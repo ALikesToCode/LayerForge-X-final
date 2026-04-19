@@ -1,0 +1,45 @@
+project:
+  name: LayerForge-X-Fast
+  seed: 7
+io:
+  max_side: 960
+  save_contact_sheet: true
+  save_parallax_gif: true
+segmentation:
+  method: classical
+  prompts: []
+  min_area_ratio: 0.002
+  nms_iou: 0.86
+  slic_segments: 96
+  slic_compactness: 12.0
+  add_background_segment: true
+depth:
+  method: geometric_luminance
+  near_is_smaller: true
+  flip: false
+  edge_smooth: true
+  ensemble: []
+layering:
+  min_layer_area_ratio: 0.0015
+  max_layers: 64
+  split_stuff_depth_bins: 3
+  occlusion_boundary_width: 5
+  occlusion_depth_threshold: 0.025
+  min_shared_boundary_px: 12
+  amodal_enabled: true
+  amodal_expand_px: 16
+matting:
+  alpha_band_px: 9
+  preserve_depth_edges: true
+inpainting:
+  method: opencv_telea
+  radius: 5
+intrinsics:
+  method: retinex
+  sigma: 28.0
+  external_command: ""
+qwen:
+  min_alpha: 0.02
+render:
+  parallax_frames: 24
+  parallax_pixels: 28
