@@ -1,0 +1,18 @@
+{
+  "project": "LayerForge-X-final",
+  "version": "1.0.0",
+  "contains": [
+    "runnable Python package",
+    "fast and cutting-edge configs",
+    "synthetic benchmark generator",
+    "Qwen/external RGBA layer enrichment",
+    "literature review and benchmarking docs",
+    "novelty and ablation plan",
+    "report tables"
+  ],
+  "validated": {
+    "py_compile": true,
+    "pytest": "1 passed",
+    "cli_help": true
+  }
+}
