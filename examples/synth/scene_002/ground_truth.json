@@ -1,0 +1,35 @@
+{
+  "image_path": "image.png",
+  "layers_near_to_far": [
+    {
+      "name": "front_table",
+      "path": "gt_layers/000_front_table.png",
+      "rank_near_to_far": 0,
+      "depth": 0.1
+    },
+    {
+      "name": "near_person",
+      "path": "gt_layers/001_near_person.png",
+      "rank_near_to_far": 1,
+      "depth": 0.22
+    },
+    {
+      "name": "mid_building",
+      "path": "gt_layers/002_mid_building.png",
+      "rank_near_to_far": 2,
+      "depth": 0.58
+    },
+    {
+      "name": "far_tree",
+      "path": "gt_layers/003_far_tree.png",
+      "rank_near_to_far": 3,
+      "depth": 0.85
+    },
+    {
+      "name": "background_sky_ground",
+      "path": "gt_layers/004_background_sky_ground.png",
+      "rank_near_to_far": 4,
+      "depth": 1.0
+    }
+  ]
+}
