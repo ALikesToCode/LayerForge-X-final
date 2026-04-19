@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "layerforge-x"
+version = "0.3.0"
+description = "Depth-aware amodal layered image decomposition from a single RGB image"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "pillow>=10.0",
+  "opencv-python>=4.8",
+  "scipy>=1.10",
+  "scikit-image>=0.21",
+  "PyYAML>=6.0",
+  "networkx>=3.1",
+  "tqdm>=4.66"
+]
+
+[project.optional-dependencies]
+models = [
+  "torch>=2.2",
+  "torchvision>=0.17",
+  "transformers>=4.45",
+  "accelerate>=0.31",
+  "diffusers>=0.30",
+  "safetensors>=0.4"
+]
+inpaint = ["simple-lama-inpainting>=0.1.2"]
+quality = ["lpips>=0.1.4", "pandas>=2.0"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[project.scripts]
+layerforge = "layerforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
