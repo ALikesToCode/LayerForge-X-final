@@ -43,5 +43,5 @@ def save_depth16(path: str | Path, depth: np.ndarray) -> Path:
     p = Path(path)
     ensure_dir(p.parent)
     arr = (normalize01(depth, robust=False) * 65535).astype(np.uint16)
-    Image.fromarray(arr, mode="I;16").save(p)
+    Image.fromarray(arr).save(p)
     return p
