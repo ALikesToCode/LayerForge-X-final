@@ -1,5 +1,7 @@
 # References to cite
 
+Short bibliography. The BibTeX-formatted version lives at `final_report_pack/05_REFERENCES.bib`.
+
 - Shade et al., Layered Depth Images, SIGGRAPH 1998.
 - Shih et al., 3D Photography using Context-aware Layered Depth Inpainting, CVPR 2020.
 - Kirillov et al., Panoptic Segmentation, CVPR 2019.

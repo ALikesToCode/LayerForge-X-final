@@ -2,33 +2,33 @@
 
 ## Core idea
 
-LayerForge-X should be described as a **Depth-Aware Amodal Layer Graph**, abbreviated **DALG**.
+LayerForge-X is best described as a **Depth-Aware Amodal Layer Graph**, or **DALG** when that phrase gets tiring.
 
-The output is not merely:
+The output isn't:
 
 ```text
 image → segmentation masks → PNG files
 ```
 
-The output is:
+It's:
 
 ```text
 image → graph of editable scene layers
 ```
 
-Each graph node is a layer. Each graph edge is an ordering/occlusion relation. The renderer converts the graph into a depth-ordered RGBA stack.
+Each graph node is a layer. Each graph edge is an ordering or occlusion relation. The renderer walks the graph and produces a depth-ordered RGBA stack on demand.
 
 ---
 
 # 1. Representation: Depth-Aware Amodal Layer Graph
 
-Define the graph:
+The graph itself:
 
 ```text
 G = (V, E)
 ```
 
-Each node `v_i ∈ V` represents one semantic layer:
+Each node `v_i ∈ V` is one semantic layer:
 
 ```text
 v_i = {
@@ -46,7 +46,7 @@ v_i = {
 }
 ```
 
-Each edge `e_ij ∈ E` represents one relation:
+Each edge `e_ij ∈ E` encodes one relation between two nodes:
 
 ```text
 v_i occludes v_j
@@ -56,11 +56,11 @@ v_i is adjacent to v_j
 v_i belongs with v_j as an associated effect
 ```
 
-Final RGBA layers are produced by topologically sorting the graph from near to far or far to near depending on rendering convention.
+Final RGBA layers come out of a topological sort of the graph, in either near-to-far or far-to-near order depending on what the renderer wants.
 
 ## Why this is novel enough for a project
 
-Most baseline systems export independent masks. DALG explicitly stores:
+Most baselines export independent masks and call it a day. DALG explicitly stores seven things a segmentation mask doesn't:
 
 1. semantic identity,
 2. depth order,
@@ -70,7 +70,7 @@ Most baseline systems export independent masks. DALG explicitly stores:
 6. intrinsic appearance,
 7. graph relations and confidence.
 
-That is a richer, inspectable scene representation.
+That combination is what makes the output a scene representation rather than a flat output.
 
 ---
 
@@ -78,36 +78,36 @@ That is a richer, inspectable scene representation.
 
 ## Problem
 
-Sorting layers by global mean or median depth fails often. Example: a large floor region may have near pixels at the bottom and far pixels at the top. A person standing on the floor may have a median depth that incorrectly ranks the whole floor against the person.
+Sorting layers by global mean or median depth is where most first-attempt pipelines quietly fall over. The failure mode is easy to describe: a large floor region might have near pixels at the bottom of the image and far pixels at the top. Its median depth ends up somewhere in the middle, and that median can rank the floor incorrectly against a person actually standing on it.
 
 ## Proposed solution
 
-Infer pairwise order using local evidence near shared boundaries.
+Instead of sorting by global statistics, infer pairwise ordering from local depth near shared boundaries.
 
-For each pair of adjacent masks `(i, j)`:
+For each adjacent pair of masks `(i, j)`:
 
-1. Find boundary pixels of `M_i` and `M_j`.
-2. Find shared/contact boundary region.
+1. Find the boundary pixels of `M_i` and `M_j`.
+2. Find the shared / contact boundary region.
 3. Sample predicted depth near that boundary.
 4. Compute robust local depth statistics.
-5. Add a directed edge from near layer to far layer with confidence.
+5. Add a directed edge from the near layer to the far layer, annotated with confidence.
 
 ## Formula
 
-Let `B_ij` be pixels near the boundary between layers `i` and `j`.
+Let `B_ij` be pixels near the boundary between layers `i` and `j`:
 
 ```text
 z_i^B = median(D[p] for p in dilate(M_i) ∩ B_ij)
 z_j^B = median(D[p] for p in dilate(M_j) ∩ B_ij)
 ```
 
-If smaller depth means nearer:
+With the convention that smaller depth means nearer:
 
 ```text
 score(i in front of j) = sigmoid((z_j^B - z_i^B) / sigma)
 ```
 
-Add edge:
+Edge decision:
 
 ```text
 if score > theta:
@@ -118,7 +118,7 @@ else:
     ambiguous edge
 ```
 
-Confidence:
+Confidence weight:
 
 ```text
 w_ij = |z_i^B - z_j^B| * shared_boundary_length(i,j) * alpha_boundary_confidence
@@ -126,7 +126,7 @@ w_ij = |z_i^B - z_j^B| * shared_boundary_length(i,j) * alpha_boundary_confidence
 
 ## Cycle resolution
 
-Depth predictions can create cycles:
+Depth predictions aren't internally consistent, and they do produce cycles:
 
 ```text
 person in front of chair
@@ -134,42 +134,40 @@ chair in front of table
 table in front of person
 ```
 
-Resolve cycles by finding an order that maximizes satisfied weighted edges:
+The resolution objective is the obvious one — find an order that maximises satisfied weighted edges:
 
 ```text
 argmax_order sum_{i,j} w_ij * 1[order_i before order_j]
 ```
 
-Practical approximation:
+In practice the approximation used is much cheaper:
 
 ```text
 rank_i = weighted_out_degree_i - weighted_in_degree_i
 sort by rank_i
 ```
 
-or use iterative removal of the lowest-confidence cycle edge.
+Alternatively, iteratively drop the lowest-confidence cycle edge until the graph becomes a DAG.
 
 ## Claim
 
 > We replace global depth sorting with a boundary-weighted occlusion graph, improving ordering for large background stuff regions and partially overlapping objects.
 
-This is a real algorithmic contribution.
+This is a genuine, small algorithmic contribution — not a world-shaking one, but it's real and it can be isolated in the ablations.
 
 ---
 
 # 3. Novel component B: Lightweight Layer Order Ranker
 
-This is the easiest way to make the project look genuinely experimental.
+This is the easiest way to make the project feel *experimental* rather than just engineering, and it is now implemented in the repo as `src/layerforge/ranker.py`.
 
 ## Idea
 
-Train a small model to predict whether layer `i` is in front of layer `j`.
-
-It does not require training a huge neural net. A logistic regression, random forest, or gradient-boosted tree is enough.
+Train a small model to predict whether layer `i` is in front of layer `j`. No giant neural network needed — the implemented version uses a lightweight logistic model trained in NumPy on the synthetic benchmark scenes.
 
 ## Input features
 
-For every candidate pair `(i, j)`:
+For each candidate pair `(i, j)`:
 
 ```text
 Δ median depth
@@ -188,7 +186,7 @@ is_stuff_i, is_stuff_j
 
 ## Label
 
-From synthetic data or RGB-D data:
+From synthetic composites or RGB-D data:
 
 ```text
 y_ij = 1 if i is nearer than j else 0
@@ -196,26 +194,23 @@ y_ij = 1 if i is nearer than j else 0
 
 ## Training data
 
-- Synthetic-LayerBench gives exact z-order.
-- NYU Depth V2 / DIODE give approximate depth order from ground-truth depth.
+The implemented source is:
+
+- Synthetic-LayerBench, which gives exact z-order by construction.
+
+RGB-D supervision remains future work, not a claimed completed result.
 
 ## Model
 
-Recommended:
+Implemented option:
 
 ```text
-LogisticRegression(class_weight='balanced')
-```
-
-or:
-
-```text
-RandomForestClassifier(n_estimators=200, max_depth=8)
+lightweight logistic model with pairwise depth / geometry / boundary features
 ```
 
 ## Evaluation
 
-Compare:
+The completed ablation in the repo compares:
 
 ```text
 Global median depth sorting
@@ -223,20 +218,19 @@ Boundary depth sorting
 Learned pairwise ranker
 ```
 
-Metrics:
+Using:
 
 ```text
+mean best IoU
 PLOA
-BW-PLOA
-Occlusion Edge F1
-Kendall tau
+recomposition PSNR / SSIM
 ```
 
 ## Claim
 
-> We introduce a lightweight pairwise layer-order ranker trained on synthetic layered composites and/or RGB-D data, improving occlusion graph consistency over global depth statistics.
+> We introduce a lightweight pairwise layer-order ranker trained on synthetic layered composites, and on the held-out synthetic split it improves recomposition PSNR over the boundary-only ordering baseline.
 
-This is compact, doable, and credible.
+Compact, doable, and — compared to "we trained a massive model" — easy to defend.
 
 ---
 
@@ -244,7 +238,7 @@ This is compact, doable, and credible.
 
 ## Problem
 
-A visible mask only contains observed pixels. Editing needs hidden extents.
+A visible (modal) mask only contains observed pixels. Editing needs the hidden extent too.
 
 ## Proposed representation
 
@@ -255,13 +249,13 @@ M_visible: what is currently visible
 M_amodal: estimated full object extent
 ```
 
-The hidden region is:
+The hidden region is the difference:
 
 ```text
 M_hidden = M_amodal - M_visible
 ```
 
-Export both:
+And export all three as separate files:
 
 ```text
 layer_007_visible_rgba.png
@@ -271,17 +265,17 @@ layer_007_hidden_completion_rgba.png
 
 ## Fallback method
 
-If no amodal model is used:
+If no amodal model is used at all, there's a usable geometric fallback:
 
 1. Detect occlusion boundaries using nearby layers and depth discontinuities.
 2. Expand the mask only behind closer occluders.
-3. Use class-dependent expansion limits.
-4. Smooth the amodal mask.
-5. Inpaint hidden color inside `M_hidden`.
+3. Apply class-dependent expansion limits (e.g. don't let a person's amodal mask grow indefinitely).
+4. Smooth the resulting amodal mask.
+5. Inpaint hidden colour inside `M_hidden`.
 
 ## Strong method
 
-Use SAMEO / amodal SAM-style backend when available.
+Plug in SAMEO or another amodal-SAM-style backend when compute and weights are available.
 
 ## Claim
 
@@ -293,7 +287,7 @@ Use SAMEO / amodal SAM-style backend when available.
 
 ## Problem
 
-Moving an object without its shadow or reflection looks fake. Standard segmentation ignores object-associated effects.
+Moving an object without its shadow or reflection looks fake. Standard segmentation ignores these effects entirely.
 
 ## Proposed representation
 
@@ -303,7 +297,7 @@ For selected foreground objects, estimate an effect mask:
 M_effect_i = soft region near object boundary with low-frequency intensity/color change
 ```
 
-Examples:
+Common examples:
 
 ```text
 person_shadow
@@ -312,7 +306,7 @@ smoke_or_transparency
 contact_shadow
 ```
 
-Represent as either:
+Two possible representations:
 
 ```text
 same object layer with extended alpha
@@ -332,18 +326,18 @@ person_core --associated_effect--> person_shadow
 
 ## Simple heuristic
 
-For shadows:
+A basic shadow heuristic that works surprisingly often:
 
-1. Find pixels near the bottom/contact region of object mask.
-2. Search for connected darkened regions relative to local background.
-3. Restrict by direction and distance from object.
-4. Export as low-alpha effect layer.
+1. Find pixels near the bottom or contact region of the object mask.
+2. Look for connected darkened regions relative to local background.
+3. Restrict the expansion by direction and distance from the object.
+4. Export as a low-alpha effect layer.
 
 ## Claim
 
 > We add optional associated-effect layers so that object edits can preserve shadows or other local visual effects.
 
-This should be framed as exploratory unless results are strong.
+This one is best framed as exploratory unless the results turn out to be very clean.
 
 ---
 
@@ -351,30 +345,30 @@ This should be framed as exploratory unless results are strong.
 
 ## Problem
 
-Intrinsic image methods operate on full images, but editing often happens per layer.
+Intrinsic image methods generally operate on full images, but editing happens per layer. A naive approach — run intrinsic separately per masked layer — creates obvious artifacts at mask boundaries.
 
 ## Proposed method
 
-Run intrinsic decomposition globally to avoid mask-boundary artifacts:
+Run intrinsic decomposition globally first, then mask afterwards:
 
 ```text
 I ≈ A * S + residual
 ```
 
-Then apply layer alpha:
+Apply each layer's alpha:
 
 ```text
 A_i = A ⊙ alpha_i
 S_i = S ⊙ alpha_i
 ```
 
-For each layer, enforce visible recomposition:
+And enforce visible-recomposition consistency per layer:
 
 ```text
 I_i ≈ A_i * S_i
 ```
 
-Export:
+Export alongside the normal RGBA:
 
 ```text
 layer_i_rgba.png
@@ -386,7 +380,7 @@ layer_i_shading_rgba.png
 
 > We expose per-layer albedo and shading controls, enabling recoloring and shading edits while preserving the original layer alpha.
 
-This is useful, but keep it as a stretch contribution.
+Useful, but stretch — keep it in the report as a bonus contribution rather than a central claim.
 
 ---
 
@@ -394,7 +388,7 @@ This is useful, but keep it as a stretch contribution.
 
 ## Step 1: Layer proposal
 
-Use one of:
+Choose one:
 
 ```text
 classical components
@@ -411,7 +405,7 @@ visible masks + labels + confidence
 
 ## Step 2: Semantic merging
 
-Merge fragments into semantic groups:
+Collapse fragments into higher-level semantic groups:
 
 ```text
 person
@@ -426,7 +420,7 @@ effect/unknown
 
 ## Step 3: Depth / geometry
 
-Use one or an ensemble:
+Pick one, or ensemble several:
 
 ```text
 Depth Anything V2
@@ -445,7 +439,7 @@ confidence map
 
 ## Step 4: Soft alpha
 
-Refine masks using:
+Refine the masks using:
 
 ```text
 mask confidence
@@ -456,15 +450,15 @@ matting backend if available
 
 ## Step 5: Boundary-weighted occlusion graph
 
-Build graph edges using local depth evidence around shared boundaries.
+Build graph edges from local depth evidence around shared boundaries (see §2 above).
 
 ## Step 6: Amodal expansion
 
-Estimate full object masks and hidden regions.
+Estimate full object masks and identify hidden regions.
 
 ## Step 7: Completion
 
-Inpaint background and hidden regions:
+Inpaint background and hidden regions using one of:
 
 ```text
 OpenCV Telea fallback
@@ -474,11 +468,11 @@ Diffusion inpainting backend
 
 ## Step 8: Intrinsic split
 
-Run Retinex fallback or Marigold-IID-style model.
+Run the Retinex fallback or a Marigold-IID-style model.
 
 ## Step 9: Export
 
-Export:
+Write out:
 
 ```text
 ordered individual RGBA layers
@@ -495,7 +489,7 @@ metrics report
 
 # 8. Main contributions section
 
-Use this in the report.
+A clean version of the contributions bullet list suitable for the report:
 
 ## Contributions
 
@@ -503,9 +497,9 @@ Use this in the report.
 
 2. **Boundary-weighted layer ordering.** We infer occlusion order using boundary-local depth evidence rather than only global mean or median depth, improving cases involving large stuff regions, slanted surfaces, and partially overlapping objects.
 
-3. **Promptable semantic layer extraction.** The system supports both closed-set panoptic segmentation and open-vocabulary grounded segmentation, enabling user-controllable extraction of layers such as “person,” “window,” “left chair,” or “red car.”
+3. **Promptable semantic layer extraction.** The system supports both closed-set panoptic segmentation and open-vocabulary grounded segmentation, enabling user-controllable extraction of layers such as "person," "window," "left chair," or "red car."
 
-4. **Amodal and completion-aware editing.** The system separates visible masks from estimated amodal masks and uses inpainting to synthesize hidden or background regions, supporting object removal, movement, and parallax.
+4. **Amodal and completion-aware editing.** The system separates visible masks from estimated amodal masks and uses inpainting to synthesise hidden or background regions, supporting object removal, movement, and parallax.
 
 5. **Multi-axis benchmark.** We evaluate not only segmentation, but also depth-order accuracy, recomposition fidelity, amodal completion, intrinsic decomposition, and editability.
 
@@ -513,7 +507,7 @@ Use this in the report.
 
 # 9. Safe novelty claims
 
-These are strong and defensible.
+These are the phrasings I'd recommend — strong enough to mean something, soft enough to survive scrutiny:
 
 ```text
 We propose a modular framework for converting a single RGB image into a depth-aware amodal layer graph rather than a set of independent visible segmentation masks.
@@ -535,7 +529,9 @@ We provide a synthetic layered benchmark with ground-truth RGBA layers, depth or
 
 # 10. Claims to avoid
 
-Do not write:
+And the phrasings to steer clear of, each paired with a defensible substitute:
+
+Don't write:
 
 ```text
 Our method solves single-image layered decomposition.
@@ -547,7 +543,7 @@ Do write:
 Our method provides a practical and inspectable approximation to single-image layered decomposition.
 ```
 
-Do not write:
+Don't write:
 
 ```text
 Our method recovers true hidden object appearance.
@@ -559,7 +555,7 @@ Do write:
 Our method synthesizes plausible hidden/background content for editing; quantitative evaluation is performed where ground truth is available.
 ```
 
-Do not write:
+Don't write:
 
 ```text
 Our method produces physically correct albedo and shading.
@@ -581,7 +577,7 @@ Our intrinsic split is intended as an editable appearance factorization and is e
 
 ## Abstract
 
-Single RGB images collapse object identity, occlusion, transparency, illumination, and depth into a single raster canvas, making local editing and parallax manipulation difficult. We present LayerForge-X, a modular system that converts one RGB image into a depth-aware amodal layer graph. Each graph node stores a semantic RGBA layer with visible mask, soft alpha matte, estimated amodal extent, depth statistics, optional completed content, and optional intrinsic albedo/shading factors. Graph edges encode occlusion and near-to-far ordering inferred from boundary-local monocular depth evidence. The graph is exported as ordered RGBA layers, semantic group layers, completed background, intrinsic appearance layers, and editing previews. We evaluate the representation using panoptic segmentation metrics, pairwise depth-order accuracy, recomposition fidelity, amodal mask/completion metrics, and editing demonstrations including object removal, movement, parallax, and recoloring. The results show that combining semantic proposals, monocular geometry, soft alpha refinement, amodal reasoning, and completion yields more editable and interpretable layers than visible-mask baselines.
+Single RGB images collapse object identity, occlusion, transparency, illumination, and depth into a single raster canvas, making local editing and parallax manipulation difficult. We present LayerForge-X, a modular system that converts one RGB image into a depth-aware amodal layer graph. Each graph node stores a semantic RGBA layer with a visible mask, a soft alpha matte, an estimated amodal extent, depth statistics, optional completed content, and optional intrinsic albedo and shading factors. Graph edges encode occlusion and near-to-far ordering inferred from boundary-local monocular depth evidence. The graph is exported as ordered RGBA layers, semantic group layers, completed background, intrinsic appearance layers, and editing previews. We evaluate the representation using panoptic segmentation metrics, pairwise depth-order accuracy, recomposition fidelity, amodal mask and completion metrics, and editing demonstrations including object removal, movement, parallax, and recolouring. The results indicate that combining semantic proposals, monocular geometry, soft alpha refinement, amodal reasoning, and completion yields more editable and interpretable layers than visible-mask baselines.
 
 ---
 
@@ -620,28 +616,28 @@ I ≈ Render(L_1, ..., L_K, order)
 
 ## 4.2 Layer proposal
 
-Describe panoptic/open-vocabulary segmentation.
+Panoptic segmentation and open-vocabulary alternatives; pick per-config.
 
 ## 4.3 Depth and geometry
 
-Describe monocular depth estimation and normalization.
+Monocular depth estimation and its normalisation.
 
 ## 4.4 Occlusion graph
 
-Describe boundary-weighted edge construction.
+Boundary-weighted edge construction; the key algorithmic section.
 
 ## 4.5 Alpha refinement
 
-Describe hard masks, feathering, gradient-aware alpha, matting backend.
+Hard masks, feathering, gradient-aware alpha, and an optional matting backend.
 
 ## 4.6 Amodal masks and completion
 
-Describe visible/amodal distinction and inpainting.
+Visible / amodal distinction, hidden-region definition, and inpainting.
 
 ## 4.7 Intrinsic decomposition
 
-Describe albedo/shading export.
+Albedo and shading export, per layer.
 
 ## 4.8 Rendering and export
 
-Describe alpha compositing and file outputs.
+Alpha compositing and the set of output files.

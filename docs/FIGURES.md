@@ -1,0 +1,32 @@
+# Figure Pack
+
+This is the figure index for the measured runs currently present in the repo.
+
+Regenerate everything with:
+
+```bash
+.venv/bin/python scripts/generate_report_figures.py
+```
+
+Generated assets:
+
+- [Truck recomposition comparison](figures/truck_recomposition_comparison.png): reference RGB, raw Qwen, Qwen plus LayerForge, old native LayerForge, automated upgraded LayerForge, and the autotune-selected LayerForge winner on `data/demo/truck.jpg`.
+- [Truck layer stack comparison](figures/truck_layer_stack_comparison.png): raw Qwen RGBA layers, enriched Qwen ordered stack, old LayerForge grouped layers, and the tightened autotune-selected LayerForge stack.
+- [Truck metrics comparison](figures/truck_metrics_comparison.png): side-by-side charts for layer count, recomposition PSNR, and recomposition SSIM across the main truck baselines and improved LayerForge variants, including the search-selected native winner.
+- [Truck prompt ablation](figures/truck_prompt_ablation.png): Gemini-only prompting versus curated prompts versus augment mode on the upgraded native recipe.
+- [Synthetic ordering ablation](figures/synthetic_ordering_ablation.png): held-out `boundary` versus `learned ranker` comparison showing that PSNR improves while IoU and PLOA stay flat.
+- [Qualitative gallery](figures/qualitative_gallery.png): astronaut, coffee, and cat scenes with input RGB, segmentation overlay, and ordered layer contact sheet.
+- [Public benchmark comparison](figures/public_benchmark_comparison.png): COCO versus ADE20K coarse-group benchmark charts for group mIoU, thing mIoU, stuff mIoU, and mean image mIoU.
+- [Public depth comparison](figures/public_depth_comparison.png): DIODE validation charts comparing the geometric fallback against DepthPro on depth error and indoor/outdoor split metrics.
+- [Figure manifest](figures/figure_manifest.json): machine-readable index of the figure files.
+
+Recommended use in the report:
+
+- intro / headline comparison: `truck_recomposition_comparison.png`
+- methods / representation slide: `truck_layer_stack_comparison.png`
+- main quantitative results: `truck_metrics_comparison.png`
+- native-method tuning evidence: `truck_prompt_ablation.png`
+- novelty / ablation evidence: `synthetic_ordering_ablation.png`
+- qualitative results section: `qualitative_gallery.png`
+- public benchmark section: `public_benchmark_comparison.png`
+- public depth section: `public_depth_comparison.png`

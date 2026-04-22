@@ -6,15 +6,15 @@
 
 ## Core idea
 
-A normal RGB image collapses object identity, occlusion, depth, shading, transparency, and background into one raster. LayerForge-X converts that raster into an editable scene-layer representation.
+A normal RGB image collapses an absurd amount of information into one 2D array: object identity, occlusion, depth, shading, transparency, and background all get squashed into a single raster. The whole point of LayerForge-X is to partially unpack that, converting the raster into an editable scene-layer representation.
 
-The final representation is a **Depth-Aware Amodal Layer Graph (DALG)**:
+The final representation is what I call a **Depth-Aware Amodal Layer Graph (DALG)**:
 
 ```text
 G = (V, E)
 ```
 
-Each node is a layer:
+Each node is a layer — and "layer" here means more than just an RGBA image. A node looks like this:
 
 ```text
 v_i = {
@@ -34,7 +34,7 @@ v_i = {
 }
 ```
 
-Each edge stores occlusion / depth evidence:
+Edges carry occlusion and depth evidence between pairs of nodes:
 
 ```text
 e_ij = {
@@ -48,6 +48,8 @@ e_ij = {
 ```
 
 ## Pipeline
+
+At a glance, the flow from a single raster to the graph looks like this:
 
 ```text
 Input RGB image
@@ -77,9 +79,9 @@ RGBA layers + graph JSON + debug visualizations + metrics
 
 ## Why the graph matters
 
-An unordered folder of transparent PNGs is weak. It does not explain which layer is closer, what occludes what, where hidden support is expected, or whether the output can be evaluated component-wise.
+An unordered folder of transparent PNGs is not a scene representation — it's a filing cabinet. You can't tell which layer is closer, what occludes what, where hidden support should live, or how to evaluate the output component-by-component.
 
-The graph makes the output inspectable:
+The graph fixes that by making the output inspectable. A node in the exported JSON reads like this:
 
 ```json
 {
@@ -98,7 +100,9 @@ The graph makes the output inspectable:
 
 ### Boundary-weighted occlusion ordering
 
-For adjacent layers `i` and `j`, global median depth can fail on large/slanted regions. LayerForge-X instead compares boundary-local depth:
+Sorting by global median (or mean) depth sounds reasonable until you try it on real scenes. It fails embarrassingly on large or slanted regions — a sloped floor or a tall wall has pixels all over the depth distribution, so its "average depth" doesn't correspond to where it actually sits relative to its neighbours.
+
+LayerForge-X side-steps this by comparing depth *near the shared boundary* of adjacent layers instead:
 
 ```text
 B_ij = local shared boundary support
@@ -107,19 +111,19 @@ z_i^B = median depth of layer i near B_ij
 z_j^B = median depth of layer j near B_ij
 ```
 
-If smaller depth means closer:
+Using the convention that smaller depth means closer:
 
 ```text
 i is in front of j when z_i^B < z_j^B
 ```
 
-Confidence:
+The confidence attached to each edge weights the raw depth gap by the length of the shared boundary:
 
 ```text
 confidence = |z_i^B - z_j^B| × log(1 + shared_boundary_length)
 ```
 
-The graph is then topologically sorted. If cycles appear, the weakest edge is removed.
+The graph is then topologically sorted. Occasionally the predicted edges produce a cycle; when that happens, the weakest edge gets dropped until the sort succeeds.
 
 ## Final outputs
 
@@ -140,4 +144,4 @@ metrics.json
 
 ## Project contribution in one paragraph
 
-LayerForge-X decomposes a single RGB image into semantically grouped, depth-ordered, amodal RGBA layers enriched with occlusion relations and intrinsic appearance factors. Unlike direct RGB-to-layer generators, it produces an inspectable graph representation and evaluates layer quality across segmentation, depth ordering, recomposition, amodal completion, intrinsic decomposition, and editing utility.
+LayerForge-X decomposes a single RGB image into semantically grouped, depth-ordered, amodal RGBA layers enriched with occlusion relations and intrinsic appearance factors. Unlike end-to-end RGB-to-layer generators, it produces an inspectable graph representation and evaluates layer quality across segmentation, depth ordering, recomposition, amodal completion, intrinsic decomposition, and editing utility — rather than leaning on a single "does it look good?" judgement call.

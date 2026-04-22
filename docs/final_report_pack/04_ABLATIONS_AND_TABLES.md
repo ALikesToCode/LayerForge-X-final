@@ -1,6 +1,26 @@
 # Ablations, Tables, and Figures for LayerForge-X
 
+This document collects every planned ablation, every table the report needs, every figure the report needs, and the slide sequence for the presentation. It is the working document — fill values in as runs complete.
+
+## Completed runs snapshot
+
+The rows below are no longer placeholders; they correspond to runs already present in the repo:
+
+| Variant | Segmentation | Depth | Ordering | Split | Mean best IoU | PLOA | Recompose PSNR |
+|---|---|---|---|---|---:|---:|---:|
+| A1 | classical | geometric luminance | boundary | synthetic fast | 0.1549 | 0.1667 | 19.1360 |
+| A2 | classical | geometric luminance | boundary | synth test | 0.1549 | 0.1667 | 19.1589 |
+| A3 | classical | geometric luminance | learned ranker | synth test | 0.1549 | 0.1667 | 19.4138 |
+
+Interpretation:
+
+- `A2 → A3` gives a real learned-ordering result worth reporting.
+- the current bottleneck is proposal quality, because the fast classical segmenter still produces about `65` predicted layers for `5` ground-truth layers.
+- therefore the strongest next qualitative row is the real-image `grounded_sam2 + depth_pro` system, not more tuning on the classical baseline.
+
 ## Main ablation matrix
+
+The core sweep. Each row changes exactly one axis relative to the next so the contribution of each component is readable off the table:
 
 | Variant | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsic | Purpose |
 |---|---|---|---|---|---|---|---|---|
@@ -17,6 +37,8 @@
 
 ## Table 1: Literature comparison
 
+A gap analysis across the most relevant families of prior work. The `LayerForge-X` row is intentionally the most densely populated — that's the point:
+
 | Method family | Semantic layers | Depth order | Amodal hidden parts | Soft alpha | Inpainting | Intrinsics | Single image | Notes |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
 | LDI | no | yes | partial | no | no | no | yes/varies | rendering representation |
@@ -32,6 +54,8 @@
 ---
 
 ## Table 2: Dataset plan
+
+Which dataset gets used for which track, with the available ground truth in each:
 
 | Dataset | Used for | Ground truth available | Metrics |
 |---|---|---|---|
@@ -61,6 +85,8 @@
 
 ## Table 4: Component ablation template
 
+A leave-one-out table. For each row, the expected-damage column says what I think should break, and the observed-result column is what the numbers actually say. If the observed column doesn't match the expected column, that's interesting and deserves a paragraph in the discussion.
+
 | Removed component | Expected damage | Metric most affected | Observed result |
 |---|---|---|---|
 | remove semantic segmenter | no meaningful object layers | PQ/mIoU | |
@@ -74,6 +100,8 @@
 ---
 
 ## Table 5: Failure analysis template
+
+One row per failure example. Talking about failures explicitly is one of the easiest ways to make the report read as mature rather than salesy:
 
 | Image | Failure type | Cause | Visible symptom | Fix/future work |
 |---|---|---|---|---|
@@ -89,7 +117,7 @@
 
 ## Figure 1: Pipeline diagram
 
-Show:
+A flow diagram in the order the pipeline runs:
 
 ```text
 RGB input
@@ -105,21 +133,27 @@ RGB input
 
 ## Figure 2: DALG representation
 
-Draw graph nodes as layers and arrows as “occludes” edges.
+A graph drawing. Nodes are layers; arrows are "occludes" edges. Use colour to distinguish semantic groups.
 
 ## Figure 3: Ordered layer contact sheet
 
-Show all layers near → far.
+All layers for a single scene, laid out near → far. This one sells the project visually better than any table.
+
+Measured file available now:
+
+```text
+docs/figures/truck_layer_stack_comparison.png
+```
 
 ## Figure 4: Baseline vs full
 
-Columns:
+A comparison grid. Columns step through the key ablations:
 
 ```text
 Input | hard masks | semantic only | depth-aware | full LayerForge-X
 ```
 
-Rows:
+Rows cover a mix of domains so no single content type dominates:
 
 ```text
 person street
@@ -129,9 +163,15 @@ animal scene
 anime/vector scene
 ```
 
+Measured file available now:
+
+```text
+docs/figures/truck_recomposition_comparison.png
+```
+
 ## Figure 5: Occlusion graph improvement
 
-Show one case where global median depth fails but boundary graph succeeds.
+Pick a single scene where the global-median-depth ordering fails and the boundary graph gets it right. Highlight the contested edge.
 
 ## Figure 6: Editing demo
 
@@ -147,20 +187,28 @@ background blur
 
 ## Figure 7: Failure cases
 
-Do not skip this. It makes the report look honest and mature.
+Do not skip this. A report without a failure-cases figure looks like the author hid the hard examples.
+
+Additional measured figure files already generated:
+
+```text
+docs/figures/truck_metrics_comparison.png
+docs/figures/synthetic_ordering_ablation.png
+docs/figures/qualitative_gallery.png
+```
 
 ---
 
 # Presentation pitch
 
-Use this slide sequence:
+Slide sequence for the talk:
 
-1. Problem: raster images are entangled.
-2. Motivation: editing needs layers.
-3. Related work map: LDI → 3D photo → panoptic/open-vocab → modern layer decomposition.
-4. Key idea: Depth-Aware Amodal Layer Graph.
+1. Problem — raster images are entangled.
+2. Motivation — editing needs layers.
+3. Related work map — LDI → 3D photo → panoptic / open-vocab → modern layer decomposition.
+4. Key idea — Depth-Aware Amodal Layer Graph.
 5. Pipeline.
-6. Boundary-weighted occlusion graph.
+6. Boundary-weighted occlusion graph (the algorithmic contribution slide).
 7. Outputs.
 8. Benchmark tracks.
 9. Quantitative results.
@@ -173,4 +221,6 @@ Use this slide sequence:
 
 # One-minute oral explanation
 
-Single images are hard to edit because all scene elements are fused into one RGB canvas. Our system converts that canvas into a structured layer graph. Each node is a semantic RGBA layer with visible mask, soft alpha, depth statistics, estimated amodal extent, and optional albedo/shading. Edges encode which layers occlude others. Instead of simply sorting masks by average depth, we build a boundary-weighted occlusion graph using local depth evidence near object contacts. This produces a near-to-far stack that can be recomposed, edited, inpainted, and animated. We evaluate the method not only with segmentation metrics but also with layer-order accuracy, recomposition error, amodal completion quality, and editing demonstrations.
+The short script if someone asks "what's your project?" at a poster session:
+
+Single images are hard to edit because every scene element gets fused into one RGB canvas. My system converts that canvas into a structured layer graph. Each node is a semantic RGBA layer with a visible mask, a soft alpha, depth statistics, an estimated amodal extent, and optional albedo and shading. The edges record which layers occlude which. Instead of sorting masks by average depth, I build a boundary-weighted occlusion graph from local depth evidence near object contacts. That yields a near-to-far stack you can recompose, edit, inpaint, and animate. The evaluation doesn't stop at segmentation metrics — it also covers layer-order accuracy, recomposition error, amodal completion quality, and actual editing demonstrations.

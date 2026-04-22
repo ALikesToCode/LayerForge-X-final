@@ -2,17 +2,19 @@
 
 ## Goal
 
-The project should not be evaluated with one vague “looks good” comparison. A layered representation has several measurable properties:
+The project shouldn't be evaluated with one vague "looks good" comparison. A layered representation has several measurable properties, each of which can fail independently:
 
 1. Are the layer regions semantically correct?
-2. Is the near-to-far depth/occlusion order correct?
+2. Is the near-to-far depth and occlusion order correct?
 3. Do the layers recompose back into the original image?
 4. Are alpha boundaries usable for editing?
-5. Are hidden/background regions completed plausibly?
+5. Are hidden and background regions completed plausibly?
 6. Does the intrinsic split behave sensibly?
 7. Does the representation actually support edits better than baselines?
 
-The benchmark therefore uses multiple tracks.
+Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
+
+For the current repository state, the completed quantitative runs are summarised in `docs/RESULTS_SUMMARY_2026_04_19.md`. That file should be treated as the source of truth for reported numbers.
 
 ---
 
@@ -21,20 +23,20 @@ The benchmark therefore uses multiple tracks.
 ## Datasets
 
 - **COCO Panoptic** for common objects and stuff.
-- **ADE20K** for dense scene parsing and diverse stuff classes.
-- Optional: a small manually labelled project test set for your chosen domains.
+- **ADE20K** for dense scene parsing and a broader set of stuff classes.
+- Optional: a small hand-labelled project test set for whichever domains the demos lean on.
 
 ## Metrics
 
 ### Panoptic Quality
 
-Use Panoptic Quality when ground-truth panoptic annotations are available:
+When ground-truth panoptic annotations are available, report PQ:
 
 ```text
 PQ = sum_{(p,g) in TP} IoU(p,g) / (|TP| + 0.5|FP| + 0.5|FN|)
 ```
 
-Also report:
+Also report the two components:
 
 ```text
 SQ = segmentation quality over matched segments
@@ -43,7 +45,7 @@ RQ = recognition quality
 
 ### Semantic mIoU
 
-For semantic-only labels:
+For semantic-only labels, the standard per-class IoU averaged over classes:
 
 ```text
 IoU_c = TP_c / (TP_c + FP_c + FN_c)
@@ -74,14 +76,14 @@ mIoU = mean_c IoU_c
 
 ## Why this matters
 
-The output is a stack, so order is as important as mask quality. Incorrect order creates broken recomposition and bad parallax. A global object depth can fail when objects are large, slanted, or touch multiple depth planes, so evaluate pairwise ordering.
+The output is a stack, so order is as important as mask quality. Get the ordering wrong and recomposition breaks, parallax looks incoherent, and the whole representation stops being useful even if each individual mask is perfect. Global average-depth sorting fails when objects are large, slanted, or span multiple depth planes — exactly the cases most scenes contain — so evaluation has to measure pairwise ordering, not just a global ranking.
 
 ## Datasets
 
 - **Synthetic-LayerBench**: generated composites with known z-order.
-- **NYU Depth V2**: indoor RGB-D scenes with object/instance labels.
-- **DIODE**: indoor/outdoor RGB-D scenes for generalization.
-- Optional: KITTI for outdoor road scenes if vehicles/roads are important.
+- **NYU Depth V2**: indoor RGB-D scenes with object and instance labels.
+- **DIODE**: indoor / outdoor RGB-D for generalisation.
+- Optional: KITTI for outdoor road scenes if vehicles and roads are a focus.
 
 ## Ground-truth pair construction
 
@@ -91,17 +93,17 @@ For each image, define a ground-truth depth value per layer using median ground-
 z_i = median(Depth_GT[p] for p in visible_mask_i)
 ```
 
-For pair `(i, j)`, include the pair only if:
+Then, for each candidate pair `(i, j)`, include it only if:
 
 ```text
 |z_i - z_j| > tau_depth
 ```
 
-This avoids penalizing ambiguous near-ties.
+That threshold rejects near-ties, which otherwise get penalised as "wrong" even when the order is genuinely ambiguous.
 
 ## Metrics
 
-### Pairwise Layer Order Accuracy, PLOA
+### Pairwise Layer Order Accuracy (PLOA)
 
 ```text
 PLOA = (# correctly ordered valid pairs) / (# valid pairs)
@@ -113,11 +115,11 @@ A pair is correct if:
 sign(pred_depth_i - pred_depth_j) == sign(gt_depth_i - gt_depth_j)
 ```
 
-Use the convention consistently: smaller depth means nearer if using metric depth.
+Stick to one depth convention consistently: here, smaller depth means nearer when using metric depth.
 
-### Boundary-Weighted Pairwise Layer Order Accuracy, BW-PLOA
+### Boundary-Weighted PLOA (BW-PLOA)
 
-Weight pairs by shared boundary length or adjacency confidence:
+Weight pairs by shared boundary length or adjacency confidence, so pairs that actually touch count more than pairs sitting in different corners of the image:
 
 ```text
 BW-PLOA = sum_{i,j} w_ij * correct_ij / sum_{i,j} w_ij
@@ -129,11 +131,9 @@ Recommended weight:
 w_ij = shared_boundary_length(i,j) * min(area_i, area_j)^0.5
 ```
 
-This focuses evaluation on pairs where ordering matters visually.
-
 ### Occlusion Edge F1
 
-Build a ground-truth occlusion graph from synthetic z-order or RGB-D boundaries. Compare predicted graph edges:
+Build a ground-truth occlusion graph from synthetic z-order or RGB-D boundary reasoning. Then compare predicted graph edges as a set:
 
 ```text
 Precision = correct_pred_edges / pred_edges
@@ -143,7 +143,7 @@ F1        = 2PR / (P + R)
 
 ### Kendall tau / inversion count
 
-For images with a total ground-truth layer order, report Kendall tau or normalized inversion count.
+For images with a total ground-truth layer order, also report Kendall tau or the normalised inversion count — it's a cleaner single number than PLOA when the order is fully defined.
 
 ## Report table
 
@@ -161,17 +161,17 @@ For images with a total ground-truth layer order, report Kendall tau or normaliz
 
 ## Why this matters
 
-If the exported layers are correct, alpha-compositing them in predicted order should reconstruct the input image closely. This is a sanity check for the representation.
+If the exported layers are correct, alpha-compositing them in predicted order should recover the input image closely. This track is essentially a sanity check on the representation as a whole.
 
 ## Rendering equation
 
-For layers ordered far-to-near during compositing:
+For layers composited far-to-near:
 
 ```text
 C_out = alpha_over(L_1, L_2, ..., L_K)
 ```
 
-or equivalently build from the farthest layer first, then alpha-over nearer layers.
+Equivalently: start from the farthest layer and alpha-over each nearer layer on top.
 
 ## Metrics
 
@@ -185,21 +185,19 @@ PSNR = 20 log10(MAX_I / sqrt(MSE))
 
 ### Structural similarity
 
-Use SSIM or MS-SSIM.
+SSIM or MS-SSIM.
 
 ### Perceptual similarity
 
-Use LPIPS if possible. Lower is better.
+LPIPS if it's available. Lower is better.
 
 ### Alpha coverage error
 
-Compare the union of exported visible alphas against valid image area:
+Compare the summed alpha against the valid image area. For opaque natural images, summed alpha should cover the whole scene:
 
 ```text
 coverage_error = mean(|clip(sum_k alpha_k, 0, 1) - 1|)
 ```
-
-For opaque natural images, summed composited opacity should cover the image.
 
 ## Report table
 
@@ -223,17 +221,13 @@ For opaque natural images, summed composited opacity should cover the image.
 
 ## Metrics
 
-### Modal IoU
-
-Visible mask quality:
+### Modal IoU — visible mask quality
 
 ```text
 IoU_visible = |M_pred_visible ∩ M_gt_visible| / |M_pred_visible ∪ M_gt_visible|
 ```
 
-### Amodal IoU
-
-Full object extent quality:
+### Amodal IoU — full object extent quality
 
 ```text
 IoU_amodal = |M_pred_amodal ∩ M_gt_amodal| / |M_pred_amodal ∪ M_gt_amodal|
@@ -241,24 +235,22 @@ IoU_amodal = |M_pred_amodal ∩ M_gt_amodal| / |M_pred_amodal ∪ M_gt_amodal|
 
 ### Invisible-region IoU
 
-Focus only on hidden area:
+The hardest and most informative of the three, because it isolates just the hidden portion:
 
 ```text
 M_invisible = M_amodal - M_visible
 IoU_invisible = IoU(M_pred_invisible, M_gt_invisible)
 ```
 
-This is harder and more informative than visible IoU.
-
 ### Background-completion quality
 
-On synthetic composites where clean background is known:
+On synthetic composites where the clean background is known:
 
 ```text
 PSNR_masked, SSIM_masked, LPIPS_masked
 ```
 
-Compute these only inside the removed/hidden region.
+These are computed only inside the removed or hidden region.
 
 ## Report table
 
@@ -283,7 +275,7 @@ Compute these only inside the removed/hidden region.
 
 ### WHDR on IIW
 
-WHDR evaluates whether predicted reflectance comparisons agree with human judgments. Lower is better.
+WHDR measures whether predicted reflectance comparisons agree with human judgments. Lower is better.
 
 ### Synthetic intrinsic metrics
 
@@ -298,13 +290,13 @@ Layer-local color constancy error
 
 ### Recomposition consistency
 
-For each layer:
+Per layer:
 
 ```text
 I_layer ≈ A_layer * S_layer + residual_layer
 ```
 
-Score:
+Scored as:
 
 ```text
 intrinsic_recompose_error = mean(|I_layer - A_layer * S_layer| inside alpha > 0)
@@ -324,16 +316,16 @@ intrinsic_recompose_error = mean(|I_layer - A_layer * S_layer| inside alpha > 0)
 
 ## Why this matters
 
-The project is about layers, not just masks. The best final section should demonstrate practical operations.
+The whole point of layers is editing. The most compelling final section should demonstrate that the representation supports practical operations, not just that it scores well on segmentation benchmarks.
 
 ## Edits to evaluate
 
-1. **Object removal**: remove one foreground layer and show completed background.
-2. **Object translation**: move one layer sideways; check whether background holes are plausible.
-3. **Parallax preview**: shift layers according to depth.
-4. **Depth-of-field edit**: blur far layers more than near layers.
-5. **Albedo recolor**: recolor an object through albedo while preserving shading.
-6. **Relighting-lite**: scale shading layer or change shading contrast.
+1. **Object removal** — remove one foreground layer and show the completed background.
+2. **Object translation** — move one layer sideways and see whether background holes stay plausible.
+3. **Parallax preview** — shift layers according to depth to simulate viewpoint change.
+4. **Depth-of-field edit** — blur far layers more than near layers.
+5. **Albedo recolour** — recolour an object through its albedo while preserving shading.
+6. **Relighting-lite** — scale or alter the shading layer.
 
 ## Metrics
 
@@ -347,7 +339,7 @@ preservation_MAE = mean(|I_original - I_edited| outside affected_region)
 
 ### Hole artifact ratio
 
-After movement/removal, measure transparent or invalid pixels:
+After movement or removal, count transparent or invalid pixels:
 
 ```text
 hole_ratio = invalid_pixels / image_pixels
@@ -355,12 +347,14 @@ hole_ratio = invalid_pixels / image_pixels
 
 ### User preference study
 
-Use a small study if possible:
+A small study is plenty:
 
 - 10 to 20 images.
 - 3 methods: baseline, depth-aware only, full method.
-- Ask: “Which edit looks more plausible?”
+- Question: "Which edit looks more plausible?"
 - Report preference percentage.
+
+Even a dozen people can surface systematic differences.
 
 ## Report table
 
@@ -375,11 +369,11 @@ Use a small study if possible:
 
 # Synthetic-LayerBench design
 
-This is the easiest way to get strong numbers because ground truth is known.
+This is the easiest path to strong, defensible numbers, precisely because ground truth is known by construction.
 
 ## Data generation
 
-Create composites from known layers:
+Composite scenes from known layers:
 
 ```text
 background B
@@ -402,7 +396,7 @@ save:
 
 ## Domains
 
-Use at least three domains:
+At least three domains to avoid overfitting the benchmark to one look:
 
 | Domain | Why it matters |
 |---|---|
@@ -418,19 +412,19 @@ validation: 100 images
 test: 100 images
 ```
 
-If time is short:
+If time is genuinely short:
 
 ```text
 30 synthetic images + 20 real qualitative images
 ```
 
-Still better than only showing handpicked results.
+Even that is a big improvement over hand-picked demos alone.
 
 ---
 
 # Ablation protocol
 
-Run a controlled set where one component changes at a time.
+Run a controlled set where one component changes at a time. The reason to do this rather than one giant comparison is simple: only this kind of diff can attribute credit to an individual component.
 
 | ID | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsics |
 |---|---|---|---|---|---|---|---|
@@ -445,18 +439,18 @@ Run a controlled set where one component changes at a time.
 
 ## Expected interpretation
 
-- A → B measures semantic segmentation benefit.
-- B → C measures depth benefit.
-- C → D measures boundary graph ordering benefit.
-- D → E measures open-vocabulary and soft alpha benefit.
-- E → F measures amodal/inpaint benefit.
+- A → B measures the semantic segmentation benefit.
+- B → C measures the depth benefit.
+- C → D measures the boundary graph benefit on top of depth.
+- D → E measures open-vocabulary plus soft alpha.
+- E → F measures amodal and inpaint.
 - G → H measures intrinsic split usefulness.
 
 ---
 
 # Minimum result set for best marks
 
-Include these figures:
+Figures that should be in the final report, in roughly this order:
 
 1. Input image.
 2. Semantic overlay.
@@ -468,10 +462,10 @@ Include these figures:
 8. Visible mask vs amodal mask.
 9. Object removal with background completion.
 10. Parallax GIF or frame strip.
-11. Albedo/shading layer visualization.
+11. Albedo/shading layer visualisation.
 12. Failure cases.
 
-Include these tables:
+Tables:
 
 1. Literature comparison table.
 2. Benchmark/dataset table.
@@ -483,7 +477,7 @@ Include these tables:
 
 # Failure-case taxonomy
 
-Do not hide failures. Classify them.
+Failures are part of the contribution, not a thing to hide. Classifying them makes the report read as mature rather than salesy:
 
 | Failure | Cause | Example | Fix / future work |
 |---|---|---|---|
@@ -501,6 +495,6 @@ Do not hide failures. Classify them.
 
 # Recommended final benchmark narrative
 
-The strongest narrative is:
+If the report needs one paragraph summarising the whole evaluation, this is the one:
 
-> We evaluate LayerForge-X across four axes: segmentation quality, layer-order correctness, recomposition fidelity, and editability. Standard panoptic metrics measure visible semantic grouping, while a synthetic layer benchmark and RGB-D datasets measure pairwise depth-order accuracy. Recomposition metrics verify that the exported RGBA stack preserves the original image. Finally, object removal, object movement, parallax, and intrinsic recoloring demonstrate that the representation is useful for editing rather than being merely a segmentation visualization.
+> We evaluate LayerForge-X across four axes: segmentation quality, layer-order correctness, recomposition fidelity, and editability. Standard panoptic metrics measure visible semantic grouping, while a synthetic layer benchmark and RGB-D datasets measure pairwise depth-order accuracy. Recomposition metrics verify that the exported RGBA stack preserves the original image. Finally, object removal, object movement, parallax, and intrinsic recolouring demonstrate that the representation is genuinely useful for editing rather than being a segmentation visualisation in disguise.

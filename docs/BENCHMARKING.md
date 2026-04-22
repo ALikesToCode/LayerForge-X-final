@@ -1,5 +1,7 @@
 # Benchmarking Plan
 
+Here's the shape of what needs measuring, and where the data for each track comes from:
+
 | Goal | Dataset | Metric |
 |---|---|---|
 | Panoptic segmentation | COCO Panoptic, ADE20K | PQ, SQ, RQ, mIoU |
@@ -13,20 +15,22 @@
 
 ## Synthetic benchmark
 
-Use `scripts/make_synthetic_dataset.py` to generate scenes with known RGBA layers and near-to-far order. This gives the full project a ground truth target, which real photos do not have.
+Real photos don't come with a z-order answer key, so the synthetic generator in `scripts/make_synthetic_dataset.py` does the heavy lifting for quantitative evaluation. Each generated scene comes with known RGBA layers, a known near-to-far order, and known hidden regions. That gives the project a ground-truth target that no real photo can provide.
 
 ## Qualitative figures
 
-For each selected image show:
+For the curated real-image qualitative set, each example should show:
 
-- input;
+- the input;
 - segmentation overlay;
 - depth map;
 - layer contact sheet;
 - completed background;
-- recomposition;
-- parallax GIF frame or edit;
-- albedo/shading split.
+- the recomposition;
+- a parallax GIF frame or another edit demo;
+- the albedo/shading split.
+
+That's a lot of panels per image, but it's the only way to make the components legible at a glance.
 
 ## Ablation table
 

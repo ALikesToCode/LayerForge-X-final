@@ -5,6 +5,10 @@
     "runnable Python package",
     "fast and cutting-edge configs",
     "synthetic benchmark generator",
+    "synthetic learned ordering ranker",
+    "official Qwen baseline runner",
+    "run-metrics collection helper",
+    "report figure generator",
     "Qwen/external RGBA layer enrichment",
     "literature review and benchmarking docs",
     "novelty and ablation plan",
@@ -12,7 +16,182 @@
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "1 passed",
-    "cli_help": true
+    "pytest": "30 passed",
+    "cli_help": true,
+    "train_ranker_cli": true
+  },
+  "measured_results": {
+    "synthetic_fast": {
+      "mean_best_iou": 0.15491331037966347,
+      "pairwise_layer_order_accuracy": 0.16666666666666666,
+      "mean_recompose_psnr": 19.135988367393463
+    },
+    "synth_test_boundary": {
+      "mean_best_iou": 0.154944951046612,
+      "pairwise_layer_order_accuracy": 0.16666666666666666,
+      "mean_recompose_psnr": 19.15887634351802
+    },
+    "synth_test_learned": {
+      "mean_best_iou": 0.154944951046612,
+      "pairwise_layer_order_accuracy": 0.16666666666666666,
+      "mean_recompose_psnr": 19.413773031054188
+    },
+    "demo_grounded_depthpro_final": {
+      "num_layers": 45.0,
+      "segmentation_method": "grounded_sam2",
+      "depth_method": "depth_pro",
+      "inpaint_method": "opencv_telea_fallback",
+      "recompose_psnr": 14.647695201962119,
+      "recompose_ssim": 0.8348244177224226
+    },
+    "truck_best_score": {
+      "num_layers": 26.0,
+      "premerge_semantic_layers": 38.0,
+      "merge_reduction": 13.0,
+      "segmentation_method": "grounded_sam2",
+      "depth_method": "ensemble",
+      "recompose_psnr": 30.821445793090486,
+      "recompose_ssim": 0.9811586271513667
+    },
+    "truck_best_score_manual": {
+      "num_layers": 19.0,
+      "premerge_semantic_layers": 35.0,
+      "merge_reduction": 17.0,
+      "segmentation_method": "grounded_sam2",
+      "depth_method": "ensemble",
+      "recompose_psnr": 31.30399539001833,
+      "recompose_ssim": 0.9813153581303283
+    },
+    "truck_best_score_augment": {
+      "num_layers": 19.0,
+      "premerge_semantic_layers": 31.0,
+      "merge_reduction": 13.0,
+      "segmentation_method": "grounded_sam2",
+      "depth_method": "ensemble",
+      "recompose_psnr": 31.152377832742634,
+      "recompose_ssim": 0.9804187458561303
+    },
+    "truck_state_of_art_search_v2_best": {
+      "num_layers": 20.0,
+      "premerge_semantic_layers": 32.0,
+      "merge_reduction": 13.0,
+      "segmentation_method": "grounded_sam2",
+      "depth_method": "ensemble",
+      "winner": "manual_precision",
+      "recompose_psnr": 32.10528232941774,
+      "recompose_ssim": 0.9847877055840306
+    },
+    "qwen_truck_layers_raw_640_20": {
+      "num_layers": 4.0,
+      "model": "Qwen/Qwen-Image-Layered",
+      "recompose_psnr": 26.787397283469158,
+      "recompose_ssim": 0.7722714474382926,
+      "offload": "sequential"
+    },
+    "qwen_truck_enriched_640_20": {
+      "num_layers": 2.0,
+      "depth_method": "depth_pro",
+      "ordering_method": "boundary",
+      "recompose_psnr": 27.4612,
+      "recompose_ssim": 0.7953
+    },
+    "qualitative_pack_cutting_edge": {
+      "astronaut": {
+        "num_layers": 13.0,
+        "recompose_psnr": 18.9531,
+        "recompose_ssim": 0.9007
+      },
+      "coffee": {
+        "num_layers": 9.0,
+        "recompose_psnr": 34.5492,
+        "recompose_ssim": 0.9847
+      },
+      "chelsea_cat": {
+        "num_layers": 10.0,
+        "recompose_psnr": 41.9994,
+        "recompose_ssim": 0.9974
+      }
+    },
+    "coco_panoptic_mask2former_512": {
+      "dataset": "COCO Panoptic val2017",
+      "images_evaluated": 512,
+      "segmenter": "mask2former",
+      "miou_supported_groups": 0.5660452766848341,
+      "thing_miou": 0.5842285591595908,
+      "stuff_miou": 0.5478619942100773,
+      "mean_image_miou": 0.4825562149159635,
+      "median_image_miou": 0.4733744097354742,
+      "mean_pred_segments": 6.44921875
+    },
+    "ade20k_mask2former_512": {
+      "dataset": "ADE20K SceneParse150 validation",
+      "images_evaluated": 512,
+      "segmenter": "mask2former",
+      "config": "configs/ade20k_mask2former.yaml",
+      "miou_supported_groups": 0.6015226885527559,
+      "thing_miou": 0.5579444701667428,
+      "stuff_miou": 0.6451009069387689,
+      "mean_image_miou": 0.5568832566409362,
+      "median_image_miou": 0.5866794389695078,
+      "mean_pred_segments": 6.248046875
+    },
+    "diode_geometric_full": {
+      "dataset": "DIODE validation depth",
+      "images_evaluated": 771,
+      "depth_method": "geometric_luminance",
+      "alignment": "scale",
+      "abs_rel": 0.629783267834179,
+      "rmse": 7.093382947525798,
+      "delta1": 0.271414161864108,
+      "silog": 184.66287624178037
+    },
+    "diode_depthpro_full": {
+      "dataset": "DIODE validation depth",
+      "images_evaluated": 771,
+      "depth_method": "depth_pro",
+      "alignment": "none",
+      "abs_rel": 0.523021385933571,
+      "rmse": 29.037954281061793,
+      "delta1": 0.40568288947748093,
+      "silog": 26.876577647964254
+    },
+    "diode_depthpro_scale_full": {
+      "dataset": "DIODE validation depth",
+      "images_evaluated": 771,
+      "depth_method": "depth_pro",
+      "alignment": "scale",
+      "abs_rel": 0.36287627184824817,
+      "rmse": 6.18912205558819,
+      "delta1": 0.6452176997911817,
+      "silog": 26.876577646880822
+    }
+  },
+  "figure_pack": {
+    "truck_recomposition_comparison": "docs/figures/truck_recomposition_comparison.png",
+    "truck_layer_stack_comparison": "docs/figures/truck_layer_stack_comparison.png",
+    "truck_metrics_comparison": "docs/figures/truck_metrics_comparison.png",
+    "truck_prompt_ablation": "docs/figures/truck_prompt_ablation.png",
+    "synthetic_ordering_ablation": "docs/figures/synthetic_ordering_ablation.png",
+    "qualitative_gallery": "docs/figures/qualitative_gallery.png",
+    "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
+    "public_depth_comparison": "docs/figures/public_depth_comparison.png",
+    "figure_index": "docs/FIGURES.md",
+    "state_of_art_summary": "runs/truck_state_of_art_search_v2/search_summary.json"
+  },
+  "public_benchmarks": {
+    "implemented_now": [
+      "COCO Panoptic val2017 visible-group benchmark",
+      "ADE20K SceneParse150 visible-group benchmark",
+      "DIODE validation depth benchmark"
+    ],
+    "roadmap_doc": "docs/PUBLIC_BENCHMARKS_2026_04_22.md",
+    "coco_panoptic_dataset_dir": "data/coco_panoptic_val",
+    "coco_panoptic_summary": "results/coco_panoptic_mask2former_512/coco_panoptic_group_benchmark_summary.json",
+    "ade20k_dataset_dir": "data/ade20k/ADEChallengeData2016",
+    "ade20k_summary": "results/ade20k_mask2former_512/ade20k_group_benchmark_summary.json",
+    "diode_dataset_dir": "data/diode/val",
+    "diode_depthpro_summary": "results/diode_depthpro_full/diode_depth_benchmark_summary.json",
+    "diode_depthpro_scale_summary": "results/diode_depthpro_scale_full/diode_depth_benchmark_summary.json",
+    "diode_geometric_summary": "results/diode_geometric_full/diode_depth_benchmark_summary.json"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "generated_by": "scripts/generate_report_figures.py",
+  "figures": {
+    "truck_recomposition_comparison": "docs/figures/truck_recomposition_comparison.png",
+    "truck_layer_stack_comparison": "docs/figures/truck_layer_stack_comparison.png",
+    "truck_metrics_comparison": "docs/figures/truck_metrics_comparison.png",
+    "truck_prompt_ablation": "docs/figures/truck_prompt_ablation.png",
+    "synthetic_ordering_ablation": "docs/figures/synthetic_ordering_ablation.png",
+    "qualitative_gallery": "docs/figures/qualitative_gallery.png",
+    "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
+    "public_depth_comparison": "docs/figures/public_depth_comparison.png"
+  }
+}
