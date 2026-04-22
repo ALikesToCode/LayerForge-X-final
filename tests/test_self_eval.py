@@ -3,23 +3,29 @@ from __future__ import annotations
 from layerforge.self_eval import choose_best_candidates
 
 
-def test_choose_best_candidates_prefers_structured_high_fidelity_candidate() -> None:
+def test_choose_best_candidates_prefers_editable_candidate_over_copy_like_fidelity() -> None:
     rows = [
         {
             "image": "demo/truck.png",
-            "label": "Qwen raw (4)",
+            "label": "Copy-like background stack",
             "status": "ok",
             "num_layers": 4,
-            "recompose_psnr": 29.1,
-            "recompose_ssim": 0.885,
-            "has_graph": False,
+            "recompose_psnr": 36.0,
+            "recompose_ssim": 0.995,
+            "has_graph": True,
             "has_ordered_layers": True,
             "effect_layer_count": 0,
-            "duration_sec": 35.0,
+            "duration_sec": 20.0,
+            "semantic_purity": 0.22,
+            "alpha_quality_score": 0.18,
+            "edit_success_score": 0.10,
+            "background_hole_ratio": 0.95,
+            "non_edited_region_preservation": 0.98,
+            "occlusion_edge_count": 2,
         },
         {
             "image": "demo/truck.png",
-            "label": "Qwen + graph preserve (4)",
+            "label": "Structured but middling hybrid",
             "status": "ok",
             "num_layers": 4,
             "recompose_psnr": 28.7,
@@ -28,6 +34,12 @@ def test_choose_best_candidates_prefers_structured_high_fidelity_candidate() -> 
             "has_ordered_layers": True,
             "effect_layer_count": 0,
             "duration_sec": 34.0,
+            "semantic_purity": 0.58,
+            "alpha_quality_score": 0.45,
+            "edit_success_score": 0.48,
+            "background_hole_ratio": 0.28,
+            "non_edited_region_preservation": 0.71,
+            "occlusion_edge_count": 6,
         },
         {
             "image": "demo/truck.png",
@@ -40,6 +52,12 @@ def test_choose_best_candidates_prefers_structured_high_fidelity_candidate() -> 
             "has_ordered_layers": True,
             "effect_layer_count": 1,
             "duration_sec": 18.0,
+            "semantic_purity": 0.72,
+            "alpha_quality_score": 0.59,
+            "edit_success_score": 0.81,
+            "background_hole_ratio": 0.06,
+            "non_edited_region_preservation": 0.84,
+            "occlusion_edge_count": 12,
         },
     ]
 
@@ -52,4 +70,3 @@ def test_choose_best_candidates_prefers_structured_high_fidelity_candidate() -> 
     assert best["label"] == "LayerForge peeling"
     assert best["self_eval_score"] == max(row["self_eval_score"] for row in scored_rows)
     assert best["self_eval_reason"]
-

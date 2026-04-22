@@ -54,15 +54,21 @@ Notes:
 | Qwen baseline | curated/synthetic | | | | |
 | recursive peeling + effects | layerbench_pp/KINS | | | | |
 
-## Table 5 — Editing utility
+## Table 5 — Editability suite
 
-| Method | Object removal | Object move | Recolor | Parallax | Non-edit preservation ↓ | Runtime ↓ |
+| Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
 |---|---:|---:|---:|---:|---:|---:|
-| mask only | | | | | | |
-| full LayerForge-X | | | | | | |
-| Qwen-Image-Layered | | | | | | |
-| Qwen + graph | | | | | | |
-| recursive peeling + effects | | | | | | |
+| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+
+Notes:
+
+- measured from `runs/frontier_review/editability_suite_summary.json`;
+- this suite is the anti-triviality guardrail for the frontier selector: `Qwen raw (4)` reconstructs reasonably well, but its object-removal response is near zero and its background-hole ratio is effectively `1.0`;
+- the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge metadata remain easy to move, recolor, and remove without damaging the rest of the frame.
 
 ## Table 6 — Five-image Qwen raw versus hybrid review
 
@@ -95,14 +101,15 @@ Notes:
 
 | Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 | strongest overall frontier score; wins three real images |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 | wins the truck scene; explicit recursive removal path |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 | compact generative baseline; weaker structural score |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 | fair metadata-first hybrid; wins the synthetic scene |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 | explicit graph-order export, slightly below preserve on this sweep |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | strongest overall frontier score after anti-triviality penalties |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 | explicit recursive removal path; no longer wins on truck after the score hardening |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 | compact generative baseline; weak editability signals |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 | fair metadata-first hybrid; just below reorder on the current sweep |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 | explicit graph-order export; wins the cat image in the hardened review |
 
 Notes:
 
 - measured from `runs/frontier_review/frontier_summary.json`;
 - this table is about candidate selection and representation quality, not a blanket "beats Qwen" claim;
-- the current best-image winners are `LayerForge native` for `astronaut`, `chelsea_cat`, and `coffee`, `LayerForge peeling` for `truck`, and `Qwen + graph preserve` for the synthetic scene.
+- the current best-image winners are `LayerForge native` for `truck`, `astronaut`, `coffee`, and the synthetic scene, with `Qwen + graph reorder (4)` winning `chelsea_cat`;
+- the self-eval change matters: the hardened selector now penalizes trivial copy-like backgrounds instead of rewarding them for near-perfect recomposition.

@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from layerforge.config import load_config
+from layerforge.editability import evaluate_run_editability
 from layerforge.proposals import build_frontier_candidate_specs
 from layerforge.self_eval import choose_best_candidates
 
@@ -138,6 +139,11 @@ def load_json_if_exists(path: Path) -> dict | None:
 def collect_row(label: str, run_dir: Path, *, image: Path, command_results: list[dict], extra: dict | None = None) -> dict:
     metrics = load_json_if_exists(run_dir / "metrics.json") or {}
     manifest = load_json_if_exists(run_dir / "manifest.json") or {}
+    editability = load_json_if_exists(run_dir / "editability_metrics.json")
+    if editability is None and (run_dir / "manifest.json").exists():
+        editability = evaluate_run_editability(run_dir)
+    graph_payload = load_json_if_exists(run_dir / "debug" / "layer_graph.json") or load_json_if_exists(run_dir / "debug" / "peeling_graph.json") or {}
+    occlusion_edges = graph_payload.get("occlusion_edges", [])
     duration_values = [float(item["duration_sec"]) for item in command_results if item.get("duration_sec") is not None]
     row = {
         "image": to_repo_relative(image),
@@ -160,11 +166,14 @@ def collect_row(label: str, run_dir: Path, *, image: Path, command_results: list
         "merge_external_layers": metrics.get("merge_external_layers"),
         "segmentation_method": metrics.get("segmentation_method"),
         "depth_method": metrics.get("depth_method"),
+        "occlusion_edge_count": len(occlusion_edges),
         "duration_sec": round(sum(duration_values), 4) if duration_values else None,
         "has_graph": (run_dir / "debug" / "layer_graph.json").exists() or (run_dir / "debug" / "peeling_graph.json").exists(),
         "has_ordered_layers": (run_dir / "layers_ordered_rgba").exists(),
         "status": "ok",
     }
+    if editability:
+        row.update({key: value for key, value in editability.items() if key != "preview_paths"})
     if extra:
         row.update(extra)
     return row

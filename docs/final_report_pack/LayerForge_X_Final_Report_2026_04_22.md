@@ -91,18 +91,29 @@ Five-image frontier candidate-bank review:
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+
+Five-image editability suite:
+
+| Method | Remove response | Move response | Recolor response | Edit success | Non-edit preservation | Background hole ratio |
+|---|---:|---:|---:|---:|---:|---:|
+| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
 
 Interpretation:
 
 - raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep;
 - native LayerForge now has the strongest mean SSIM on the same images, at the cost of a much larger stack;
-- the measured frontier candidate bank now selects `LayerForge native` for `3/5` images, `LayerForge peeling` for the truck scene, and `Qwen + graph preserve` for the synthetic scene;
+- the measured frontier candidate bank now selects `LayerForge native` for `4/5` images, with `Qwen + graph reorder` winning the cat scene;
 - the `Qwen + graph preserve` row is the fair metadata-first hybrid comparison because it keeps the interpreted Qwen stack and adds graphs, ordering metadata, amodal masks, and intrinsic artifacts;
+- the editability suite now acts as the anti-triviality guardrail for the frontier selector, which is why raw Qwen's object-removal response stays near zero despite reasonable recomposition scores;
 - the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 
 ### Remaining review checklist

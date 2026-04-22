@@ -299,31 +299,37 @@ The implementation lives in:
 
 ## Candidate scoring
 
-Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally heuristic and explicit rather than pretending to be a learned black box.
+Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally explicit rather than pretending to be a learned black box.
 
 The score combines:
 
 ```text
 recomposition fidelity
-graph / structure availability
-editability bias toward usable layer counts
+edit-preservation and anti-trivial copy penalties
+semantic separation
+alpha quality
+graph confidence
 runtime
 ```
 
 The implemented weighted score is:
 
 ```text
-score = 0.40 * fidelity
-      + 0.25 * structure
-      + 0.20 * editability
-      + 0.15 * runtime
+score = 0.20 * recomposition_fidelity
+      + 0.25 * edit_preservation
+      + 0.20 * semantic_separation
+      + 0.10 * alpha_quality
+      + 0.15 * graph_confidence
+      + 0.10 * runtime
 ```
 
 where:
 
-- `fidelity` is computed from normalised PSNR and SSIM;
-- `structure` rewards explicit graph output, ordered layers, and recovered effect layers;
-- `editability` favours candidates with usable layer counts and graph metadata;
+- `recomposition_fidelity` is computed from normalised PSNR and SSIM;
+- `edit_preservation` rewards remove/move/recolor responses that affect the target layer while preserving the rest of the frame;
+- `semantic_separation` rewards foreground coverage without collapsing everything into one dominant layer;
+- `alpha_quality` favours soft, non-binary alpha mattes when the data supports them;
+- `graph_confidence` rewards explicit graph output, ordered layers, and occlusion edges;
 - `runtime` is a light preference for cheaper candidates when quality is otherwise close.
 
 ## Why this matters
@@ -344,7 +350,7 @@ That is a more current framing for the project because the frontier is no longer
 
 ## Claim
 
-> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, structure, editability, and runtime signals.
+> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, editability, semantic separation, graph confidence, alpha quality, and runtime signals.
 
 ## Fallback method
 

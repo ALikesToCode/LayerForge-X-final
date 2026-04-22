@@ -38,6 +38,7 @@ python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/quali
 
 ```bash
 python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/frontier_summary.json --output runs/frontier_review/editability_suite_summary.json
 ```
 
 ## Associated-effect demo

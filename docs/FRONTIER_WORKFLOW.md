@@ -5,7 +5,7 @@ LayerForge-X++ is the repo's highest-leverage hybrid path:
 1. generate multiple decomposition candidates;
 2. preserve both generative and graph-ordered variants where needed;
 3. compare native, peeling, raw Qwen, and hybrid rows on the same images;
-4. run a heuristic self-evaluation pass to select the best editable representation per image.
+4. run an explicit self-evaluation pass to select the best editable representation per image.
 
 The goal is not "more models". The goal is a better structured representation.
 
@@ -42,25 +42,42 @@ Outputs:
 
 - `frontier_summary.json`
 - `frontier_summary.md`
+- `editability_suite_summary.json` after `python scripts/run_editability_suite.py`
 - per-image `best_decomposition.json`
 - per-image `why_selected.md`
 
 ## Self-evaluation
 
-The current self-evaluation stage is intentionally described as heuristic. It scores each successful candidate per image using:
+The current self-evaluation stage is intentionally explicit. It scores each successful candidate per image using:
 
 - recomposition fidelity;
-- explicit structure availability;
-- editability bias toward usable layer counts;
+- edit-preservation and anti-trivial copy penalties;
+- semantic separation;
+- alpha quality;
+- graph confidence;
 - runtime.
 
-The score is not a claim of universal quality. It is a routing heuristic for selecting the most useful editable decomposition among the candidates the repo can already measure.
+The score is not a claim of universal quality. It is a routing metric for selecting the most useful editable decomposition among the candidates the repo can already measure, and it now includes explicit penalties for stacks that reconstruct well only because the background layer copies too much of the source image.
 
 Default weights live in `configs/frontier.yaml` under `self_eval.weights`.
 
 ## Promptable extraction
 
-Promptable extraction already works through the existing pipeline entrypoints:
+Promptable extraction now has a dedicated entrypoint:
+
+```bash
+.venv/bin/layerforge extract \
+  --input data/demo/truck.jpg \
+  --output runs/truck_extract \
+  --config configs/frontier.yaml \
+  --segmenter grounded_sam2 \
+  --depth ensemble \
+  --prompt "the truck in the foreground"
+```
+
+This writes a normal run and a `target_extract/` folder with the selected target RGBA, alpha, background-completed image, and edit previews.
+
+The older general pipeline form still works:
 
 ```bash
 .venv/bin/layerforge run \
@@ -91,26 +108,26 @@ Aggregate results:
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Best-per-image selections:
 
-- `truck`: `LayerForge peeling`
+- `truck`: `LayerForge native`
 - `astronaut`: `LayerForge native`
 - `coffee`: `LayerForge native`
-- `chelsea_cat`: `LayerForge native`
-- `synth image`: `Qwen + graph preserve (4)`
+- `chelsea_cat`: `Qwen + graph reorder (4)`
+- `synth image`: `LayerForge native`
 
 ## Artifact interpretation
 
 The frontier path is strongest when reported honestly:
 
 - `Qwen raw` is the generative baseline.
-- `Qwen + graph preserve` is the fair metadata-first hybrid.
+- `Qwen + graph preserve` remains the fair metadata-first hybrid even when it is not the top-scoring row on the current five-image bank.
 - `Qwen + graph reorder` shows what changes when the graph owns visual ordering.
 - `LayerForge peeling` is the graph-guided recursive decomposition path.
 - `best_decomposition.json` is the repo's self-selected editable representation, not a claim of state-of-the-art quality.

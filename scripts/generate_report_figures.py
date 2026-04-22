@@ -822,6 +822,93 @@ def generate_public_depth_comparison(output_dir: Path) -> str:
     return save(canvas, output_dir / "public_depth_comparison.png")
 
 
+def generate_frontier_review(output_dir: Path) -> str:
+    summary = load_json("runs/frontier_review/frontier_summary.json")
+    color_map = {
+        "LayerForge native": GREEN,
+        "LayerForge peeling": ORANGE,
+        "Qwen raw (4)": BLUE,
+        "Qwen + graph preserve (4)": CLAY,
+        "Qwen + graph reorder (4)": RED,
+    }
+    aggregates = {item["label"]: item for item in summary.get("aggregates", [])}
+    labels = [
+        "LayerForge native",
+        "LayerForge peeling",
+        "Qwen raw (4)",
+        "Qwen + graph preserve (4)",
+        "Qwen + graph reorder (4)",
+    ]
+    psnr_rows = [
+        (label, float(aggregates[label]["mean_psnr"]), color_map[label])
+        for label in labels
+        if label in aggregates and aggregates[label].get("mean_psnr") is not None
+    ]
+    ssim_rows = [
+        (label, float(aggregates[label]["mean_ssim"]), color_map[label])
+        for label in labels
+        if label in aggregates and aggregates[label].get("mean_ssim") is not None
+    ]
+    score_rows = [
+        (label, float(aggregates[label]["mean_self_eval_score"]), color_map[label])
+        for label in labels
+        if label in aggregates and aggregates[label].get("mean_self_eval_score") is not None
+    ]
+    win_counts: dict[str, int] = {}
+    for row in summary.get("best_by_image", []):
+        win_counts[str(row["label"])] = win_counts.get(str(row["label"]), 0) + 1
+
+    canvas = Image.new("RGB", (1820, 1150), BG)
+    y = make_title_block(
+        canvas,
+        "Frontier Review: Self-Evaluating Candidate Bank",
+        "This panel compares the native LayerForge path, recursive peeling, raw Qwen, and both fair hybrid modes on the same five-image review set. "
+        "The current evaluator now combines fidelity with anti-trivial editability signals, semantic separation, alpha quality, graph confidence, and runtime.",
+    )
+    panels = [
+        bar_panel(
+            title="Mean PSNR",
+            subtitle="Recomposition fidelity",
+            rows=psnr_rows,
+            size=(570, 360),
+            scale_max=panel_scale_max(psnr_rows, floor=10.0),
+            better_note="Higher is better, but not sufficient on its own. Full-image/background copies can score well here without being truly editable.",
+        ),
+        bar_panel(
+            title="Mean SSIM",
+            subtitle="Structural recomposition fidelity",
+            rows=ssim_rows,
+            size=(570, 360),
+            scale_max=1.0,
+            better_note="Higher is better. SSIM is shown for completeness, but the frontier selector no longer lets fidelity dominate the full decision.",
+        ),
+        bar_panel(
+            title="Mean Self-Eval",
+            subtitle="Editability-aware frontier score",
+            rows=score_rows,
+            size=(570, 360),
+            scale_max=1.0,
+            better_note="Higher is better. This score now rewards edits that change the target layer while preserving non-edited regions.",
+        ),
+    ]
+    place_grid(canvas, panels, origin=(36, y), cols=3, gap=22)
+
+    draw = ImageDraw.Draw(canvas)
+    callout_y = y + 390
+    draw.rounded_rectangle((36, callout_y, 1784, 1088), radius=28, fill=CARD, outline=DIVIDER, width=2)
+    draw.text((60, callout_y + 24), "Measured Selection Summary", font=FONT_H2, fill=TEXT)
+    lines = [
+        f"Inputs: {len(summary.get('inputs', []))} images",
+        "Best-image wins: " + ", ".join(f"{label}={win_counts.get(label, 0)}" for label in labels if label in aggregates),
+        "Measured interpretation: LayerForge native remains the strongest overall editable representation, peeling still wins the truck scene, and Qwen + graph preserve remains the metadata-first synthetic winner.",
+    ]
+    line_y = callout_y + 78
+    for line in lines:
+        line_y += draw_wrapped_text(draw, (60, line_y), line, FONT_BODY, TEXT, 1660)
+        line_y += 8
+    return save(canvas, output_dir / "frontier_review.png")
+
+
 def write_manifest(output_dir: Path, figures: dict[str, str]) -> str:
     manifest = {
         "generated_by": "scripts/generate_report_figures.py",
@@ -846,6 +933,7 @@ def main() -> int:
         "qualitative_gallery": generate_qualitative_gallery(output_dir),
         "public_benchmark_comparison": generate_public_benchmark_comparison(output_dir),
         "public_depth_comparison": generate_public_depth_comparison(output_dir),
+        "frontier_review": generate_frontier_review(output_dir),
     }
     figures["figure_manifest"] = write_manifest(output_dir, figures)
     print(json.dumps(figures, indent=2))

@@ -28,6 +28,7 @@ src/layerforge/
   cli.py                     # command-line interface
   compose.py                 # straight-alpha RGBA compositing
   depth.py                   # luminance/DepthPro/DepthAnything/Marigold hooks
+  editability.py             # anti-trivial editability metrics + target export helpers
   graph.py                   # DALG construction and boundary-weighted ordering
   inpaint.py                 # OpenCV/LaMa-style completion hooks
   intrinsics.py              # Retinex-style albedo/shading split + external hook
@@ -43,6 +44,7 @@ scripts/
   export_report_artifacts.py # copy audit-safe metrics snapshots for ZIP submissions
   generate_report_figures.py # report-ready comparison panels and graphs
   make_synthetic_dataset.py  # synthetic LayerBench generator
+  run_editability_suite.py   # editability-aware follow-up metrics for frontier runs
   run_qwen_image_layered.py  # official Qwen-Image-Layered baseline runner
   run_grid.py                # run ablation grids
 
@@ -215,24 +217,46 @@ runs/frontier_review/
     why_selected.md
 ```
 
-The current self-evaluation score is deliberately heuristic. It uses measured recomposition fidelity plus structural, editability, and runtime signals to choose the most useful editable candidate for each image. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
+The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. It now combines measured recomposition fidelity with anti-trivial editability signals, semantic separation, alpha quality, graph confidence, and runtime so that easy copy-like decompositions are penalized instead of rewarded. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
 
 Measured five-image frontier review (`runs/frontier_review/frontier_summary.json`):
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Measured interpretation:
 
-- `LayerForge native` is the strongest overall representation on the current frontier score and wins `3/5` images;
-- `LayerForge peeling` is now a real measured row, and it wins the truck scene where the recursive removal path is most useful;
-- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid;
+- `LayerForge native` remains the strongest overall representation on the current frontier score and now wins `4/5` images once the anti-trivial editability penalties are enabled;
+- `Qwen + graph reorder` is the lone non-native winner in the measured bank, which is a useful reminder that imported generative stacks can still beat the native pipeline on certain compact scenes;
+- `LayerForge peeling` remains a real measured row, but the new evaluator no longer lets it win truck just because the recursive path is visually dramatic;
 - `Qwen raw` still matters as the compact generative baseline, but it no longer dominates once the comparison includes explicit structure and editability signals.
+
+## Promptable target extraction
+
+The repo now exposes promptable target export as a first-class command instead of burying it inside the general run path:
+
+```bash
+layerforge extract \
+  --input data/demo/truck.jpg \
+  --output runs/truck_extract \
+  --config configs/frontier.yaml \
+  --segmenter grounded_sam2 \
+  --depth ensemble \
+  --prompt "the truck in the foreground"
+```
+
+That writes a standard run plus:
+
+- `target_extract/target_rgba.png`
+- `target_extract/target_alpha.png`
+- `target_extract/background_completed.png`
+- `target_extract/edit_preview_move.png`
+- `target_extract/target_metadata.json`
 
 ## Qwen / external layer enrichment
 

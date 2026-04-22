@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 
@@ -22,6 +23,7 @@ SNAPSHOTS = {
     "qwen_enriched_metrics.json": ROOT / "runs/qwen_truck_enriched_640_20/metrics.json",
     "qwen_five_image_review_summary.json": ROOT / "runs/qwen_five_image_review/comparison_summary.json",
     "frontier_review_summary.json": ROOT / "runs/frontier_review/frontier_summary.json",
+    "editability_suite_summary.json": ROOT / "runs/frontier_review/editability_suite_summary.json",
     "effects_demo_metrics.json": ROOT / "runs/effects_groundtruth_demo_cutting_edge/metrics.json",
 }
 
@@ -123,6 +125,7 @@ python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/quali
 
 ```bash
 python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/frontier_summary.json --output runs/frontier_review/editability_suite_summary.json
 ```
 
 ## Associated-effect demo
@@ -164,15 +167,37 @@ def _sanitize_string(value: str) -> str:
     root_prefix = str(ROOT) + "/"
     if value == str(ROOT):
         return "."
-    return value.replace(root_prefix, "")
+    cleaned = value.replace(root_prefix, "")
+    home_pattern = re.compile(r"/home/[A-Za-z0-9._-]+(?:/[^\s\"']*)?")
+    cleaned = home_pattern.sub("[local-path]", cleaned)
+    return cleaned
 
 
-def _sanitize_json(value):
+def _summarize_log(value: str) -> str:
+    cleaned = _sanitize_string(value)
+    lines = [line.strip() for line in cleaned.splitlines() if line.strip()]
+    if not lines:
+        return ""
+    kept: list[str] = []
+    for line in lines:
+        if len(kept) >= 6:
+            break
+        if any(token in line.lower() for token in ("warning", "error", "deprecated", "hf_", "sam2", "transformers", "resume_download")):
+            kept.append(line)
+    if not kept:
+        kept = lines[:3]
+    suffix = "" if len(lines) <= len(kept) else " ... [scrubbed local runtime log]"
+    return "\n".join(kept) + suffix
+
+
+def _sanitize_json(value, key: str | None = None):
     if isinstance(value, dict):
-        return {key: _sanitize_json(item) for key, item in value.items()}
+        return {child_key: _sanitize_json(item, key=child_key) for child_key, item in value.items()}
     if isinstance(value, list):
-        return [_sanitize_json(item) for item in value]
+        return [_sanitize_json(item, key=key) for item in value]
     if isinstance(value, str):
+        if key in {"stderr", "stdout"}:
+            return _summarize_log(value)
         return _sanitize_string(value)
     return value
 

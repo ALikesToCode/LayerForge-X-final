@@ -24,18 +24,36 @@ The repo now also contains the measured five-image frontier comparison at `runs/
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Interpretation:
 
-- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `3/5` measured images;
-- `LayerForge peeling` is a real measured row and wins the truck scene, which is exactly the kind of edit-heavy foreground removal case the recursive path was added for;
-- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid row;
+- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- the hardened selector no longer lets `LayerForge peeling` win the truck image simply because the recursive removal path is visually dramatic;
+- `Qwen + graph reorder` now wins the cat image, showing that imported generative stacks can still beat the native path on specific compact scenes;
 - `Qwen raw` remains the compact frontier generative baseline, but it is no longer the best overall editable representation once structure and editability are scored explicitly.
+
+## Editability suite snapshot
+
+The frontier review is now paired with an editability suite so recomposition fidelity is not the only score that matters.
+
+| Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
+|---|---:|---:|---:|---:|---:|---:|
+| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+
+Interpretation:
+
+- the editability suite is the anti-triviality guardrail for the frontier selector;
+- `Qwen raw (4)` is the obvious example of why recomposition alone is insufficient, because its remove/move/recolor responses are almost zero while its background-hole ratio is effectively `1.0`;
+- the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge graph metadata are still easy to move, recolor, and remove cleanly.
 
 ## Main ablation matrix
 

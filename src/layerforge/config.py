@@ -69,10 +69,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
     },
     "self_eval": {
         "weights": {
-            "fidelity": 0.40,
-            "structure": 0.25,
-            "editability": 0.20,
-            "runtime": 0.15,
+            "recomposition_fidelity": 0.20,
+            "edit_preservation": 0.25,
+            "semantic_separation": 0.20,
+            "alpha_quality": 0.10,
+            "graph_confidence": 0.15,
+            "runtime": 0.10,
         }
     },
     "render": {"parallax_frames": 24, "parallax_pixels": 28},

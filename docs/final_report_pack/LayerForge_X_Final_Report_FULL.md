@@ -91,18 +91,29 @@ Five-image frontier candidate-bank review:
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+
+Five-image editability suite:
+
+| Method | Remove response | Move response | Recolor response | Edit success | Non-edit preservation | Background hole ratio |
+|---|---:|---:|---:|---:|---:|---:|
+| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
 
 Interpretation:
 
 - raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep;
 - native LayerForge now has the strongest mean SSIM on the same images, at the cost of a much larger stack;
-- the measured frontier candidate bank now selects `LayerForge native` for `3/5` images, `LayerForge peeling` for the truck scene, and `Qwen + graph preserve` for the synthetic scene;
+- the measured frontier candidate bank now selects `LayerForge native` for `4/5` images, with `Qwen + graph reorder` winning the cat scene;
 - the `Qwen + graph preserve` row is the fair metadata-first hybrid comparison because it keeps the interpreted Qwen stack and adds graphs, ordering metadata, amodal masks, and intrinsic artifacts;
+- the editability suite now acts as the anti-triviality guardrail for the frontier selector, which is why raw Qwen's object-removal response stays near zero despite reasonable recomposition scores;
 - the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 
 ### Remaining review checklist
@@ -1124,31 +1135,37 @@ The implementation lives in:
 
 ## Candidate scoring
 
-Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally heuristic and explicit rather than pretending to be a learned black box.
+Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally explicit rather than pretending to be a learned black box.
 
 The score combines:
 
 ```text
 recomposition fidelity
-graph / structure availability
-editability bias toward usable layer counts
+edit-preservation and anti-trivial copy penalties
+semantic separation
+alpha quality
+graph confidence
 runtime
 ```
 
 The implemented weighted score is:
 
 ```text
-score = 0.40 * fidelity
-      + 0.25 * structure
-      + 0.20 * editability
-      + 0.15 * runtime
+score = 0.20 * recomposition_fidelity
+      + 0.25 * edit_preservation
+      + 0.20 * semantic_separation
+      + 0.10 * alpha_quality
+      + 0.15 * graph_confidence
+      + 0.10 * runtime
 ```
 
 where:
 
-- `fidelity` is computed from normalised PSNR and SSIM;
-- `structure` rewards explicit graph output, ordered layers, and recovered effect layers;
-- `editability` favours candidates with usable layer counts and graph metadata;
+- `recomposition_fidelity` is computed from normalised PSNR and SSIM;
+- `edit_preservation` rewards remove/move/recolor responses that affect the target layer while preserving the rest of the frame;
+- `semantic_separation` rewards foreground coverage without collapsing everything into one dominant layer;
+- `alpha_quality` favours soft, non-binary alpha mattes when the data supports them;
+- `graph_confidence` rewards explicit graph output, ordered layers, and occlusion edges;
 - `runtime` is a light preference for cheaper candidates when quality is otherwise close.
 
 ## Why this matters
@@ -1169,7 +1186,7 @@ That is a more current framing for the project because the frontier is no longer
 
 ## Claim
 
-> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, structure, editability, and runtime signals.
+> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, editability, semantic separation, graph confidence, alpha quality, and runtime signals.
 
 ## Fallback method
 
@@ -1640,18 +1657,36 @@ The repo now also contains the measured five-image frontier comparison at `runs/
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Interpretation:
 
-- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `3/5` measured images;
-- `LayerForge peeling` is a real measured row and wins the truck scene, which is exactly the kind of edit-heavy foreground removal case the recursive path was added for;
-- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid row;
+- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- the hardened selector no longer lets `LayerForge peeling` win the truck image simply because the recursive removal path is visually dramatic;
+- `Qwen + graph reorder` now wins the cat image, showing that imported generative stacks can still beat the native path on specific compact scenes;
 - `Qwen raw` remains the compact frontier generative baseline, but it is no longer the best overall editable representation once structure and editability are scored explicitly.
+
+## Editability suite snapshot
+
+The frontier review is now paired with an editability suite so recomposition fidelity is not the only score that matters.
+
+| Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
+|---|---:|---:|---:|---:|---:|---:|
+| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+
+Interpretation:
+
+- the editability suite is the anti-triviality guardrail for the frontier selector;
+- `Qwen raw (4)` is the obvious example of why recomposition alone is insufficient, because its remove/move/recolor responses are almost zero while its background-hole ratio is effectively `1.0`;
+- the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge graph metadata are still easy to move, recolor, and remove cleanly.
 
 ## Main ablation matrix
 

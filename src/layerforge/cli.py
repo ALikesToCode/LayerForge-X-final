@@ -5,11 +5,28 @@ import json
 from pathlib import Path
 
 from .config import load_config
+from .editability import export_target_assets
 from .pipeline import LayerForgePipeline
 
 
 def parse_prompts(text: str | None) -> list[str] | None:
     return [x.strip() for x in text.split(",") if x.strip()] if text else None
+
+
+def parse_point(text: str | None) -> tuple[int, int] | None:
+    if not text:
+        return None
+    x, y = [int(part.strip()) for part in text.split(",", maxsplit=1)]
+    return (x, y)
+
+
+def parse_box(text: str | None) -> tuple[int, int, int, int] | None:
+    if not text:
+        return None
+    parts = [int(part.strip()) for part in text.split(",")]
+    if len(parts) != 4:
+        raise ValueError("--box expects x1,y1,x2,y2")
+    return (parts[0], parts[1], parts[2], parts[3])
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -117,6 +134,37 @@ def cmd_peel(args: argparse.Namespace) -> int:
     print(f"manifest: {out.manifest_path}")
     print(f"metrics:  {out.metrics_path}")
     print(f"layers:   {len(out.ordered_layer_paths)} RGBA files")
+    return 0
+
+
+def cmd_extract(args: argparse.Namespace) -> int:
+    cfg = load_config(args.config)
+    pipe = LayerForgePipeline(cfg, device=args.device)
+    prompt_values = parse_prompts(args.prompt)
+    out = pipe.run(
+        args.input,
+        args.output,
+        segmenter=args.segmenter,
+        depth_method=args.depth,
+        prompts=prompt_values,
+        prompt_source=args.prompt_source,
+        flip_depth=args.flip_depth,
+        save_parallax=not args.no_parallax,
+        ordering_method=args.ordering,
+        ranker_model_path=args.ranker_model,
+    )
+    metadata = export_target_assets(
+        out.output_dir,
+        output_dir=Path(args.output) / "target_extract",
+        prompt=args.prompt,
+        point=parse_point(args.point),
+        box=parse_box(args.box),
+        target_name=args.target_name,
+    )
+    print(f"manifest: {out.manifest_path}")
+    print(f"metrics:  {out.metrics_path}")
+    print(f"target:   {(Path(args.output) / 'target_extract' / 'target_metadata.json')}")
+    print(f"selected: {metadata['selected_target']['name']}")
     return 0
 
 
@@ -281,6 +329,24 @@ def build_parser() -> argparse.ArgumentParser:
     peel.add_argument("--flip-depth", action="store_true")
     peel.add_argument("--max-layers", type=int, default=None)
     peel.set_defaults(func=cmd_peel)
+
+    extract = sub.add_parser("extract", help="Run LayerForge-X and export one prompt-selected editable target layer plus background-completed previews")
+    extract.add_argument("--input", required=True)
+    extract.add_argument("--output", required=True)
+    extract.add_argument("--config", default="configs/fast.yaml")
+    extract.add_argument("--segmenter", default=None, help="classical | mask2former | grounded_sam2 | gemini")
+    extract.add_argument("--depth", default=None, help="geometric_luminance | depth_pro | depth_anything_v2 | marigold | ensemble")
+    extract.add_argument("--prompt", default=None, help="Prompt describing the target layer, e.g. 'the red car'")
+    extract.add_argument("--point", default=None, help="Optional x,y point hint in image pixels")
+    extract.add_argument("--box", default=None, help="Optional x1,y1,x2,y2 box hint in image pixels")
+    extract.add_argument("--target-name", default=None, help="Optional exact layer name override after decomposition")
+    extract.add_argument("--prompt-source", default=None, help="manual | gemini | augment | hybrid | auto")
+    extract.add_argument("--device", default="auto")
+    extract.add_argument("--flip-depth", action="store_true")
+    extract.add_argument("--ordering", default=None, help="boundary | learned")
+    extract.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
+    extract.add_argument("--no-parallax", action="store_true")
+    extract.set_defaults(func=cmd_extract)
 
     bench = sub.add_parser("benchmark", help="Run a lightweight synthetic benchmark and write a CSV/JSON report")
     bench.add_argument("--dataset-dir", required=True)
