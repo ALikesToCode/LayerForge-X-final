@@ -17,9 +17,36 @@ def optional_import(name: str):
         raise RuntimeError(f"Optional dependency '{name}' is required for this mode") from exc
 
 
+def transformers_pipeline_device_index(device: str) -> int:
+    d = str(device).lower()
+    if d == "cpu":
+        return -1
+    if d == "auto":
+        try:
+            torch = importlib.import_module("torch")
+            return 0 if torch.cuda.is_available() else -1
+        except Exception:
+            return -1
+    if d == "cuda":
+        return 0
+    if d.startswith("cuda:"):
+        try:
+            return int(d.split(":", 1)[1])
+        except Exception:
+            return 0
+    return -1
+
+
 def seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
+    try:
+        torch = importlib.import_module("torch")
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+    except Exception:
+        pass
 
 
 def ensure_dir(path: str | Path) -> Path:

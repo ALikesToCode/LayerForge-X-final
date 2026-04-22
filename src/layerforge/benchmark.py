@@ -105,6 +105,8 @@ def run_synthetic_benchmark(
     depth: str = "geometric_luminance",
     device: str = "auto",
     max_scenes: int | None = None,
+    ordering_method: str | None = None,
+    ranker_model_path: str | Path | None = None,
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     cfg = load_config(config_path)
@@ -116,7 +118,15 @@ def run_synthetic_benchmark(
     rows: list[dict[str, Any]] = []
     for scene in scenes:
         run_dir = output_dir / "runs" / scene.name
-        out = pipe.run(scene / "image.png", run_dir, segmenter=segmenter, depth_method=depth, save_parallax=False)
+        out = pipe.run(
+            scene / "image.png",
+            run_dir,
+            segmenter=segmenter,
+            depth_method=depth,
+            save_parallax=False,
+            ordering_method=ordering_method,
+            ranker_model_path=ranker_model_path,
+        )
         gt = load_ground_truth(scene)
         pred = load_predicted_layers(out.manifest_path)
         pairs, miou = match_layers(gt, pred)
@@ -134,6 +144,7 @@ def run_synthetic_benchmark(
             "pairwise_layer_order_accuracy": ploa,
             "recompose_psnr": run_metrics.get("recompose_psnr"),
             "recompose_ssim": run_metrics.get("recompose_ssim"),
+            "ordering_method": run_metrics.get("ordering_method"),
             "manifest": str(out.manifest_path),
         })
 

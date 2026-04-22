@@ -1,0 +1,65 @@
+{
+  "bias": -3.526608552406623e-09,
+  "feature_names": [
+    "delta_depth_median",
+    "delta_depth_p10",
+    "delta_depth_p90",
+    "signed_boundary_gap",
+    "has_boundary_contact",
+    "log_shared_boundary",
+    "delta_log_area",
+    "delta_centroid_y",
+    "delta_centroid_x",
+    "bbox_overlap_ratio",
+    "delta_border_touch",
+    "delta_background_group"
+  ],
+  "mean": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scale": [
+    0.12663377821445465,
+    0.0992136001586914,
+    0.13043661415576935,
+    0.010683620348572731,
+    0.40824830532073975,
+    1.3301119804382324,
+    1.0,
+    0.1032799780368805,
+    0.34290000796318054,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "training_metrics": {
+    "pair_count": 480.0,
+    "positive_rate": 0.5,
+    "scene_count": 40.0,
+    "train_accuracy": 1.0
+  },
+  "weights": [
+    0.09718520939350128,
+    -4.294118881225586,
+    0.4650786519050598,
+    0.20942279696464539,
+    0.20943166315555573,
+    0.2094316929578781,
+    0.0,
+    1.4030319452285767,
+    -0.40681201219558716,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

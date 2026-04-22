@@ -8,7 +8,7 @@ from PIL import Image
 
 from .compose import composite_layers_near_to_far
 from .depth import estimate_depth
-from .graph import amodal_complete, build_nodes, graph_json, topo_order
+from .graph import amodal_complete, build_nodes, graph_json, merge_compatible_layers, topo_order
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
 from .intrinsics import decompose_intrinsics, intrinsic_rgba
 from .metrics import compute_run_metrics
@@ -84,7 +84,17 @@ def enrich_rgba_layers(
 
     segments, rgba_by_sid = load_external_rgba_segments(layers_dir, depth.shape, float(cfg.get("qwen", {}).get("min_alpha", 0.02)))
     nodes = build_nodes(segments, depth, cfg["layering"])
-    order = topo_order(nodes)
+    ordering_method = str(cfg["layering"].get("ordering_method", "boundary")).lower()
+    ordering_scores: dict[int, float] = {}
+    if ordering_method in {"learned", "ranker"}:
+        from .ranker import learned_order, load_ranker
+
+        model_path = str(cfg["layering"].get("ranker_model_path", "")).strip()
+        if not model_path:
+            raise RuntimeError("Learned ordering requires layering.ranker_model_path")
+        order, ordering_scores = learned_order(nodes, load_ranker(model_path))
+    else:
+        order = topo_order(nodes)
 
     layers: list[Layer] = []
     min_area = max(8, int(depth.size * float(cfg["layering"].get("min_layer_area_ratio", 0.001))))
@@ -103,8 +113,10 @@ def enrich_rgba_layers(
             len(layers), name, seg.label, seg.group, rank,
             node.depth_median, node.depth_p10, node.depth_p90, int(visible.sum()), bbox_from_mask(visible),
             alpha, rgba, ar, sr, visible, amodal, [seg.id], sorted(node.occludes), sorted(node.occluded_by),
-            {"source": "external-rgba", "external_path": seg.metadata.get("path"), "depth_source": depth_pred.source},
+            {"source": "external-rgba", "external_path": seg.metadata.get("path"), "depth_source": depth_pred.source, "ordering_method": ordering_method, "ordering_score": ordering_scores.get(sid)},
         ))
+    premerge_layer_count = len(layers)
+    layers = merge_compatible_layers(layers, cfg["layering"])
 
     ordered_paths = []
     for l in sorted(layers, key=lambda x: x.rank):
@@ -121,7 +133,16 @@ def enrich_rgba_layers(
     save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", layers)
 
     metrics = compute_run_metrics(rgb, layers, cfg)
-    metrics.update({"mode": "external_rgba_enrichment", "depth_method": cfg["depth"]["method"], "depth_source": depth_pred.source, "intrinsic_method": iid_method, "external_layers_dir": str(layers_dir)})
+    metrics.update({
+        "mode": "external_rgba_enrichment",
+        "depth_method": cfg["depth"]["method"],
+        "depth_source": depth_pred.source,
+        "intrinsic_method": iid_method,
+        "external_layers_dir": str(layers_dir),
+        "ordering_method": ordering_method,
+        "premerge_semantic_layers": float(premerge_layer_count),
+        "merge_reduction": float(max(0, premerge_layer_count - len(layers))),
+    })
     metrics_path = write_json(out / "metrics.json", metrics)
     graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(layers, nodes))
     manifest = {

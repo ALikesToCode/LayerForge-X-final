@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 
 from .compose import composite_layers_near_to_far
-from .config import load_config
+from .config import deep_update, load_config
 from .depth import estimate_depth
 from .graph import build_completed_background_layer, build_layers, graph_json, grouped_layers
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
@@ -25,16 +25,25 @@ class LayerForgePipeline:
         self.device = device
         seed_everything(int(self.cfg.get("project", {}).get("seed", 7)))
 
-    def run(self, input_path: str | Path, output_dir: str | Path, *, segmenter: str | None = None, depth_method: str | None = None, prompts: list[str] | None = None, flip_depth: bool | None = None, save_parallax: bool | None = None) -> PipelineOutputs:
+    def run(self, input_path: str | Path, output_dir: str | Path, *, segmenter: str | None = None, depth_method: str | None = None, prompts: list[str] | None = None, prompt_source: str | None = None, flip_depth: bool | None = None, save_parallax: bool | None = None, ordering_method: str | None = None, ranker_model_path: str | Path | None = None, config_overrides: dict[str, Any] | None = None) -> PipelineOutputs:
         cfg = load_config(None, self.cfg)
+        if config_overrides:
+            cfg = deep_update(cfg, config_overrides)
+        seed_everything(int(cfg.get("project", {}).get("seed", 7)))
         if segmenter:
             cfg["segmentation"]["method"] = segmenter
         if depth_method:
             cfg["depth"]["method"] = depth_method
         if prompts:
             cfg["segmentation"]["prompts"] = prompts
+        if prompt_source:
+            cfg["segmentation"]["prompt_source"] = prompt_source
         if flip_depth is not None:
             cfg["depth"]["flip"] = bool(flip_depth)
+        if ordering_method:
+            cfg["layering"]["ordering_method"] = ordering_method
+        if ranker_model_path:
+            cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
 
         out = ensure_dir(output_dir)
         dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_grouped_rgba", "debug"]}
@@ -55,6 +64,7 @@ class LayerForgePipeline:
         save_rgb(dirs["debug"] / "intrinsic_shading.png", shading)
 
         semantic_layers, nodes = build_layers(rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"])
+        premerge_semantic_layer_count = len(nodes)
         remove_mask = np.zeros(depth.shape, dtype=bool)
         for l in semantic_layers:
             if l.group not in {"sky", "road", "ground", "building", "water", "stuff", "background"}:
@@ -93,12 +103,22 @@ class LayerForgePipeline:
             parallax_path = save_parallax_gif(dirs["debug"] / "parallax_preview.gif", layers, int(cfg["render"].get("parallax_frames", 24)), float(cfg["render"].get("parallax_pixels", 28)))
 
         metrics = compute_run_metrics(rgb, layers, cfg)
-        metrics.update({"segmentation_method": cfg["segmentation"]["method"], "depth_method": cfg["depth"]["method"], "depth_source": depth_pred.source, "intrinsic_method": iid_method, "inpaint_method": inpaint_method})
+        metrics.update({
+            "segmentation_method": cfg["segmentation"]["method"],
+            "depth_method": cfg["depth"]["method"],
+            "depth_source": depth_pred.source,
+            "intrinsic_method": iid_method,
+            "inpaint_method": inpaint_method,
+            "ordering_method": cfg["layering"].get("ordering_method", "boundary"),
+            "premerge_semantic_layers": float(premerge_semantic_layer_count),
+            "merge_reduction": float(max(0, premerge_semantic_layer_count - len(semantic_layers))),
+        })
         metrics_path = write_json(out / "metrics.json", metrics)
         graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(layers, nodes))
         segments_path = write_json(dirs["debug"] / "segments.json", summarize_segments(segments))
         manifest = {
             "input": str(input_path), "output_dir": str(out), "config": cfg,
+            "ordering_method": cfg["layering"].get("ordering_method", "boundary"),
             "metrics": str(metrics_path), "segments": str(segments_path), "layer_graph": str(graph_path),
             "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, sorted(layers, key=lambda x: x.rank))],
             "grouped_layers": [str(p) for p in grouped_paths],
@@ -107,8 +127,12 @@ class LayerForgePipeline:
         manifest_path = write_json(out / "manifest.json", manifest)
         return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, grouped_paths, {k: Path(v) for k, v in manifest["debug"].items() if v})
 
-    def enrich_rgba_layers(self, input_path: str | Path, layers_dir: str | Path, output_dir: str | Path, *, depth_method: str | None = None, flip_depth: bool | None = None) -> PipelineOutputs:
+    def enrich_rgba_layers(self, input_path: str | Path, layers_dir: str | Path, output_dir: str | Path, *, depth_method: str | None = None, flip_depth: bool | None = None, ordering_method: str | None = None, ranker_model_path: str | Path | None = None) -> PipelineOutputs:
         cfg = load_config(None, self.cfg)
+        seed_everything(int(cfg.get("project", {}).get("seed", 7)))
+        if ordering_method:
+            cfg["layering"]["ordering_method"] = ordering_method
+        if ranker_model_path:
+            cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
         from .qwen_io import enrich_rgba_layers as enrich
         return enrich(input_path, layers_dir, output_dir, cfg, self.device, depth_method=depth_method, flip_depth=flip_depth)
-

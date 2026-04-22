@@ -29,6 +29,7 @@ class DepthPrediction:
     source: str
     metric: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
+    raw_depth: np.ndarray | None = None
 
 
 @dataclass(slots=True)

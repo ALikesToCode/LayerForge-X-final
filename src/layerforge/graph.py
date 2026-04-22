@@ -217,6 +217,140 @@ def visible_masks_by_order(segments: list[Segment], order: list[int]) -> dict[in
     return visible
 
 
+def _base_label(label: str) -> str:
+    low = str(label).lower()
+    for token in ("background visible", "background completed", " plane "):
+        if token in low:
+            low = low.split(token)[0]
+    return safe_name(low)
+
+
+def _layer_color_signature(layer: Layer) -> np.ndarray:
+    mask = layer.alpha > 0.05
+    if not mask.any():
+        return np.zeros(3, dtype=np.float32)
+    vals = image_to_float(layer.rgba[..., :3])[mask]
+    return np.median(vals, axis=0).astype(np.float32)
+
+
+def _bbox_gap(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> int:
+    ax0, ay0, ax1, ay1 = a
+    bx0, by0, bx1, by1 = b
+    dx = max(0, max(ax0 - bx1, bx0 - ax1))
+    dy = max(0, max(ay0 - by1, by0 - ay1))
+    return int(max(dx, dy))
+
+
+def _masks_near(a: np.ndarray, b: np.ndarray, gap_px: int) -> bool:
+    if gap_px <= 0:
+        return bool((a & b).any())
+    dil = ndi.binary_dilation(a, iterations=gap_px)
+    return bool((dil & b).any())
+
+
+def _merge_bucket_candidate(bucket: list[Layer], layer: Layer, cfg: dict[str, Any]) -> bool:
+    first = bucket[0]
+    if first.group == "background" or layer.group == "background":
+        return False
+    if first.group != layer.group:
+        return False
+    depth_thresh = float(cfg.get("merge_depth_threshold", 0.04))
+    color_thresh = float(cfg.get("merge_color_threshold", 0.17))
+    spatial_gap = int(cfg.get("merge_spatial_gap_px", 20))
+    bucket_depth = float(np.median([b.depth_median for b in bucket]))
+    if abs(bucket_depth - layer.depth_median) > depth_thresh:
+        return False
+    bucket_color = np.median(np.stack([_layer_color_signature(b) for b in bucket], axis=0), axis=0)
+    if float(np.linalg.norm(bucket_color - _layer_color_signature(layer))) > color_thresh:
+        return False
+    if layer.group in BACKGROUND_GROUPS:
+        return True
+    label_match = _base_label(first.label) == _base_label(layer.label)
+    if not label_match:
+        return False
+    merged_mask = np.maximum.reduce([b.alpha for b in bucket]) > 0.05
+    return _masks_near(merged_mask, layer.alpha > 0.05, spatial_gap) or _bbox_gap(first.bbox, layer.bbox) <= spatial_gap
+
+
+def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
+    ordered = sorted(bucket, key=lambda l: l.rank)
+    if len(ordered) == 1:
+        layer = ordered[0]
+        layer.rank = rank
+        layer.id = rank
+        return layer
+    rgba = composite_layers_near_to_far(ordered)
+    albedo = composite_layers_near_to_far(
+        [Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.albedo_rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata) for l in ordered]
+    )
+    shading = composite_layers_near_to_far(
+        [Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.shading_rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata) for l in ordered]
+    )
+    alpha = image_to_float(rgba)[..., 3]
+    visible = alpha > 0.05
+    group = ordered[0].group
+    labels = {_base_label(l.label) for l in ordered}
+    label = ordered[0].label if len(labels) == 1 else f"{group} merged"
+    merged_amodal = None
+    if any(l.amodal_mask is not None for l in ordered):
+        merged_amodal = np.zeros_like(ordered[0].visible_mask, dtype=bool)
+        for layer in ordered:
+            if layer.amodal_mask is not None:
+                merged_amodal |= layer.amodal_mask.astype(bool)
+    source_ids = sorted({sid for l in ordered for sid in l.source_segment_ids})
+    occludes = sorted({sid for l in ordered for sid in l.occludes})
+    occluded_by = sorted({sid for l in ordered for sid in l.occluded_by})
+    depth_weights = np.array([max(1, l.area) for l in ordered], dtype=np.float32)
+    depth_values = np.array([l.depth_median for l in ordered], dtype=np.float32)
+    p10_values = np.array([l.depth_p10 for l in ordered], dtype=np.float32)
+    p90_values = np.array([l.depth_p90 for l in ordered], dtype=np.float32)
+    meta = {
+        "merged_members": [l.name for l in ordered],
+        "merged_count": len(ordered),
+    }
+    return Layer(
+        rank,
+        f"{rank:03d}_{safe_name(group)}_{safe_name(label)}",
+        label,
+        group,
+        rank,
+        float(np.average(depth_values, weights=depth_weights)),
+        float(np.min(p10_values)),
+        float(np.max(p90_values)),
+        int(visible.sum()),
+        bbox_from_mask(visible),
+        alpha,
+        rgba,
+        albedo,
+        shading,
+        visible,
+        merged_amodal,
+        source_ids,
+        occludes,
+        occluded_by,
+        {**ordered[0].metadata, **meta},
+    )
+
+
+def merge_compatible_layers(layers: list[Layer], cfg: dict[str, Any]) -> list[Layer]:
+    if not layers or not bool(cfg.get("merge_enabled", True)):
+        return sorted(layers, key=lambda l: l.rank)
+    buckets: list[list[Layer]] = []
+    for layer in sorted(layers, key=lambda l: l.rank):
+        if layer.group == "background" or not buckets:
+            buckets.append([layer])
+            continue
+        if _merge_bucket_candidate(buckets[-1], layer, cfg):
+            buckets[-1].append(layer)
+        else:
+            buckets.append([layer])
+    merged = [_merge_layer_bucket(bucket, rank) for rank, bucket in enumerate(buckets)]
+    for idx, layer in enumerate(merged):
+        layer.id = idx
+        layer.rank = idx
+    return merged
+
+
 def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, albedo: np.ndarray, shading: np.ndarray, cfg: dict[str, Any], matting_cfg: dict[str, Any]) -> tuple[list[Layer], dict[int, Node]]:
     h, w = depth.shape
     min_area = max(12, int(h * w * float(cfg.get("min_layer_area_ratio", 0.0015))))
@@ -227,7 +361,17 @@ def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, al
         for i, s in enumerate(segments):
             s.id = i
     nodes = build_nodes(segments, depth, cfg)
-    order = topo_order(nodes)
+    ordering_method = str(cfg.get("ordering_method", "boundary")).lower()
+    ordering_scores: dict[int, float] = {}
+    if ordering_method in {"learned", "ranker"}:
+        from .ranker import learned_order, load_ranker
+
+        model_path = str(cfg.get("ranker_model_path", "")).strip()
+        if not model_path:
+            raise RuntimeError("Learned ordering requires layering.ranker_model_path")
+        order, ordering_scores = learned_order(nodes, load_ranker(model_path))
+    else:
+        order = topo_order(nodes)
     visible = visible_masks_by_order(segments, order)
     layers: list[Layer] = []
     for rank, sid in enumerate(order):
@@ -264,9 +408,9 @@ def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, al
             [seg.id],
             sorted(node.occludes),
             sorted(node.occluded_by),
-            {"source": seg.source, "score": seg.score, **seg.metadata, **edge_meta},
+            {"source": seg.source, "score": seg.score, "ordering_method": ordering_method, "ordering_score": ordering_scores.get(sid), **seg.metadata, **edge_meta},
         ))
-    return layers, nodes
+    return merge_compatible_layers(layers, cfg), nodes
 
 
 def build_completed_background_layer(bg_rgb: np.ndarray, albedo: np.ndarray, shading: np.ndarray, rank: int, method: str) -> Layer:
