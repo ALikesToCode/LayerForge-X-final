@@ -283,7 +283,60 @@ Plug in SAMEO or another amodal-SAM-style backend when compute and weights are a
 
 ---
 
-# 5. Novel component D: Associated-effect layers
+# 5. Novel component D: Graph-guided recursive semantic peeling
+
+## Problem
+
+One-shot decomposition freezes the full scene in place before any hidden content has been revealed. That forces ordering, hidden support, and background completion to compete inside a single pass.
+
+## Proposed method
+
+Instead of extracting every layer once, iterate:
+
+```text
+I_0 = input RGB
+for t in 1..T:
+    propose layers on I_{t-1}
+    choose the frontmost editable entity from the current graph
+    export RGBA_t
+    inpaint the residual canvas to obtain I_t
+repeat until only background remains
+```
+
+At each iteration, store:
+
+```text
+iteration_t/input.png
+iteration_t/selected_mask.png
+iteration_t/selected_layer.png
+iteration_t/residual_inpainted.png
+```
+
+## Why it matters
+
+This reformulates the pipeline from:
+
+```text
+segment once -> sort once -> export once
+```
+
+to:
+
+```text
+extract front layer -> reveal residual -> repeat
+```
+
+That makes the next layer and the completed background explicit rather than implied.
+
+## Claim
+
+> We add a graph-guided recursive peeling mode that repeatedly extracts the current frontmost editable layer, inpaints the residual canvas, and updates the ordered scene representation.
+
+This is the strongest "frontier" addition in the current repo state because it changes the decomposition formulation rather than only tuning a component.
+
+---
+
+# 6. Novel component E: Associated-effect layers
 
 ## Problem
 
@@ -341,7 +394,7 @@ This one is best framed as exploratory unless the results turn out to be very cl
 
 ---
 
-# 6. Novel component E: Layer-local intrinsic decomposition
+# 7. Novel component F: Layer-local intrinsic decomposition
 
 ## Problem
 
@@ -384,7 +437,7 @@ Useful, but stretch — keep it in the report as a bonus contribution rather tha
 
 ---
 
-# 7. Full pipeline
+# 8. Full pipeline
 
 ## Step 1: Layer proposal
 
@@ -456,7 +509,7 @@ Build graph edges from local depth evidence around shared boundaries (see §2 ab
 
 Estimate full object masks and identify hidden regions.
 
-## Step 7: Completion
+## Step 7: Completion / recursive residual update
 
 Inpaint background and hidden regions using one of:
 
@@ -481,13 +534,15 @@ visible and amodal masks
 background completion
 layer graph JSON
 albedo/shading RGBA layers
+iteration artifacts for recursive peeling
+optional associated-effect RGBA layers
 parallax preview
 metrics report
 ```
 
 ---
 
-# 8. Main contributions section
+# 9. Main contributions section
 
 A clean version of the contributions bullet list suitable for the report:
 
@@ -499,13 +554,15 @@ A clean version of the contributions bullet list suitable for the report:
 
 3. **Promptable semantic layer extraction.** The system supports both closed-set panoptic segmentation and open-vocabulary grounded segmentation, enabling user-controllable extraction of layers such as "person," "window," "left chair," or "red car."
 
-4. **Amodal and completion-aware editing.** The system separates visible masks from estimated amodal masks and uses inpainting to synthesise hidden or background regions, supporting object removal, movement, and parallax.
+4. **Recursive peeling and completion-aware editing.** The system supports both one-shot layer export and graph-guided recursive peeling, where a frontmost layer is extracted, the residual scene is completed, and the graph is updated for the next iteration.
 
-5. **Multi-axis benchmark.** We evaluate not only segmentation, but also depth-order accuracy, recomposition fidelity, amodal completion, intrinsic decomposition, and editability.
+5. **Amodal and effect-aware layers.** The system separates visible masks from estimated amodal masks and can optionally export associated-effect layers so that edits preserve shadows or other local visual effects.
+
+6. **Multi-axis benchmark.** We evaluate not only segmentation, but also depth-order accuracy, recomposition fidelity, amodal completion, intrinsic decomposition, and editability.
 
 ---
 
-# 9. Safe novelty claims
+# 10. Safe novelty claims
 
 These are the phrasings I'd recommend — strong enough to mean something, soft enough to survive scrutiny:
 
@@ -527,7 +584,7 @@ We provide a synthetic layered benchmark with ground-truth RGBA layers, depth or
 
 ---
 
-# 10. Claims to avoid
+# 11. Claims to avoid
 
 And the phrasings to steer clear of, each paired with a defensible substitute:
 
@@ -569,7 +626,7 @@ Our intrinsic split is intended as an editable appearance factorization and is e
 
 ---
 
-# 11. Best title and abstract
+# 12. Best title and abstract
 
 ## Title
 
@@ -577,11 +634,11 @@ Our intrinsic split is intended as an editable appearance factorization and is e
 
 ## Abstract
 
-Single RGB images collapse object identity, occlusion, transparency, illumination, and depth into a single raster canvas, making local editing and parallax manipulation difficult. We present LayerForge-X, a modular system that converts one RGB image into a depth-aware amodal layer graph. Each graph node stores a semantic RGBA layer with a visible mask, a soft alpha matte, an estimated amodal extent, depth statistics, optional completed content, and optional intrinsic albedo and shading factors. Graph edges encode occlusion and near-to-far ordering inferred from boundary-local monocular depth evidence. The graph is exported as ordered RGBA layers, semantic group layers, completed background, intrinsic appearance layers, and editing previews. We evaluate the representation using panoptic segmentation metrics, pairwise depth-order accuracy, recomposition fidelity, amodal mask and completion metrics, and editing demonstrations including object removal, movement, parallax, and recolouring. The results indicate that combining semantic proposals, monocular geometry, soft alpha refinement, amodal reasoning, and completion yields more editable and interpretable layers than visible-mask baselines.
+Single RGB images collapse object identity, occlusion, transparency, illumination, and depth into a single raster canvas, making local editing and parallax manipulation difficult. We present LayerForge-X, a modular system that converts one RGB image into a depth-aware amodal layer graph. Each graph node stores a semantic RGBA layer with a visible mask, a soft alpha matte, an estimated amodal extent, depth statistics, optional completed content, and optional intrinsic albedo and shading factors. Graph edges encode occlusion and near-to-far ordering inferred from boundary-local monocular depth evidence. The graph is exported as ordered RGBA layers, semantic group layers, completed background, intrinsic appearance layers, and editing previews. We evaluate the representation using visible-grouping metrics on public datasets, pairwise depth-order accuracy, recomposition fidelity, amodal mask and completion metrics, and editing demonstrations including object removal, movement, parallax, and recolouring. The results indicate that combining semantic proposals, monocular geometry, soft alpha refinement, amodal reasoning, and completion yields more editable and interpretable layers than visible-mask baselines.
 
 ---
 
-# 12. Method section skeleton
+# 13. Method section skeleton
 
 ## 4.1 Problem definition
 
@@ -634,10 +691,14 @@ Hard masks, feathering, gradient-aware alpha, and an optional matting backend.
 
 Visible / amodal distinction, hidden-region definition, and inpainting.
 
-## 4.7 Intrinsic decomposition
+## 4.7 Recursive peeling and completion
+
+Iterative extraction of frontmost layers with residual inpainting.
+
+## 4.8 Intrinsic decomposition
 
 Albedo and shading export, per layer.
 
-## 4.8 Rendering and export
+## 4.9 Rendering and export
 
 Alpha compositing and the set of output files.

@@ -1,0 +1,252 @@
+{
+  "best": {
+    "copied_best_dir": "runs/truck_state_of_art_search_v2/best",
+    "description": "manual prompts with precision thresholds",
+    "metrics": {
+      "depth_method": "ensemble",
+      "depth_source": "ensemble(depth_pro+marigold)",
+      "foreground_alpha_coverage": 1.0,
+      "inpaint_method": "opencv_telea_fallback",
+      "intrinsic_method": "retinex",
+      "mean_amodal_extra_ratio": 0.20472833095335746,
+      "mean_layer_area": 161891.7,
+      "merge_reduction": 13.0,
+      "num_layers": 20.0,
+      "ordering_method": "boundary",
+      "premerge_semantic_layers": 32.0,
+      "recompose_psnr": 32.10528232941774,
+      "recompose_ssim": 0.9847877055840306,
+      "segmentation_method": "grounded_sam2"
+    },
+    "name": "manual_precision",
+    "source_output_dir": "runs/truck_state_of_art_search_v2/candidates/manual_precision"
+  },
+  "candidates": [
+    {
+      "description": "manual prompts with balanced thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/manual_balanced/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.14572791004206387,
+        "mean_layer_area": 172799.57894736843,
+        "merge_reduction": 16.0,
+        "num_layers": 19.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 34.0,
+        "recompose_psnr": 32.09759481845279,
+        "recompose_ssim": 0.9847692757952805,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/manual_balanced/metrics.json",
+      "name": "manual_balanced",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/manual_balanced",
+      "rank_key": [
+        32.09759481845279,
+        0.9847692757952805,
+        -19.0
+      ]
+    },
+    {
+      "description": "manual prompts with recall thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/manual_recall/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.20110690288949526,
+        "mean_layer_area": 170545.42105263157,
+        "merge_reduction": 18.0,
+        "num_layers": 19.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 36.0,
+        "recompose_psnr": 32.06529621899839,
+        "recompose_ssim": 0.9846097120203147,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/manual_recall/metrics.json",
+      "name": "manual_recall",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/manual_recall",
+      "rank_key": [
+        32.06529621899839,
+        0.9846097120203147,
+        -19.0
+      ]
+    },
+    {
+      "description": "manual prompts with precision thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/manual_precision/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.20472833095335746,
+        "mean_layer_area": 161891.7,
+        "merge_reduction": 13.0,
+        "num_layers": 20.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 32.0,
+        "recompose_psnr": 32.10528232941774,
+        "recompose_ssim": 0.9847877055840306,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/manual_precision/metrics.json",
+      "name": "manual_precision",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/manual_precision",
+      "rank_key": [
+        32.10528232941774,
+        0.9847877055840306,
+        -20.0
+      ]
+    },
+    {
+      "description": "augment prompts with balanced thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/augment_balanced/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.19824913728092913,
+        "mean_layer_area": 160135.2,
+        "merge_reduction": 15.0,
+        "num_layers": 20.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 34.0,
+        "recompose_psnr": 30.60174806047343,
+        "recompose_ssim": 0.9835825456253665,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/augment_balanced/metrics.json",
+      "name": "augment_balanced",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/augment_balanced",
+      "rank_key": [
+        30.60174806047343,
+        0.9835825456253665,
+        -20.0
+      ]
+    },
+    {
+      "description": "augment prompts with recall thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/augment_recall/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.22988328512239004,
+        "mean_layer_area": 142299.1739130435,
+        "merge_reduction": 22.0,
+        "num_layers": 23.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 44.0,
+        "recompose_psnr": 31.44049944937663,
+        "recompose_ssim": 0.9829859551961041,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/augment_recall/metrics.json",
+      "name": "augment_recall",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/augment_recall",
+      "rank_key": [
+        31.44049944937663,
+        0.9829859551961041,
+        -23.0
+      ]
+    },
+    {
+      "description": "augment prompts with precision thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/augment_precision/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.0780906127086088,
+        "mean_layer_area": 197348.5,
+        "merge_reduction": 3.0,
+        "num_layers": 16.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 18.0,
+        "recompose_psnr": 14.419864807731376,
+        "recompose_ssim": 0.828806165213984,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/augment_precision/metrics.json",
+      "name": "augment_precision",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/augment_precision",
+      "rank_key": [
+        14.419864807731376,
+        0.828806165213984,
+        -16.0
+      ]
+    },
+    {
+      "description": "gemini prompts with balanced thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/gemini_balanced/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.19082681696723167,
+        "mean_layer_area": 161642.55,
+        "merge_reduction": 19.0,
+        "num_layers": 20.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 38.0,
+        "recompose_psnr": 30.61111644058608,
+        "recompose_ssim": 0.9835723294140889,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/gemini_balanced/metrics.json",
+      "name": "gemini_balanced",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/gemini_balanced",
+      "rank_key": [
+        30.61111644058608,
+        0.9835723294140889,
+        -20.0
+      ]
+    },
+    {
+      "description": "gemini prompts with recall thresholds",
+      "manifest_path": "runs/truck_state_of_art_search_v2/candidates/gemini_recall/manifest.json",
+      "metrics": {
+        "depth_method": "ensemble",
+        "depth_source": "ensemble(depth_pro+marigold)",
+        "foreground_alpha_coverage": 1.0,
+        "inpaint_method": "opencv_telea_fallback",
+        "intrinsic_method": "retinex",
+        "mean_amodal_extra_ratio": 0.3363021638637524,
+        "mean_layer_area": 131122.64,
+        "merge_reduction": 24.0,
+        "num_layers": 25.0,
+        "ordering_method": "boundary",
+        "premerge_semantic_layers": 48.0,
+        "recompose_psnr": 28.94430581843129,
+        "recompose_ssim": 0.9783043769657209,
+        "segmentation_method": "grounded_sam2"
+      },
+      "metrics_path": "runs/truck_state_of_art_search_v2/candidates/gemini_recall/metrics.json",
+      "name": "gemini_recall",
+      "output_dir": "runs/truck_state_of_art_search_v2/candidates/gemini_recall",
+      "rank_key": [
+        28.94430581843129,
+        0.9783043769657209,
+        -25.0
+      ]
+    }
+  ],
+  "input": "data/demo/truck.jpg",
+  "selected_by": "lexicographic(recompose_psnr, recompose_ssim, -num_layers)"
+}

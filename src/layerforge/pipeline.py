@@ -8,7 +8,7 @@ import numpy as np
 from .compose import composite_layers_near_to_far
 from .config import deep_update, load_config
 from .depth import estimate_depth
-from .graph import build_completed_background_layer, build_layers, graph_json, grouped_layers
+from .graph import build_completed_background_layer, build_layers, graph_json, grouped_layers, renumber_layers_in_place
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
 from .inpaint import inpaint_background
 from .intrinsics import decompose_intrinsics
@@ -72,13 +72,11 @@ class LayerForgePipeline:
         bg_rgb, bg_mask, inpaint_method = inpaint_background(rgb, remove_mask, cfg["inpainting"], self.device)
         bg_albedo, bg_shading, _ = decompose_intrinsics(bg_rgb, cfg["intrinsics"])
         background = build_completed_background_layer(bg_rgb, bg_albedo, bg_shading, len(semantic_layers), inpaint_method)
-        layers = semantic_layers + [background]
-        for idx, l in enumerate(sorted(layers, key=lambda x: x.rank)):
-            l.id = idx
-            l.rank = idx
+        layers = renumber_layers_in_place(semantic_layers + [background])
+        ordered_layers = list(layers)
 
         ordered_paths = []
-        for l in sorted(layers, key=lambda x: x.rank):
+        for l in ordered_layers:
             ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{l.name}.png", l.rgba))
             save_rgba(dirs["layers_albedo_rgba"] / f"{l.name}_albedo.png", l.albedo_rgba)
             save_rgba(dirs["layers_shading_rgba"] / f"{l.name}_shading.png", l.shading_rgba)
@@ -86,23 +84,23 @@ class LayerForgePipeline:
             if l.amodal_mask is not None:
                 save_gray(dirs["layers_amodal_masks"] / f"{l.name}_amodal.png", l.amodal_mask.astype(np.float32))
 
-        grouped = grouped_layers(layers, bins=3)
-        grouped_paths = [save_rgba(dirs["layers_grouped_rgba"] / f"{g.name}.png", g.rgba) for g in sorted(grouped, key=lambda x: x.rank)]
-        recomposed = composite_layers_near_to_far(layers)
+        grouped = grouped_layers(ordered_layers, bins=3)
+        grouped_paths = [save_rgba(dirs["layers_grouped_rgba"] / f"{g.name}.png", g.rgba) for g in grouped]
+        recomposed = composite_layers_near_to_far(ordered_layers)
         save_rgba(dirs["debug"] / "recomposed_rgba.png", recomposed)
         save_rgb(dirs["debug"] / "recomposed_rgb.png", recomposed[..., :3])
         save_rgb(dirs["debug"] / "background_completion.png", bg_rgb)
         save_gray(dirs["debug"] / "background_inpaint_mask.png", bg_mask.astype(np.float32))
         if cfg["io"].get("save_contact_sheet", True):
-            save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", layers)
+            save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", ordered_layers)
             save_layer_contact_sheet(dirs["debug"] / "grouped_layer_contact_sheet.png", grouped)
 
         parallax_path = None
         if cfg["io"].get("save_parallax_gif", True) if save_parallax is None else save_parallax:
             from .render import save_parallax_gif
-            parallax_path = save_parallax_gif(dirs["debug"] / "parallax_preview.gif", layers, int(cfg["render"].get("parallax_frames", 24)), float(cfg["render"].get("parallax_pixels", 28)))
+            parallax_path = save_parallax_gif(dirs["debug"] / "parallax_preview.gif", ordered_layers, int(cfg["render"].get("parallax_frames", 24)), float(cfg["render"].get("parallax_pixels", 28)))
 
-        metrics = compute_run_metrics(rgb, layers, cfg)
+        metrics = compute_run_metrics(rgb, ordered_layers, cfg)
         metrics.update({
             "segmentation_method": cfg["segmentation"]["method"],
             "depth_method": cfg["depth"]["method"],
@@ -114,13 +112,13 @@ class LayerForgePipeline:
             "merge_reduction": float(max(0, premerge_semantic_layer_count - len(semantic_layers))),
         })
         metrics_path = write_json(out / "metrics.json", metrics)
-        graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(layers, nodes))
+        graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(ordered_layers, nodes))
         segments_path = write_json(dirs["debug"] / "segments.json", summarize_segments(segments))
         manifest = {
             "input": str(input_path), "output_dir": str(out), "config": cfg,
             "ordering_method": cfg["layering"].get("ordering_method", "boundary"),
             "metrics": str(metrics_path), "segments": str(segments_path), "layer_graph": str(graph_path),
-            "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, sorted(layers, key=lambda x: x.rank))],
+            "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, ordered_layers)],
             "grouped_layers": [str(p) for p in grouped_paths],
             "debug": {"input_rgb": str(dirs["debug"] / "input_rgb.png"), "depth_gray": str(dirs["debug"] / "depth_gray.png"), "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"), "background_completion": str(dirs["debug"] / "background_completion.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"), "parallax_preview": str(parallax_path) if parallax_path else None}
         }
@@ -136,3 +134,24 @@ class LayerForgePipeline:
             cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
         from .qwen_io import enrich_rgba_layers as enrich
         return enrich(input_path, layers_dir, output_dir, cfg, self.device, depth_method=depth_method, flip_depth=flip_depth)
+
+    def peel(self, input_path: str | Path, output_dir: str | Path, *, segmenter: str | None = None, depth_method: str | None = None, prompts: list[str] | None = None, prompt_source: str | None = None, flip_depth: bool | None = None, max_layers: int | None = None, config_overrides: dict[str, Any] | None = None) -> PipelineOutputs:
+        cfg = load_config(None, self.cfg)
+        if config_overrides:
+            cfg = deep_update(cfg, config_overrides)
+        seed_everything(int(cfg.get("project", {}).get("seed", 7)))
+        if segmenter:
+            cfg["segmentation"]["method"] = segmenter
+        if depth_method:
+            cfg["depth"]["method"] = depth_method
+        if prompts:
+            cfg["segmentation"]["prompts"] = prompts
+        if prompt_source:
+            cfg["segmentation"]["prompt_source"] = prompt_source
+        if flip_depth is not None:
+            cfg["depth"]["flip"] = bool(flip_depth)
+        if max_layers is not None:
+            cfg["peeling"]["max_layers"] = int(max_layers)
+        from .peeling import run_recursive_peeling
+
+        return run_recursive_peeling(input_path, output_dir, cfg, self.device)

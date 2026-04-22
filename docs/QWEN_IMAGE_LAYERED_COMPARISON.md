@@ -79,6 +79,59 @@ metrics.json
 manifest.json
 ```
 
+For the multi-image review run, use the harness instead of ad hoc one-off commands:
+
+```bash
+python scripts/run_curated_comparison.py \
+  --input-dir data/qualitative_pack \
+  --output-root runs/curated_comparison \
+  --native-config configs/cutting_edge.yaml \
+  --native-segmenter grounded_sam2 \
+  --native-depth depth_pro \
+  --qwen-layers 3,4,6,8
+```
+
+That writes both the per-image run trees and an aggregate `comparison_summary.json` / `comparison_summary.md`.
+
+## Measured five-image review
+
+The repo now contains a real five-image comparison in `runs/qwen_five_image_review/` covering:
+
+- `data/demo/truck.jpg`
+- `data/qualitative_pack/astronaut.png`
+- `data/qualitative_pack/coffee.png`
+- `data/qualitative_pack/chelsea_cat.png`
+- `examples/synth/scene_000/image.png`
+
+Each image has both:
+
+- `Qwen raw (4)`: direct RGBA export, scored by recomposing the manifest-ordered layers;
+- `Qwen + graph (4)`: the same RGBA stack enriched with LayerForge depth ordering, graph edges, and amodal/intrinsic artifacts.
+
+Aggregate mean results over the five images:
+
+| Method | Images | Graph | Mean PSNR | Mean SSIM | Mean amodal extra ratio |
+|---|---:|---|---:|---:|---:|
+| Qwen raw (4) | 5 | no | 29.0757 | 0.8850 | 0.0000 |
+| Qwen + graph (4) | 5 | yes | 28.5408 | 0.8637 | 2.9970 |
+
+Per-image measured rows:
+
+| Image | Qwen raw PSNR | Qwen raw SSIM | Qwen + graph PSNR | Qwen + graph SSIM | Graph output |
+|---|---:|---:|---:|---:|---|
+| truck | 28.8062 | 0.8614 | 26.8214 | 0.7826 | yes |
+| astronaut | 29.4532 | 0.9091 | 29.3737 | 0.9153 | yes |
+| coffee | 28.2737 | 0.8762 | 28.0333 | 0.8718 | yes |
+| chelsea_cat | 29.5828 | 0.9050 | 29.4704 | 0.8918 | yes |
+| synth image | 29.2627 | 0.8733 | 29.0052 | 0.8571 | yes |
+
+Interpretation:
+
+- on this five-image set, raw Qwen wins mean PSNR and mean SSIM;
+- the hybrid row is still valuable because it adds explicit graph structure and amodal artifacts rather than only pixels;
+- the honest framing is therefore not "hybrid beats raw Qwen visually", but "hybrid adds structure while remaining competitive on some images";
+- the best hybrid qualitative case in this sweep is `astronaut`, where SSIM slightly improves while the graph becomes explicit.
+
 ## What the hybrid row means
 
 The `Q+G` row in the report should not be described as "our model with Qwen." It is more precise to say:

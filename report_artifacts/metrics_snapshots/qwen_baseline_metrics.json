@@ -1,0 +1,11 @@
+{
+  "mode": "qwen_raw_rgba",
+  "model": "Qwen/Qwen-Image-Layered",
+  "num_layers": 4.0,
+  "recompose_psnr": 26.787397283469158,
+  "recompose_ssim": 0.7722714474382926,
+  "ordering_assumption": "manifest_order_interpreted_as_far_to_near",
+  "resolution": 640,
+  "num_inference_steps": 20,
+  "offload": "sequential"
+}

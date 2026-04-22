@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from layerforge.pipeline import LayerForgePipeline
 
 
@@ -28,6 +30,7 @@ def make_synthetic_dataset(root: Path, *, count: int, seed: int, width: int = 32
     )
 
 
+@pytest.mark.slow
 def test_train_synthetic_order_ranker(tmp_path) -> None:
     from layerforge.ranker import load_ranker, train_synthetic_order_ranker
 
@@ -53,6 +56,7 @@ def test_train_synthetic_order_ranker(tmp_path) -> None:
     assert len(model.weights) == len(model.feature_names)
 
 
+@pytest.mark.slow
 def test_pipeline_accepts_learned_ordering(tmp_path) -> None:
     from layerforge.ranker import train_synthetic_order_ranker
 

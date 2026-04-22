@@ -1,0 +1,8 @@
+{
+  "effect_delta_mean": 0.11256778240203857,
+  "effect_detected": true,
+  "effect_iou": 0.0005652511834946654,
+  "ground_truth_effect_pixels": 13750,
+  "predicted_effect_pixels": 411,
+  "scene_dir": "runs/effects_demo_source/scene_000"
+}

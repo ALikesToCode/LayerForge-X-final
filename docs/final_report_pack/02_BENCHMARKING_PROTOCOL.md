@@ -63,12 +63,18 @@ mIoU = mean_c IoU_c
 
 ## Report table
 
-| Method | Dataset | PQ ↑ | SQ ↑ | RQ ↑ | mIoU ↑ | Avg layers | Runtime |
+| Method | Dataset | group mIoU ↑ | thing mIoU ↑ | stuff mIoU ↑ | mean image mIoU ↑ | Avg layers | Runtime |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Classical | COCO-val subset | | | | | | |
 | Mask2Former | COCO-val subset | | | | | | |
 | Grounded-SAM2 | curated prompts | | | | | | |
 | LayerForge-X | mixed | | | | | | |
+
+For the current repo state, note the distinction clearly:
+
+- the implemented COCO and ADE20K evaluators are **coarse-group IoU** benchmarks rather than official PQ pipelines;
+- PQ/SQ/RQ stay as the report-template target if a full panoptic evaluator is added later;
+- do not relabel the current JSON summaries as PQ.
 
 ---
 
@@ -389,9 +395,11 @@ save:
     each GT RGBA layer
     modal mask
     amodal/full mask
+    alpha matte
     depth order
     clean background
     albedo and shading if available
+    optional associated-effect layer
 ```
 
 ## Domains
@@ -420,6 +428,37 @@ If time is genuinely short:
 
 Even that is a big improvement over hand-picked demos alone.
 
+## Rich synthetic export now implemented
+
+The repo now supports:
+
+```bash
+python scripts/make_synthetic_dataset.py \
+  --output data/synthetic_layerbench_pp \
+  --count 20 \
+  --output-format layerbench_pp \
+  --with-effects
+```
+
+Per scene, `layerbench_pp` writes:
+
+```text
+image.png
+layers_near_to_far/
+visible_masks/
+amodal_masks/
+alpha_mattes/
+layers_effects_rgba/
+intrinsics/albedo.png
+intrinsics/shading.png
+depth.png
+depth.npy
+occlusion_graph.json
+scene_metadata.json
+```
+
+That format is the right one to use for recursive-peeling and effect-layer evaluation because it preserves both the visible scene and the hidden/effect supervision.
+
 ---
 
 # Ablation protocol
@@ -436,6 +475,7 @@ Run a controlled set where one component changes at a time. The reason to do thi
 | F | Grounded-SAM2 | Depth Pro/MoGe | boundary graph | soft | heuristic | OpenCV | off |
 | G | Grounded-SAM2 | ensemble | learned edge ranker | soft/matting | amodal | LaMa | off |
 | H | full | ensemble | learned edge ranker | soft/matting | amodal | LaMa | Retinex/Marigold-IID |
+| I | full + peel | ensemble | graph-guided peeling | soft/matting | amodal | iterative completion | Retinex/Marigold-IID |
 
 ## Expected interpretation
 
@@ -445,6 +485,7 @@ Run a controlled set where one component changes at a time. The reason to do thi
 - D → E measures open-vocabulary plus soft alpha.
 - E → F measures amodal and inpaint.
 - G → H measures intrinsic split usefulness.
+- H → I measures whether recursive peeling improves editability or hidden-region completion beyond the one-shot stack.
 
 ---
 
@@ -461,9 +502,10 @@ Figures that should be in the final report, in roughly this order:
 7. Global-depth ordering vs boundary-graph ordering.
 8. Visible mask vs amodal mask.
 9. Object removal with background completion.
-10. Parallax GIF or frame strip.
-11. Albedo/shading layer visualisation.
-12. Failure cases.
+10. Recursive peeling storyboard.
+11. Parallax GIF or frame strip.
+12. Albedo/shading layer visualisation.
+13. Failure cases.
 
 Tables:
 

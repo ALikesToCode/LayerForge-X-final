@@ -40,6 +40,19 @@ intrinsics:
   external_command: ""
 qwen:
   min_alpha: 0.02
+peeling:
+  max_layers: 5
+  min_remaining_foreground_ratio: 0.001
+effects:
+  enabled: true
+  dilate_px: 16
+  inner_dilate_px: 3
+  support_dilate_px: 10
+  support_inpaint_radius: 5
+  delta_threshold: 0.04
+  alpha_scale: 0.14
+  min_area_px: 36
+  prefer_downward: true
 render:
   parallax_frames: 24
   parallax_pixels: 28

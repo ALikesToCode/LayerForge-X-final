@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 import layerforge.pipeline as pipeline_mod
 from layerforge.pipeline import LayerForgePipeline
 
@@ -28,6 +30,7 @@ def make_synthetic_dataset(root: Path, *, count: int, seed: int, width: int = 16
     )
 
 
+@pytest.mark.slow
 def test_pipeline_run_reseeds_each_invocation(monkeypatch, tmp_path) -> None:
     dataset_dir = tmp_path / "synthetic"
     make_synthetic_dataset(dataset_dir, count=1, seed=3)

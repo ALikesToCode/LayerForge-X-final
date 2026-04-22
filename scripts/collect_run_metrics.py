@@ -33,6 +33,7 @@ def load_run(run_dir: str | Path) -> dict:
         "recompose_psnr": metrics.get("recompose_psnr"),
         "recompose_ssim": metrics.get("recompose_ssim"),
         "mean_amodal_extra_ratio": metrics.get("mean_amodal_extra_ratio"),
+        "effect_layer_count": metrics.get("effect_layer_count"),
         "mode": metrics.get("mode", "layerforge"),
     }
 
@@ -49,10 +50,11 @@ def to_markdown(rows: list[dict]) -> str:
         "PSNR",
         "SSIM",
         "Amodal+",
+        "Effects",
     ]
     out = [
         "| " + " | ".join(header) + " |",
-        "|---|---|---|---|---|---|---:|---:|---:|---:|",
+        "|---|---|---|---|---|---|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         out.append(
@@ -69,6 +71,7 @@ def to_markdown(rows: list[dict]) -> str:
                     f"{float(row.get('recompose_psnr', 0.0)):.4f}" if row.get("recompose_psnr") is not None else "",
                     f"{float(row.get('recompose_ssim', 0.0)):.4f}" if row.get("recompose_ssim") is not None else "",
                     f"{float(row.get('mean_amodal_extra_ratio', 0.0)):.4f}" if row.get("mean_amodal_extra_ratio") is not None else "",
+                    f"{float(row.get('effect_layer_count', 0.0)):.1f}" if row.get("effect_layer_count") is not None else "",
                 ]
             )
             + " |"

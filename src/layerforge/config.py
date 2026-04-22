@@ -47,6 +47,19 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "inpainting": {"method": "opencv_telea", "radius": 5},
     "intrinsics": {"method": "retinex", "sigma": 28.0, "external_command": ""},
     "qwen": {"min_alpha": 0.02},
+    "peeling": {
+        "max_layers": 6,
+        "min_remaining_foreground_ratio": 0.001,
+    },
+    "effects": {
+        "enabled": True,
+        "dilate_px": 22,
+        "inner_dilate_px": 4,
+        "delta_threshold": 0.05,
+        "alpha_scale": 0.18,
+        "min_area_px": 80,
+        "prefer_downward": True,
+    },
     "render": {"parallax_frames": 24, "parallax_pixels": 28},
 }
 

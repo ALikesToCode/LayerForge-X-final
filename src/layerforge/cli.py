@@ -91,6 +91,25 @@ def cmd_enrich_qwen(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_peel(args: argparse.Namespace) -> int:
+    cfg = load_config(args.config)
+    pipe = LayerForgePipeline(cfg, device=args.device)
+    out = pipe.peel(
+        args.input,
+        args.output,
+        segmenter=args.segmenter,
+        depth_method=args.depth,
+        prompts=parse_prompts(args.prompts),
+        prompt_source=args.prompt_source,
+        flip_depth=args.flip_depth,
+        max_layers=args.max_layers,
+    )
+    print(f"manifest: {out.manifest_path}")
+    print(f"metrics:  {out.metrics_path}")
+    print(f"layers:   {len(out.ordered_layer_paths)} RGBA files")
+    return 0
+
+
 def cmd_benchmark(args: argparse.Namespace) -> int:
     from .benchmark import run_synthetic_benchmark
 
@@ -189,7 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--segmenter", default=None, help="classical | mask2former | grounded_sam2 | gemini")
     run.add_argument("--depth", default=None, help="geometric_luminance | depth_pro | depth_anything_v2 | marigold | ensemble")
     run.add_argument("--prompts", default=None, help="Comma-separated open-vocabulary prompts")
-    run.add_argument("--prompt-source", default=None, help="manual | gemini | auto (for promptable segmenters)")
+    run.add_argument("--prompt-source", default=None, help="manual | gemini | augment | hybrid | auto (for promptable segmenters)")
     run.add_argument("--device", default="auto")
     run.add_argument("--flip-depth", action="store_true")
     run.add_argument("--ordering", default=None, help="boundary | learned")
@@ -204,7 +223,7 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument("--segmenter", default=None)
     batch.add_argument("--depth", default=None)
     batch.add_argument("--prompts", default=None)
-    batch.add_argument("--prompt-source", default=None)
+    batch.add_argument("--prompt-source", default=None, help="manual | gemini | augment | hybrid | auto")
     batch.add_argument("--device", default="auto")
     batch.add_argument("--flip-depth", action="store_true")
     batch.add_argument("--ordering", default=None, help="boundary | learned")
@@ -237,6 +256,19 @@ def build_parser() -> argparse.ArgumentParser:
     enrich.add_argument("--ordering", default=None, help="boundary | learned")
     enrich.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
     enrich.set_defaults(func=cmd_enrich_qwen)
+
+    peel = sub.add_parser("peel", help="Run graph-guided recursive layer peeling with residual inpainting and optional effect layers")
+    peel.add_argument("--input", required=True)
+    peel.add_argument("--output", required=True)
+    peel.add_argument("--config", default="configs/fast.yaml")
+    peel.add_argument("--segmenter", default=None, help="classical | mask2former | grounded_sam2 | gemini")
+    peel.add_argument("--depth", default=None, help="geometric_luminance | depth_pro | depth_anything_v2 | marigold | ensemble")
+    peel.add_argument("--prompts", default=None, help="Comma-separated open-vocabulary prompts")
+    peel.add_argument("--prompt-source", default=None, help="manual | gemini | augment | auto")
+    peel.add_argument("--device", default="auto")
+    peel.add_argument("--flip-depth", action="store_true")
+    peel.add_argument("--max-layers", type=int, default=None)
+    peel.set_defaults(func=cmd_peel)
 
     bench = sub.add_parser("benchmark", help="Run a lightweight synthetic benchmark and write a CSV/JSON report")
     bench.add_argument("--dataset-dir", required=True)

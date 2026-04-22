@@ -7,7 +7,7 @@ This file is the ground-truth snapshot of what has actually been run in the repo
 - machine: RTX 5090 laptop GPU
 - Python: `3.14.4`
 - torch: `2.11.0+cu130`
-- validation: `pytest -q` passed with `30` tests
+- validation: `pytest -q` passed with `40` tests
 
 ## What was implemented
 
@@ -31,6 +31,9 @@ Base validation:
 
 ```bash
 .venv/bin/pytest -q
+.venv/bin/pytest -q tests/test_smoke.py tests/test_merge.py tests/test_segment_api.py
+python scripts/export_report_artifacts.py
+python scripts/build_report_docx.py
 ```
 
 Synthetic benchmark dataset:
@@ -491,6 +494,89 @@ That means the submission can now honestly say:
 - the repo contains a measured raw Qwen baseline, a measured `Q+G` hybrid result, and multiple measured native LayerForge variants
 - completed measured results cover fast synthetic ablations, learned ordering, real-image qualitative packs, direct Qwen comparisons, and a prompt-strategy ablation on the native path
 
+### Five-image Qwen raw versus hybrid review
+
+The repo now also contains a measured five-image Qwen review:
+
+```bash
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python scripts/run_curated_comparison.py \
+  --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png \
+  --output-root runs/qwen_five_image_review \
+  --qwen-layers 4 \
+  --qwen-steps 10 \
+  --qwen-resolution 640 \
+  --qwen-device cuda \
+  --qwen-dtype bfloat16 \
+  --qwen-offload sequential \
+  --skip-native \
+  --skip-existing
+```
+
+Aggregate mean results:
+
+| Method | Images | Graph | Mean PSNR | Mean SSIM |
+|---|---:|---|---:|---:|
+| `Qwen raw (4)` | 5 | no | 29.0757 | 0.8850 |
+| `Qwen + graph (4)` | 5 | yes | 28.5408 | 0.8637 |
+
+Per-image results:
+
+| Image | Qwen raw PSNR | Qwen raw SSIM | Qwen + graph PSNR | Qwen + graph SSIM |
+|---|---:|---:|---:|---:|
+| truck | 28.8062 | 0.8614 | 26.8214 | 0.7826 |
+| astronaut | 29.4532 | 0.9091 | 29.3737 | 0.9153 |
+| coffee | 28.2737 | 0.8762 | 28.0333 | 0.8718 |
+| chelsea_cat | 29.5828 | 0.9050 | 29.4704 | 0.8918 |
+| synth image | 29.2627 | 0.8733 | 29.0052 | 0.8571 |
+
+What this means:
+
+- raw Qwen currently wins mean PSNR and mean SSIM on this five-image review;
+- the hybrid row still matters because it adds explicit graph ordering, amodal masks, intrinsic layers, and edit metadata;
+- the honest claim is therefore that the hybrid is a structured-representation complement to Qwen, not a universal raw-fidelity winner.
+
+## Recursive peeling and associated-effect demos
+
+The repo also now contains measured demo artifacts for the new recursive-peeling and effect-aware paths.
+
+Recursive peeling demo:
+
+```bash
+.venv/bin/layerforge peel \
+  --input runs/effects_demo_source/scene_000/image.png \
+  --output runs/effects_demo_peel \
+  --config configs/fast.yaml \
+  --segmenter classical \
+  --depth geometric_luminance \
+  --max-layers 4
+```
+
+Measured result:
+
+| Run | Mode | Layers | Effect layers | PSNR | SSIM |
+|---|---|---:|---:|---:|---:|
+| `runs/effects_demo_peel` | recursive peeling | 5 | 0 | 33.1022 | 0.9724 |
+
+Associated-effect extractor demo on a `layerbench_pp` synthetic scene:
+
+```bash
+.venv/bin/python scripts/run_effects_demo.py \
+  --scene-dir runs/effects_demo_source/scene_000 \
+  --output runs/effects_groundtruth_demo_cutting_edge \
+  --config configs/cutting_edge.yaml
+```
+
+Measured result:
+
+| Run | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
+|---|---|---:|---:|---:|
+| `runs/effects_groundtruth_demo_cutting_edge` | yes | 411 | 13750 | 0.0006 |
+
+Notes:
+
+- the effect demo proves that the repo now has a real, exportable associated-effect artifact and a matching figure at `docs/figures/effects_layer_demo.png`;
+- the IoU is intentionally weak, so the current effect-layer claim should be framed as "early heuristic demo" rather than "solved shadow decomposition."
+
 ## Report figure pack
 
 The repo now contains a generated figure pack derived directly from the measured runs:
@@ -507,6 +593,7 @@ Main figure files:
 - `docs/figures/truck_prompt_ablation.png`
 - `docs/figures/synthetic_ordering_ablation.png`
 - `docs/figures/qualitative_gallery.png`
+- `docs/figures/effects_layer_demo.png`
 
 Use `docs/FIGURES.md` for the figure index and suggested report placement.
 

@@ -31,6 +31,7 @@ src/layerforge/
   graph.py                   # DALG construction and boundary-weighted ordering
   inpaint.py                 # OpenCV/LaMa-style completion hooks
   intrinsics.py              # Retinex-style albedo/shading split + external hook
+  peeling.py                 # recursive semantic layer peeling + effects extraction
   pipeline.py                # full pipeline
   qwen_io.py                 # import/enrich Qwen or external RGBA layers
   ranker.py                  # lightweight learned pairwise near/far ranker
@@ -39,6 +40,7 @@ src/layerforge/
 
 scripts/
   collect_run_metrics.py      # compact markdown/json tables from run directories
+  export_report_artifacts.py # copy audit-safe metrics snapshots for ZIP submissions
   generate_report_figures.py # report-ready comparison panels and graphs
   make_synthetic_dataset.py  # synthetic LayerBench generator
   run_qwen_image_layered.py  # official Qwen-Image-Layered baseline runner
@@ -93,6 +95,12 @@ layerforge run \
   --no-parallax
 ```
 
+For a quick regression gate that stays away from heavyweight model downloads:
+
+```bash
+./.venv/bin/pytest -q tests/test_smoke.py tests/test_merge.py tests/test_segment_api.py
+```
+
 ## Full model-backed run
 
 Once the model extras are installed, this is the recommended "the works" invocation:
@@ -142,7 +150,38 @@ That command writes:
 - `runs/truck_state_of_art_search_v2/candidates/*`
 - `runs/truck_state_of_art_search_v2/best`
 
+For submission-safe auditing, `python scripts/export_report_artifacts.py` also copies the selected summary into `report_artifacts/metrics_snapshots/truck_search_summary.json`.
+
 The current reproducible winner on the truck scene is `manual_precision` at `PSNR 32.1053`, `SSIM 0.9848`, `20` layers.
+
+## Recursive semantic peeling
+
+The repo now includes a second decomposition path aimed at the "frontier" formulation: recursively peel the frontmost editable entity, inpaint the residual canvas, and keep iterating until the background is reached.
+
+```bash
+layerforge peel \
+  --input data/demo/truck.jpg \
+  --output runs/truck_recursive_peel \
+  --config configs/best_score.yaml \
+  --segmenter grounded_sam2 \
+  --depth ensemble \
+  --prompts "truck,road,sky,tree,building,window,wheel,car" \
+  --prompt-source augment \
+  --max-layers 6
+```
+
+This writes:
+
+```text
+iterations/iteration_00/input.png
+iterations/iteration_00/selected_mask.png
+iterations/iteration_00/selected_layer.png
+iterations/iteration_00/residual_inpainted.png
+layers_effects_rgba/
+debug/peeling_strip.png
+```
+
+The recursive path is intentionally explicit: each iteration logs the selected layer, the residual image after inpainting, and any associated effect layer recovered from the object-local residual.
 
 ## Qwen / external layer enrichment
 
@@ -185,6 +224,26 @@ layerforge enrich-qwen \
 ```
 
 The output directory will contain ordered layers, albedo/shading layers, amodal masks, and a `debug/layer_graph.json` describing the graph structure.
+
+## Submission-safe report artifacts
+
+The local checkout includes heavyweight `runs/`, `results/`, and `data/` directories, but those are commonly excluded from submission ZIPs. To keep the report auditable even when those folders are omitted, export a compact artifact pack:
+
+```bash
+python scripts/export_report_artifacts.py
+```
+
+That writes:
+
+```text
+report_artifacts/
+  README.md
+  command_log.md
+  metrics_snapshots/
+  figure_sources/figure_manifest.json
+```
+
+The README and `PROJECT_MANIFEST.json` now point to these compact JSON snapshots instead of assuming the raw benchmark directories will always be present in the archive.
 
 ## Collecting report metrics
 
@@ -247,9 +306,38 @@ results/synthetic_fast/synthetic_benchmark_summary.json
 results/synthetic_fast/runs/<scene>/
 ```
 
+For the richer benchmark artifact format used by the updated report narrative, the generator now has an opt-in `layerbench_pp` mode:
+
+```bash
+python scripts/make_synthetic_dataset.py \
+  --output data/synthetic_layerbench_pp \
+  --count 20 \
+  --output-format layerbench_pp \
+  --with-effects
+```
+
+Each scene then also includes:
+
+```text
+visible_masks/
+amodal_masks/
+alpha_mattes/
+layers_effects_rgba/
+intrinsics/albedo.png
+intrinsics/shading.png
+depth.png
+depth.npy
+occlusion_graph.json
+scene_metadata.json
+```
+
+The original `basic` mode is still the default so the existing lightweight benchmark path remains reproducible.
+
+For the next external review, the remaining measured-work checklist is tracked in [docs/NEXT_REVIEW_CHECKLIST_2026_04_22.md](docs/NEXT_REVIEW_CHECKLIST_2026_04_22.md).
+
 ### Measured fast-path baseline
 
-The deterministic fallback was actually run on `12` synthetic scenes. The current summary file is `results/synthetic_fast/synthetic_benchmark_summary.json`.
+The deterministic fallback was actually run on `12` synthetic scenes. The submission-safe summary snapshot is `report_artifacts/metrics_snapshots/synthetic_benchmark_summary.json`.
 
 | Split | Segmenter | Depth | Ordering | Mean best IoU | PLOA | Recompose PSNR |
 |---|---|---|---|---:|---:|---:|
@@ -288,7 +376,7 @@ Measured result already in the repo:
 |---|---|---:|---:|---:|---:|---:|
 | COCO Panoptic val2017 sample | mask2former | 512 | 0.5660 | 0.5842 | 0.5479 | 6.45 |
 
-Per-group IoU from `results/coco_panoptic_mask2former_512/coco_panoptic_group_benchmark_summary.json`:
+Per-group IoU from `report_artifacts/metrics_snapshots/coco_panoptic_group_benchmark_summary.json`:
 
 | Group | IoU |
 |---|---:|
@@ -307,7 +395,7 @@ Per-group IoU from `results/coco_panoptic_mask2former_512/coco_panoptic_group_be
 
 This benchmark is intentionally scoped to what COCO can supervise honestly: visible grouping quality. Depth ordering, amodal completion, and intrinsics still need different public datasets.
 
-The repo now also includes a second real-data evaluator for **ADE20K SceneParse150 validation**. This uses the same coarse-group IoU protocol as the COCO benchmark, but on a much broader scene-parsing dataset with denser indoor/outdoor background supervision. For ADE20K, the best available in-repo setup is the ADE-tuned Mask2Former config in [configs/ade20k_mask2former.yaml](/home/mysterious/storage/github/LayerForge-X-final/configs/ade20k_mask2former.yaml).
+The repo now also includes a second real-data evaluator for **ADE20K SceneParse150 validation**. This uses the same coarse-group IoU protocol as the COCO benchmark, but on a much broader scene-parsing dataset with denser indoor/outdoor background supervision. For ADE20K, the best available in-repo setup is the ADE-tuned Mask2Former config in [configs/ade20k_mask2former.yaml](configs/ade20k_mask2former.yaml).
 
 Download the official ADE benchmark zip:
 
@@ -336,7 +424,7 @@ Measured result already in the repo:
 |---|---|---:|---:|---:|---:|---:|---:|
 | ADE20K validation sample | mask2former (ADE) | 512 | 0.6015 | 0.5579 | 0.6451 | 0.5569 | 6.25 |
 
-Per-group IoU from `results/ade20k_mask2former_512/ade20k_group_benchmark_summary.json`:
+Per-group IoU from `report_artifacts/metrics_snapshots/ade20k_group_benchmark_summary.json`:
 
 | Group | IoU |
 |---|---:|
@@ -501,6 +589,20 @@ So the honest framing is: use Qwen as
 
 That positioning is, I think, the strongest defense for grading.
 
+To make the multi-image comparison reproducible rather than ad hoc, the repo now includes:
+
+```bash
+python scripts/run_curated_comparison.py \
+  --input-dir data/qualitative_pack \
+  --output-root runs/curated_comparison \
+  --native-config configs/cutting_edge.yaml \
+  --native-segmenter grounded_sam2 \
+  --native-depth depth_pro \
+  --qwen-layers 3,4,6,8
+```
+
+This writes a per-image native/Qwen/hybrid comparison tree plus `comparison_summary.json` and `comparison_summary.md`.
+
 ## Public benchmark roadmap
 
-The current public-benchmark status and links for the next datasets are tracked in [docs/PUBLIC_BENCHMARKS_2026_04_22.md](/home/mysterious/storage/github/LayerForge-X-final/docs/PUBLIC_BENCHMARKS_2026_04_22.md).
+The current public-benchmark status and links for the next datasets are tracked in [docs/PUBLIC_BENCHMARKS_2026_04_22.md](docs/PUBLIC_BENCHMARKS_2026_04_22.md).

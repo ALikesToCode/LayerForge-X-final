@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +9,7 @@ from PIL import Image
 
 from .compose import composite_layers_near_to_far
 from .depth import estimate_depth
-from .graph import amodal_complete, build_nodes, graph_json, merge_compatible_layers, topo_order
+from .graph import amodal_complete, build_nodes, graph_json, merge_compatible_layers, renumber_layers_in_place, topo_order
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
 from .intrinsics import decompose_intrinsics, intrinsic_rgba
 from .metrics import compute_run_metrics
@@ -24,6 +25,32 @@ def _candidate_layer_paths(layers_dir: str | Path) -> list[Path]:
     paths = [p for p in sorted(root.rglob("*")) if p.is_file() and p.suffix.lower() in exts]
     bad_tokens = ("albedo", "shading", "mask", "depth", "debug", "contact_sheet", "preview", "recomposed")
     return [p for p in paths if not any(tok in p.stem.lower() for tok in bad_tokens)]
+
+
+def _resolve_manifest_layer_path(root: Path, raw_path: str | Path) -> Path:
+    path = Path(raw_path)
+    candidates = []
+    if path.is_absolute():
+        candidates.append(path)
+    else:
+        candidates.extend([root / path.name, root / path, path])
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+def _manifest_layer_paths(layers_dir: str | Path) -> tuple[dict[str, Any], list[Path]]:
+    root = Path(layers_dir)
+    manifest_path = root / "manifest.json"
+    manifest = {}
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        layer_paths = [_resolve_manifest_layer_path(root, item) for item in manifest.get("layer_paths", [])]
+        layer_paths = [path for path in layer_paths if path.exists()]
+        if layer_paths:
+            return manifest, layer_paths
+    return manifest, _candidate_layer_paths(root)
 
 
 def _validate_rgba(arr: np.ndarray) -> np.ndarray:
@@ -51,6 +78,72 @@ def load_external_rgba_segments(layers_dir: str | Path, image_shape: tuple[int, 
     if not segments:
         raise ValueError(f"No usable RGBA layer files found in {layers_dir}")
     return segments, rgba_by_sid
+
+
+def score_raw_rgba_layers(
+    image_path: str | Path,
+    layers_dir: str | Path,
+    *,
+    min_alpha: float = 0.02,
+) -> tuple[Path, Path]:
+    root = Path(layers_dir)
+    manifest, layer_paths = _manifest_layer_paths(root)
+    if not layer_paths:
+        raise ValueError(f"No usable RGBA layer files found in {layers_dir}")
+
+    first = Image.open(layer_paths[0]).convert("RGBA")
+    target_size = first.size
+    rgb = np.asarray(Image.open(image_path).convert("RGB").resize(target_size, Image.Resampling.LANCZOS), dtype=np.uint8)
+
+    ordered_layers: list[Layer] = []
+    manifest_far_to_near = list(layer_paths)
+    for rank, path in enumerate(reversed(manifest_far_to_near)):
+        rgba = np.asarray(Image.open(path).convert("RGBA"), dtype=np.uint8)
+        alpha = rgba[..., 3].astype(np.float32) / 255.0
+        visible = alpha > float(min_alpha)
+        label = path.stem.replace("_", " ").replace("-", " ")
+        ordered_layers.append(
+            Layer(
+                id=rank,
+                name=f"{rank:03d}_{safe_name(path.stem)}",
+                label=label,
+                group=label_to_group(label),
+                rank=rank,
+                depth_median=float(rank),
+                depth_p10=float(rank),
+                depth_p90=float(rank),
+                area=int(visible.sum()),
+                bbox=bbox_from_mask(visible),
+                alpha=alpha,
+                rgba=rgba,
+                albedo_rgba=rgba.copy(),
+                shading_rgba=rgba.copy(),
+                visible_mask=visible,
+                amodal_mask=None,
+                source_segment_ids=[rank],
+                metadata={"source": "qwen_raw_rgba", "path": str(path)},
+            )
+        )
+
+    recomposed = composite_layers_near_to_far(ordered_layers)
+    save_rgba(root / "recomposed_rgba.png", recomposed)
+    save_rgb(root / "recomposed_rgb.png", recomposed[..., :3])
+    save_layer_contact_sheet(root / "ordered_layer_contact_sheet.png", ordered_layers)
+
+    metrics = compute_run_metrics(rgb, ordered_layers, cfg={})
+    metrics.update(
+        {
+            "mode": "qwen_raw_rgba",
+            "model": manifest.get("model"),
+            "ordering_assumption": "manifest_order_interpreted_as_far_to_near",
+            "resolution": manifest.get("resolution"),
+            "num_inference_steps": manifest.get("num_inference_steps"),
+            "offload": manifest.get("offload"),
+            "input_resized_to": [int(target_size[0]), int(target_size[1])],
+        }
+    )
+    metrics_path = write_json(root / "metrics.json", metrics)
+    return metrics_path, root / "recomposed_rgb.png"
 
 
 def enrich_rgba_layers(
@@ -116,10 +209,11 @@ def enrich_rgba_layers(
             {"source": "external-rgba", "external_path": seg.metadata.get("path"), "depth_source": depth_pred.source, "ordering_method": ordering_method, "ordering_score": ordering_scores.get(sid)},
         ))
     premerge_layer_count = len(layers)
-    layers = merge_compatible_layers(layers, cfg["layering"])
+    layers = renumber_layers_in_place(merge_compatible_layers(layers, cfg["layering"]))
+    ordered_layers = list(layers)
 
     ordered_paths = []
-    for l in sorted(layers, key=lambda x: x.rank):
+    for l in ordered_layers:
         ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{l.name}.png", l.rgba))
         save_rgba(dirs["layers_albedo_rgba"] / f"{l.name}_albedo.png", l.albedo_rgba)
         save_rgba(dirs["layers_shading_rgba"] / f"{l.name}_shading.png", l.shading_rgba)
@@ -127,12 +221,12 @@ def enrich_rgba_layers(
         if l.amodal_mask is not None:
             save_gray(dirs["layers_amodal_masks"] / f"{l.name}_amodal.png", l.amodal_mask.astype(np.float32))
 
-    recomposed = composite_layers_near_to_far(layers)
+    recomposed = composite_layers_near_to_far(ordered_layers)
     save_rgba(dirs["debug"] / "recomposed_rgba.png", recomposed)
     save_rgb(dirs["debug"] / "recomposed_rgb.png", recomposed[..., :3])
-    save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", layers)
+    save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", ordered_layers)
 
-    metrics = compute_run_metrics(rgb, layers, cfg)
+    metrics = compute_run_metrics(rgb, ordered_layers, cfg)
     metrics.update({
         "mode": "external_rgba_enrichment",
         "depth_method": cfg["depth"]["method"],
@@ -141,17 +235,17 @@ def enrich_rgba_layers(
         "external_layers_dir": str(layers_dir),
         "ordering_method": ordering_method,
         "premerge_semantic_layers": float(premerge_layer_count),
-        "merge_reduction": float(max(0, premerge_layer_count - len(layers))),
+        "merge_reduction": float(max(0, premerge_layer_count - len(ordered_layers))),
     })
     metrics_path = write_json(out / "metrics.json", metrics)
-    graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(layers, nodes))
+    graph_path = write_json(dirs["debug"] / "layer_graph.json", graph_json(ordered_layers, nodes))
     manifest = {
         "input": str(image_path),
         "external_layers_dir": str(layers_dir),
         "output_dir": str(out),
         "metrics": str(metrics_path),
         "layer_graph": str(graph_path),
-        "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, sorted(layers, key=lambda x: x.rank))],
+        "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, ordered_layers)],
         "debug": {"depth_gray": str(dirs["debug"] / "depth_gray.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png")},
     }
     manifest_path = write_json(out / "manifest.json", manifest)

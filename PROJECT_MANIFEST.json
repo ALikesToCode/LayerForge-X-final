@@ -8,15 +8,18 @@
     "synthetic learned ordering ranker",
     "official Qwen baseline runner",
     "run-metrics collection helper",
+    "submission-safe report artifact exporter",
     "report figure generator",
     "Qwen/external RGBA layer enrichment",
+    "graph-guided recursive peeling CLI",
+    "heuristic associated-effects layer extraction",
     "literature review and benchmarking docs",
     "novelty and ablation plan",
     "report tables"
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "30 passed",
+    "pytest": "40 passed",
     "cli_help": true,
     "train_ranker_cli": true
   },
@@ -94,6 +97,20 @@
       "ordering_method": "boundary",
       "recompose_psnr": 27.4612,
       "recompose_ssim": 0.7953
+    },
+    "qwen_five_image_review": {
+      "images_evaluated": 5,
+      "qwen_raw_mean_psnr": 29.075732442522252,
+      "qwen_raw_mean_ssim": 0.8850195543821586,
+      "qwen_graph_mean_psnr": 28.540780364773006,
+      "qwen_graph_mean_ssim": 0.8637172854242428,
+      "summary": "runs/qwen_five_image_review/comparison_summary.json"
+    },
+    "effects_groundtruth_demo_cutting_edge": {
+      "effect_detected": true,
+      "predicted_effect_pixels": 411,
+      "ground_truth_effect_pixels": 13750,
+      "effect_iou": 0.0005652511834946654
     },
     "qualitative_pack_cutting_edge": {
       "astronaut": {
@@ -173,10 +190,11 @@
     "truck_prompt_ablation": "docs/figures/truck_prompt_ablation.png",
     "synthetic_ordering_ablation": "docs/figures/synthetic_ordering_ablation.png",
     "qualitative_gallery": "docs/figures/qualitative_gallery.png",
+    "effects_layer_demo": "docs/figures/effects_layer_demo.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
     "figure_index": "docs/FIGURES.md",
-    "state_of_art_summary": "runs/truck_state_of_art_search_v2/search_summary.json"
+    "state_of_art_summary": "report_artifacts/metrics_snapshots/truck_search_summary.json"
   },
   "public_benchmarks": {
     "implemented_now": [
@@ -186,12 +204,20 @@
     ],
     "roadmap_doc": "docs/PUBLIC_BENCHMARKS_2026_04_22.md",
     "coco_panoptic_dataset_dir": "data/coco_panoptic_val",
-    "coco_panoptic_summary": "results/coco_panoptic_mask2former_512/coco_panoptic_group_benchmark_summary.json",
+    "coco_panoptic_summary": "report_artifacts/metrics_snapshots/coco_panoptic_group_benchmark_summary.json",
     "ade20k_dataset_dir": "data/ade20k/ADEChallengeData2016",
-    "ade20k_summary": "results/ade20k_mask2former_512/ade20k_group_benchmark_summary.json",
+    "ade20k_summary": "report_artifacts/metrics_snapshots/ade20k_group_benchmark_summary.json",
     "diode_dataset_dir": "data/diode/val",
-    "diode_depthpro_summary": "results/diode_depthpro_full/diode_depth_benchmark_summary.json",
-    "diode_depthpro_scale_summary": "results/diode_depthpro_scale_full/diode_depth_benchmark_summary.json",
-    "diode_geometric_summary": "results/diode_geometric_full/diode_depth_benchmark_summary.json"
+    "diode_depthpro_summary": "report_artifacts/metrics_snapshots/diode_depth_benchmark_summary.json",
+    "diode_depthpro_scale_summary": "report_artifacts/metrics_snapshots/diode_depth_scale_benchmark_summary.json",
+    "diode_geometric_summary": "report_artifacts/metrics_snapshots/diode_geometric_benchmark_summary.json"
+  },
+  "submission_artifacts": {
+    "root": "report_artifacts",
+    "readme": "report_artifacts/README.md",
+    "metrics_snapshots_dir": "report_artifacts/metrics_snapshots",
+    "figure_sources": "report_artifacts/figure_sources/figure_manifest.json",
+    "command_log": "report_artifacts/command_log.md",
+    "final_report_docx": "docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"
   }
 }

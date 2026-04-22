@@ -32,6 +32,7 @@ The core sweep. Each row changes exactly one axis relative to the next so the co
 | F | Grounded-SAM2 | Depth Pro / MoGe | boundary graph | soft | heuristic | OpenCV | no | tests amodal + completion |
 | G | Grounded-SAM2 | ensemble | learned edge ranker | soft/matting | amodal | LaMa | no | strong non-intrinsic system |
 | H | full | ensemble | learned edge ranker | soft/matting | amodal | LaMa | Retinex / Marigold-IID | full LayerForge-X |
+| I | full + peel | ensemble | graph-guided peeling | soft/matting | amodal | iterative completion | Retinex / Marigold-IID | recursive peeling variant |
 
 ---
 
@@ -59,9 +60,9 @@ Which dataset gets used for which track, with the available ground truth in each
 
 | Dataset | Used for | Ground truth available | Metrics |
 |---|---|---|---|
-| Synthetic-LayerBench | full pipeline | RGBA layers, z-order, masks, clean background, optional albedo/shading | PLOA, PSNR, SSIM, LPIPS, alpha MAE, amodal IoU |
-| COCO Panoptic | semantic/panoptic grouping | panoptic masks | PQ, SQ, RQ, mIoU |
-| ADE20K | scene/stuff parsing | semantic masks | mIoU, pixel accuracy |
+| Synthetic-LayerBench / layerbench_pp | full pipeline | RGBA layers, z-order, masks, clean background, optional albedo/shading, optional effects | PLOA, PSNR, SSIM, LPIPS, alpha MAE, amodal IoU |
+| COCO Panoptic | visible semantic grouping | panoptic masks | coarse-group mIoU, thing/stuff mIoU |
+| ADE20K | scene/stuff parsing | semantic masks | coarse-group mIoU, pixel accuracy |
 | NYU Depth V2 | indoor depth order | RGB-D, labels | AbsRel, RMSE, PLOA |
 | DIODE | indoor/outdoor depth | RGB-D | AbsRel, RMSE, PLOA |
 | KINS / COCOA | amodal segmentation | amodal masks | modal IoU, amodal IoU, invisible IoU |
@@ -72,7 +73,7 @@ Which dataset gets used for which track, with the available ground truth in each
 
 ## Table 3: Main quantitative results template
 
-| Method | PQ ↑ | PLOA ↑ | BW-PLOA ↑ | Recon PSNR ↑ | Recon SSIM ↑ | LPIPS ↓ | Amodal IoU ↑ | Runtime ↓ |
+| Method | group mIoU ↑ | PLOA ↑ | BW-PLOA ↑ | Recon PSNR ↑ | Recon SSIM ↑ | LPIPS ↓ | Amodal IoU ↑ | Runtime ↓ |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Classical baseline | | | | | | | | |
 | Panoptic only | | | | | | | | |
@@ -89,13 +90,14 @@ A leave-one-out table. For each row, the expected-damage column says what I thin
 
 | Removed component | Expected damage | Metric most affected | Observed result |
 |---|---|---|---|
-| remove semantic segmenter | no meaningful object layers | PQ/mIoU | |
+| remove semantic segmenter | no meaningful object layers | group mIoU | |
 | remove depth | wrong near/far order | PLOA/BW-PLOA | |
 | remove boundary graph | large stuff/object order errors | BW-PLOA/Occlusion F1 | |
 | remove soft alpha | jagged boundaries | alpha MAE/recomposition edge error | |
 | remove amodal masks | no hidden object support | amodal IoU/editing score | |
 | remove inpainting | holes after edits | masked LPIPS/hole ratio | |
 | remove intrinsic split | no recoloring/shading control | WHDR/edit demo | |
+| remove recursive peeling | weaker hidden-region recovery in iterative scenes | edit demo / masked LPIPS | |
 
 ---
 

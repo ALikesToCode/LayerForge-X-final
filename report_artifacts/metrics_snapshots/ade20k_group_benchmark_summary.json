@@ -1,0 +1,31 @@
+{
+  "csv": "results/ade20k_mask2former_512/ade20k_group_benchmark.csv",
+  "dataset": "ADE20K SceneParse150 validation",
+  "dataset_dir": "data/ade20k/ADEChallengeData2016",
+  "group_iou": {
+    "animal": 0.3709622003132989,
+    "building": 0.7757301801759207,
+    "furniture": 0.6402994519736873,
+    "ground": 0.5105246271016401,
+    "object": 0.46687203788104054,
+    "person": 0.5411624372318525,
+    "plant": 0.6387333648794742,
+    "road": 0.829986763745925,
+    "sky": 0.8454723657830923,
+    "stuff": 0.3503725549602953,
+    "vehicle": 0.6896373287211032,
+    "water": 0.5585189498657399
+  },
+  "images_evaluated": 512,
+  "mean_image_miou": 0.5568832566409362,
+  "mean_pred_segments": 6.248046875,
+  "median_image_miou": 0.5866794389695078,
+  "miou_supported_groups": 0.6015226885527559,
+  "prompt_source": null,
+  "prompts": [],
+  "seed": 7,
+  "segmenter": "mask2former",
+  "selected_by": "random_sample",
+  "stuff_miou": 0.6451009069387689,
+  "thing_miou": 0.5579444701667428
+}

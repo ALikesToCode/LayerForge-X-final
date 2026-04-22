@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from typing import Any
 
 import numpy as np
@@ -225,6 +225,17 @@ def _base_label(label: str) -> str:
     return safe_name(low)
 
 
+def renumber_layers_in_place(layers: list[Layer]) -> list[Layer]:
+    ordered = sorted(layers, key=lambda x: (x.rank, x.depth_median, -x.area))
+    for idx, layer in enumerate(ordered):
+        layer.id = idx
+        layer.rank = idx
+        group_name = safe_name(layer.group)
+        base_name = _base_label(layer.label)
+        layer.name = f"{idx:03d}_{group_name}" if base_name == group_name else f"{idx:03d}_{group_name}_{base_name}"
+    return ordered
+
+
 def _layer_color_signature(layer: Layer) -> np.ndarray:
     mask = layer.alpha > 0.05
     if not mask.any():
@@ -334,7 +345,7 @@ def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
 
 def merge_compatible_layers(layers: list[Layer], cfg: dict[str, Any]) -> list[Layer]:
     if not layers or not bool(cfg.get("merge_enabled", True)):
-        return sorted(layers, key=lambda l: l.rank)
+        return renumber_layers_in_place(list(layers))
     buckets: list[list[Layer]] = []
     for layer in sorted(layers, key=lambda l: l.rank):
         if layer.group == "background" or not buckets:
@@ -345,10 +356,7 @@ def merge_compatible_layers(layers: list[Layer], cfg: dict[str, Any]) -> list[La
         else:
             buckets.append([layer])
     merged = [_merge_layer_bucket(bucket, rank) for rank, bucket in enumerate(buckets)]
-    for idx, layer in enumerate(merged):
-        layer.id = idx
-        layer.rank = idx
-    return merged
+    return renumber_layers_in_place(merged)
 
 
 def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, albedo: np.ndarray, shading: np.ndarray, cfg: dict[str, Any], matting_cfg: dict[str, Any]) -> tuple[list[Layer], dict[int, Node]]:
@@ -438,8 +446,11 @@ def grouped_layers(layers: list[Layer], bins: int = 3) -> list[Layer]:
         first = sorted(bucket, key=lambda l: l.rank)[0]
         out.append(Layer(len(out), f"{len(out):03d}_{safe_name(group)}_depthbin_{bid}", f"{group} depth bin {bid}", group, len(out), float(np.median([b.depth_median for b in bucket])), float(np.min([b.depth_p10 for b in bucket])), float(np.max([b.depth_p90 for b in bucket])), int((alpha > 0.05).sum()), bbox_from_mask(alpha > 0.05), alpha, comp, first.albedo_rgba, first.shading_rgba, alpha > 0.05, None, [], [], [], {"members": [b.name for b in bucket]}))
     for b in bg:
-        b.rank = len(out)
-        out.append(b)
+        idx = len(out)
+        group_name = safe_name(b.group)
+        base_name = _base_label(b.label)
+        name = f"{idx:03d}_{group_name}" if base_name == group_name else f"{idx:03d}_{group_name}_{base_name}"
+        out.append(replace(b, id=idx, rank=idx, name=name))
     return out
 
 

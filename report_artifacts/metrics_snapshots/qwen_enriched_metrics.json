@@ -1,0 +1,14 @@
+{
+  "depth_method": "depth_pro",
+  "depth_source": "depth_pro",
+  "external_layers_dir": "runs/qwen_truck_layers_raw_640_20",
+  "foreground_alpha_coverage": 1.0,
+  "intrinsic_method": "retinex",
+  "mean_amodal_extra_ratio": 0.022625992038655084,
+  "mean_layer_area": 1026090.0,
+  "mode": "external_rgba_enrichment",
+  "num_layers": 2.0,
+  "ordering_method": "boundary",
+  "recompose_psnr": 27.461164964979595,
+  "recompose_ssim": 0.7953214570224438
+}

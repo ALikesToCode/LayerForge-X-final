@@ -1,0 +1,29 @@
+{
+  "csv": "results/coco_panoptic_mask2former_512/coco_panoptic_group_benchmark.csv",
+  "dataset": "COCO Panoptic val2017",
+  "dataset_dir": "data/coco_panoptic_val",
+  "group_iou": {
+    "animal": 0.648336430316127,
+    "building": 0.5785116349611609,
+    "furniture": 0.42450762584262375,
+    "ground": 0.46336401610806266,
+    "object": 0.35558544431075584,
+    "person": 0.6854069559196116,
+    "plant": 0.7114681103004709,
+    "road": 0.39750180674478885,
+    "sky": 0.8632138057749175,
+    "stuff": 0.20478759215344883,
+    "vehicle": 0.680066788267956,
+    "water": 0.7797931095180849
+  },
+  "images_evaluated": 512,
+  "mean_pred_segments": 6.44921875,
+  "miou_supported_groups": 0.5660452766848341,
+  "prompt_source": null,
+  "prompts": [],
+  "seed": 7,
+  "segmenter": "mask2former",
+  "selected_by": "random_sample",
+  "stuff_miou": 0.5478619942100773,
+  "thing_miou": 0.5842285591595908
+}

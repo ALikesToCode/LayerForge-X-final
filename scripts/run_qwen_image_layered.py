@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from PIL import Image
+from layerforge.qwen_io import score_raw_rgba_layers
 
 
 def parse_args() -> argparse.Namespace:
@@ -97,7 +98,18 @@ def main() -> int:
         "layer_paths": layer_paths,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(json.dumps({"manifest": str(out_dir / "manifest.json"), "num_layers": len(layer_paths)}, indent=2))
+    metrics_path, recomposed_path = score_raw_rgba_layers(args.input, out_dir)
+    print(
+        json.dumps(
+            {
+                "manifest": str(out_dir / "manifest.json"),
+                "metrics": str(metrics_path),
+                "recomposed_rgb": str(recomposed_path),
+                "num_layers": len(layer_paths),
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

@@ -1,0 +1,244 @@
+{
+  "inputs": [
+    "/home/mysterious/storage/github/LayerForge-X-final/data/demo/truck.jpg",
+    "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/astronaut.png",
+    "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/coffee.png",
+    "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/chelsea_cat.png",
+    "/home/mysterious/storage/github/LayerForge-X-final/examples/synth/scene_000/image.png"
+  ],
+  "output_root": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review",
+  "rows": [
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/demo/truck.jpg",
+      "label": "Qwen raw (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/truck/qwen_4",
+      "mode": "qwen_raw",
+      "num_layers": 4.0,
+      "recompose_psnr": 28.806230336347355,
+      "recompose_ssim": 0.8613792273465634,
+      "mean_amodal_extra_ratio": 0.0,
+      "effect_layer_count": null,
+      "ordering_method": null,
+      "segmentation_method": null,
+      "depth_method": null,
+      "has_graph": false,
+      "has_ordered_layers": false,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/demo/truck.jpg",
+      "label": "Qwen + graph (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/truck/qwen_4_hybrid",
+      "mode": "external_rgba_enrichment",
+      "num_layers": 4.0,
+      "recompose_psnr": 26.821381964236643,
+      "recompose_ssim": 0.7825656554437687,
+      "mean_amodal_extra_ratio": 2.5303600989780914,
+      "effect_layer_count": null,
+      "ordering_method": "boundary",
+      "segmentation_method": null,
+      "depth_method": "depth_pro",
+      "has_graph": true,
+      "has_ordered_layers": true,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/astronaut.png",
+      "label": "Qwen raw (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/astronaut/qwen_4",
+      "mode": "qwen_raw",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.453214943337077,
+      "recompose_ssim": 0.909136508214465,
+      "mean_amodal_extra_ratio": 0.0,
+      "effect_layer_count": null,
+      "ordering_method": null,
+      "segmentation_method": null,
+      "depth_method": null,
+      "has_graph": false,
+      "has_ordered_layers": false,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/astronaut.png",
+      "label": "Qwen + graph (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/astronaut/qwen_4_hybrid",
+      "mode": "external_rgba_enrichment",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.373676777242494,
+      "recompose_ssim": 0.9153193835009308,
+      "mean_amodal_extra_ratio": 0.4623615988724491,
+      "effect_layer_count": null,
+      "ordering_method": "boundary",
+      "segmentation_method": null,
+      "depth_method": "depth_pro",
+      "has_graph": true,
+      "has_ordered_layers": true,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/coffee.png",
+      "label": "Qwen raw (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/coffee/qwen_4",
+      "mode": "qwen_raw",
+      "num_layers": 4.0,
+      "recompose_psnr": 28.273659053609897,
+      "recompose_ssim": 0.8762358018437829,
+      "mean_amodal_extra_ratio": 0.0,
+      "effect_layer_count": null,
+      "ordering_method": null,
+      "segmentation_method": null,
+      "depth_method": null,
+      "has_graph": false,
+      "has_ordered_layers": false,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/coffee.png",
+      "label": "Qwen + graph (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/coffee/qwen_4_hybrid",
+      "mode": "external_rgba_enrichment",
+      "num_layers": 4.0,
+      "recompose_psnr": 28.033253045975336,
+      "recompose_ssim": 0.871770444846358,
+      "mean_amodal_extra_ratio": 1.0529694908191838,
+      "effect_layer_count": null,
+      "ordering_method": "boundary",
+      "segmentation_method": null,
+      "depth_method": "depth_pro",
+      "has_graph": true,
+      "has_ordered_layers": true,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/chelsea_cat.png",
+      "label": "Qwen raw (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/chelsea_cat/qwen_4",
+      "mode": "qwen_raw",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.58284874792883,
+      "recompose_ssim": 0.9050403749336083,
+      "mean_amodal_extra_ratio": 0.0,
+      "effect_layer_count": null,
+      "ordering_method": null,
+      "segmentation_method": null,
+      "depth_method": null,
+      "has_graph": false,
+      "has_ordered_layers": false,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/data/qualitative_pack/chelsea_cat.png",
+      "label": "Qwen + graph (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/chelsea_cat/qwen_4_hybrid",
+      "mode": "external_rgba_enrichment",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.47039938443625,
+      "recompose_ssim": 0.8918272146955438,
+      "mean_amodal_extra_ratio": 10.488138926149702,
+      "effect_layer_count": null,
+      "ordering_method": "boundary",
+      "segmentation_method": null,
+      "depth_method": "depth_pro",
+      "has_graph": true,
+      "has_ordered_layers": true,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/examples/synth/scene_000/image.png",
+      "label": "Qwen raw (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/image/qwen_4",
+      "mode": "qwen_raw",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.2627091313881,
+      "recompose_ssim": 0.8733058595723735,
+      "mean_amodal_extra_ratio": 0.0,
+      "effect_layer_count": null,
+      "ordering_method": null,
+      "segmentation_method": null,
+      "depth_method": null,
+      "has_graph": false,
+      "has_ordered_layers": false,
+      "status": "ok",
+      "requested_layers": 4
+    },
+    {
+      "image": "/home/mysterious/storage/github/LayerForge-X-final/examples/synth/scene_000/image.png",
+      "label": "Qwen + graph (4)",
+      "run_dir": "/home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/image/qwen_4_hybrid",
+      "mode": "external_rgba_enrichment",
+      "num_layers": 4.0,
+      "recompose_psnr": 29.005190651974303,
+      "recompose_ssim": 0.8571037286346126,
+      "mean_amodal_extra_ratio": 0.45132151998147885,
+      "effect_layer_count": null,
+      "ordering_method": "boundary",
+      "segmentation_method": null,
+      "depth_method": "depth_pro",
+      "has_graph": true,
+      "has_ordered_layers": true,
+      "status": "ok",
+      "requested_layers": 4
+    }
+  ],
+  "commands": [
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/truck/qwen_4",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/truck/qwen_4_hybrid",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/astronaut/qwen_4",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/astronaut/qwen_4_hybrid",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/coffee/qwen_4",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/coffee/qwen_4_hybrid",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/chelsea_cat/qwen_4",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/chelsea_cat/qwen_4_hybrid",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/image/qwen_4",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing /home/mysterious/storage/github/LayerForge-X-final/runs/qwen_five_image_review/image/qwen_4_hybrid",
+      "returncode": null,
+      "status": "skipped"
+    }
+  ]
+}

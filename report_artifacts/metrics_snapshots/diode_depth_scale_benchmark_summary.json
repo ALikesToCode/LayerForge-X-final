@@ -1,0 +1,53 @@
+{
+  "alignment": "scale",
+  "csv": "results/diode_depthpro_scale_full/diode_depth_benchmark.csv",
+  "dataset": "DIODE validation depth",
+  "dataset_dir": "data/diode/val",
+  "depth_method": "depth_pro",
+  "images_evaluated": 771,
+  "metrics": {
+    "abs_rel": 0.36287627184824817,
+    "delta1": 0.6452176997911817,
+    "delta2": 0.753266309923533,
+    "delta3": 0.7946213540419637,
+    "log_mae": 0.362809518824788,
+    "log_rmse": 0.3953327398979153,
+    "mae": 4.464200294485847,
+    "rmse": 6.18912205558819,
+    "rmse_log": 0.9102872736614321,
+    "silog": 26.876577646880822,
+    "sq_rel": 6.096102555079572
+  },
+  "scene_breakdown": {
+    "indoors": {
+      "abs_rel": 0.08798768428304077,
+      "delta1": 0.9071561958768413,
+      "delta2": 0.9731307574784527,
+      "delta3": 0.9917138586093184,
+      "images": 325,
+      "log_mae": 0.03478506874200389,
+      "log_rmse": 0.05303431200007698,
+      "mae": 0.2543681208362241,
+      "rmse": 0.4202187825083377,
+      "rmse_log": 0.12211601622857247,
+      "silog": 11.109397777138629,
+      "sq_rel": 0.07571917981752158
+    },
+    "outdoor": {
+      "abs_rel": 0.56318746233859,
+      "delta1": 0.4543432351547708,
+      "delta2": 0.5930511855841859,
+      "delta3": 0.6510001343460213,
+      "images": 446,
+      "log_mae": 0.6018407885039467,
+      "log_rmse": 0.6447654508100172,
+      "mae": 7.53190311160721,
+      "rmse": 10.392919283729338,
+      "rmse_log": 1.4846273155127312,
+      "silog": 38.36611454747771,
+      "sq_rel": 10.483153220909543
+    }
+  },
+  "seed": 7,
+  "selected_by": "full_split"
+}

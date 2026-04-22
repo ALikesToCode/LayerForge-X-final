@@ -14,6 +14,7 @@ Layer decomposition is multi-dimensional, and any single metric will lie to you.
 | M5 | Qwen-Image-Layered | frontier generative baseline |
 | M6 | Qwen + LayerForge graph | hybrid baseline |
 | M7 | Full LayerForge-X | final method |
+| M8 | LayerForge peel | graph-guided recursive peeling variant |
 
 ## Dataset plan
 
@@ -22,8 +23,8 @@ Each dataset plays a specific role — don't mix their metrics:
 | Dataset | Role |
 |---|---|
 | Synthetic-LayerBench | ground-truth masks, order, alpha, hidden regions |
-| COCO Panoptic | panoptic segmentation |
-| ADE20K | scene parsing and stuff/background |
+| COCO Panoptic | coarse-group visible semantic grouping |
+| ADE20K | coarse-group scene parsing and stuff/background |
 | NYU Depth V2 | indoor RGB-D depth ordering |
 | DIODE | indoor/outdoor depth |
 | KINS / COCOA / MP3D-Amodal | amodal masks |
@@ -32,19 +33,18 @@ Each dataset plays a specific role — don't mix their metrics:
 
 ## Track A: segmentation
 
-Standard panoptic and semantic metrics, nothing exotic:
+Standard visible-grouping metrics. The current repo implementation uses coarse-group IoU on COCO and ADE20K rather than official PQ:
 
 ```text
 mIoU
 pixel accuracy
-PQ
-SQ
-RQ
+thing mIoU
+stuff mIoU
 ```
 
 Table template:
 
-| Method | Dataset | mIoU ↑ | PQ ↑ | SQ ↑ | RQ ↑ | Avg layers | Runtime ↓ |
+| Method | Dataset | group mIoU ↑ | thing mIoU ↑ | stuff mIoU ↑ | pixel acc ↑ | Avg layers | Runtime ↓ |
 |---|---|---:|---:|---:|---:|---:|---:|
 
 ## Track B: depth/order
@@ -173,4 +173,16 @@ layerforge benchmark \
   --depth geometric_luminance
 ```
 
-Run this first. Any numbers you quote in the report should at least be reproducible through that harness.
+For the richer submission/demo artifact set, generate one `layerbench_pp` scene pack as well:
+
+```bash
+python scripts/make_synthetic_dataset.py \
+  --output data/synthetic_layerbench_pp \
+  --count 20 \
+  --output-format layerbench_pp \
+  --with-effects
+```
+
+That second export is the right benchmark substrate for recursive peeling, associated-effect layers, and intrinsic-layer inspection.
+
+Run these first. Any numbers you quote in the report should at least be reproducible through one of those harnesses.

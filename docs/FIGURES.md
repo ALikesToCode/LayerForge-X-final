@@ -16,6 +16,7 @@ Generated assets:
 - [Truck prompt ablation](figures/truck_prompt_ablation.png): Gemini-only prompting versus curated prompts versus augment mode on the upgraded native recipe.
 - [Synthetic ordering ablation](figures/synthetic_ordering_ablation.png): held-out `boundary` versus `learned ranker` comparison showing that PSNR improves while IoU and PLOA stay flat.
 - [Qualitative gallery](figures/qualitative_gallery.png): astronaut, coffee, and cat scenes with input RGB, segmentation overlay, and ordered layer contact sheet.
+- [Effects layer demo](figures/effects_layer_demo.png): controlled synthetic `layerbench_pp` scene showing input RGB, clean reference without the object, ground-truth shadow layer, and the extracted associated-effect layer.
 - [Public benchmark comparison](figures/public_benchmark_comparison.png): COCO versus ADE20K coarse-group benchmark charts for group mIoU, thing mIoU, stuff mIoU, and mean image mIoU.
 - [Public depth comparison](figures/public_depth_comparison.png): DIODE validation charts comparing the geometric fallback against DepthPro on depth error and indoor/outdoor split metrics.
 - [Figure manifest](figures/figure_manifest.json): machine-readable index of the figure files.
@@ -28,5 +29,6 @@ Recommended use in the report:
 - native-method tuning evidence: `truck_prompt_ablation.png`
 - novelty / ablation evidence: `synthetic_ordering_ablation.png`
 - qualitative results section: `qualitative_gallery.png`
+- associated-effect demo section: `effects_layer_demo.png`
 - public benchmark section: `public_benchmark_comparison.png`
 - public depth section: `public_depth_comparison.png`

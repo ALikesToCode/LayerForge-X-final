@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerforge-x"
-version = "0.3.0"
+version = "1.0.0"
 description = "Depth-aware amodal layered image decomposition from a single RGB image"
 readme = "README.md"
 requires-python = ">=3.10"
