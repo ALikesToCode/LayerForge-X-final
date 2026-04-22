@@ -27,6 +27,7 @@ src/layerforge/
   benchmark.py               # synthetic benchmark runner
   cli.py                     # command-line interface
   compose.py                 # straight-alpha RGBA compositing
+  dalg.py                    # canonical DALG design-manifest export
   depth.py                   # luminance/DepthPro/DepthAnything/Marigold hooks
   editability.py             # anti-trivial editability metrics + target export helpers
   graph.py                   # DALG construction and boundary-weighted ordering
@@ -51,12 +52,17 @@ scripts/
 docs/
   FIGURES.md
   FINAL_PROJECT_SPEC.md
+  PRODUCT_ARCHITECTURE_AND_LAUNCH.md
   QWEN_IMAGE_LAYERED_COMPARISON.md
   BENCHMARKING_PROTOCOL_FINAL.md
   NOVELTY_AND_ABLATIONS_FINAL.md
   REPORT_TABLES.md
+  api/openapi.yaml
   figures/
   final_report_pack/
+
+schemas/
+  dalg.schema.json           # canonical Depth-Aware Amodal Layer Graph schema
 ```
 
 ## Install
@@ -186,6 +192,34 @@ debug/peeling_strip.png
 ```
 
 The recursive path is intentionally explicit: each iteration logs the selected layer, the residual image after inpainting, and any associated effect layer recovered from the object-local residual.
+
+## Canonical DALG export
+
+The run manifests in `runs/*/manifest.json` are still useful as engine-level artifacts, but
+the product-facing object is now `dalg_manifest.json`: a canonical
+Depth-Aware Amodal Layer Graph that normalizes native runs, recursive peeling,
+and Qwen/external RGBA enrichment into one design-manifest contract.
+
+Every fresh `run`, `peel`, and `enrich-qwen` invocation now writes:
+
+```text
+<run-dir>/
+  manifest.json
+  dalg_manifest.json
+```
+
+You can also regenerate the canonical design manifest for any existing run:
+
+```bash
+layerforge export-design \
+  --run-dir runs/frontier_review/truck/layerforge_native \
+  --output runs/frontier_review/truck/layerforge_native/dalg_manifest.json
+```
+
+The schema lives at [schemas/dalg.schema.json](schemas/dalg.schema.json), and the
+intended public API contract is captured in [docs/api/openapi.yaml](docs/api/openapi.yaml).
+This keeps the product direction explicit: DALG is the system of record, while
+PNG stacks, PSD-style folders, and report artifacts are projections of that graph.
 
 ## Frontier comparison and self-evaluation
 

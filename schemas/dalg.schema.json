@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://layerforge.dev/schemas/dalg.schema.json",
+  "title": "LayerForge Depth-Aware Amodal Layer Graph",
+  "type": "object",
+  "required": [
+    "$schema",
+    "kind",
+    "schema_version",
+    "asset",
+    "recipe",
+    "graph",
+    "metrics",
+    "exports"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "kind": {
+      "const": "layerforge.dalg"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "asset": {
+      "type": "object",
+      "required": [
+        "input",
+        "run_dir",
+        "mode"
+      ],
+      "properties": {
+        "input": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_dir": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "recipe": {
+      "type": "object",
+      "properties": {
+        "segmentation_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "depth_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "depth_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ordering_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visual_order_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "selected_external_visual_order": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "intrinsic_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inpaint_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "graph": {
+      "type": "object",
+      "required": [
+        "ordering",
+        "graph_order_available",
+        "node_count",
+        "edge_count",
+        "layers",
+        "edges"
+      ],
+      "properties": {
+        "ordering": {
+          "const": "near_to_far"
+        },
+        "graph_order_available": {
+          "type": "boolean"
+        },
+        "node_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/layer"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "exports": {
+      "type": "object",
+      "required": [
+        "source_manifest",
+        "metrics",
+        "grouped_layers",
+        "effect_layers",
+        "debug"
+      ],
+      "properties": {
+        "source_manifest": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "grouped_layers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effect_layers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "debug": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "layer": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "label",
+        "group",
+        "rank",
+        "editable",
+        "paths",
+        "metadata"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "bbox": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "area": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "depth_median": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "occludes": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "occluded_by": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "paths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "edge": {
+      "type": "object",
+      "required": [
+        "near_id",
+        "far_id",
+        "confidence"
+      ],
+      "properties": {
+        "near_id": {
+          "type": "integer"
+        },
+        "far_id": {
+          "type": "integer"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "shared_boundary_length": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "local_depth_gap": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "near_local_depth": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "far_local_depth": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

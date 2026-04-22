@@ -8,6 +8,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
+from .dalg import export_dalg_manifest
 from .depth import estimate_depth
 from .graph import build_completed_background_layer, build_layers, grouped_layers, renumber_layers_in_place
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
@@ -317,5 +318,8 @@ def run_recursive_peeling(image_path: str | Path, output_dir: str | Path, cfg: d
             "peeling_strip": str(strip_path),
         },
     }
+    manifest_path = write_json(out / "manifest.json", manifest)
+    canonical_dalg_path = export_dalg_manifest(out)
+    manifest["canonical_dalg"] = str(canonical_dalg_path)
     manifest_path = write_json(out / "manifest.json", manifest)
     return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, grouped_paths, {k: Path(v) for k, v in manifest["debug"].items() if v})

@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image
 
 from .compose import composite_layers_near_to_far
+from .dalg import export_dalg_manifest
 from .depth import estimate_depth
 from .graph import amodal_complete, build_nodes, graph_json, merge_compatible_layers, renumber_layers_in_place, topo_order
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
@@ -398,5 +399,8 @@ def enrich_rgba_layers(
         "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, ordered_layers)],
         "debug": {"depth_gray": str(dirs["debug"] / "depth_gray.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png")},
     }
+    manifest_path = write_json(out / "manifest.json", manifest)
+    canonical_dalg_path = export_dalg_manifest(out)
+    manifest["canonical_dalg"] = str(canonical_dalg_path)
     manifest_path = write_json(out / "manifest.json", manifest)
     return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, [], {k: Path(v) for k, v in manifest["debug"].items()})

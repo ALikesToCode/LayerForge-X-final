@@ -7,6 +7,7 @@ import numpy as np
 
 from .compose import composite_layers_near_to_far
 from .config import deep_update, load_config
+from .dalg import export_dalg_manifest
 from .depth import estimate_depth
 from .graph import build_completed_background_layer, build_layers, graph_json, grouped_layers, renumber_layers_in_place
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
@@ -122,6 +123,9 @@ class LayerForgePipeline:
             "grouped_layers": [str(p) for p in grouped_paths],
             "debug": {"input_rgb": str(dirs["debug"] / "input_rgb.png"), "depth_gray": str(dirs["debug"] / "depth_gray.png"), "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"), "background_completion": str(dirs["debug"] / "background_completion.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"), "parallax_preview": str(parallax_path) if parallax_path else None}
         }
+        manifest_path = write_json(out / "manifest.json", manifest)
+        canonical_dalg_path = export_dalg_manifest(out)
+        manifest["canonical_dalg"] = str(canonical_dalg_path)
         manifest_path = write_json(out / "manifest.json", manifest)
         return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, grouped_paths, {k: Path(v) for k, v in manifest["debug"].items() if v})
 

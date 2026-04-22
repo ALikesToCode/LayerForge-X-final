@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from .config import load_config
+from .dalg import export_dalg_manifest
 from .editability import export_target_assets
 from .pipeline import LayerForgePipeline
 
@@ -165,6 +166,12 @@ def cmd_extract(args: argparse.Namespace) -> int:
     print(f"metrics:  {out.metrics_path}")
     print(f"target:   {(Path(args.output) / 'target_extract' / 'target_metadata.json')}")
     print(f"selected: {metadata['selected_target']['name']}")
+    return 0
+
+
+def cmd_export_design(args: argparse.Namespace) -> int:
+    output_path = export_dalg_manifest(args.run_dir, args.output)
+    print(f"dalg:     {output_path}")
     return 0
 
 
@@ -347,6 +354,11 @@ def build_parser() -> argparse.ArgumentParser:
     extract.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
     extract.add_argument("--no-parallax", action="store_true")
     extract.set_defaults(func=cmd_extract)
+
+    export_design = sub.add_parser("export-design", help="Normalize an existing LayerForge run into the canonical DALG design-manifest JSON")
+    export_design.add_argument("--run-dir", required=True, help="Run directory containing manifest.json")
+    export_design.add_argument("--output", default=None, help="Optional output JSON path; defaults to <run-dir>/dalg_manifest.json")
+    export_design.set_defaults(func=cmd_export_design)
 
     bench = sub.add_parser("benchmark", help="Run a lightweight synthetic benchmark and write a CSV/JSON report")
     bench.add_argument("--dataset-dir", required=True)

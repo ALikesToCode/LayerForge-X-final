@@ -11,9 +11,11 @@
     "Qwen/external RGBA layer enrichment",
     "graph-guided recursive peeling CLI",
     "promptable target extraction CLI",
+    "canonical DALG design-manifest export",
     "heuristic associated-effects layer extraction",
     "frontier proposal-bank orchestration",
     "editability suite scorer",
+    "contract-first OpenAPI document",
     "run-metrics collection helper",
     "submission-safe report artifact exporter",
     "report figure generator",
@@ -23,8 +25,9 @@
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "46 passed",
+    "pytest": "48 passed",
     "cli_help": true,
+    "export_design_cli": true,
     "train_ranker_cli": true,
     "frontier_dry_run": true,
     "frontier_review_full": true
@@ -252,6 +255,9 @@
     "metrics_snapshots_dir": "report_artifacts/metrics_snapshots",
     "figure_sources": "report_artifacts/figure_sources/figure_manifest.json",
     "command_log": "report_artifacts/command_log.md",
+    "dalg_schema": "schemas/dalg.schema.json",
+    "openapi_contract": "docs/api/openapi.yaml",
+    "product_architecture_doc": "docs/PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
     "final_report_markdown": "docs/final_report_pack/LayerForge_X_Final_Report_FULL.md",
     "final_report_docx": "docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"
   }

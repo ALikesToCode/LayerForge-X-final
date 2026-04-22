@@ -1,0 +1,246 @@
+openapi: 3.1.1
+info:
+  title: LayerForge API
+  version: 1.0.0
+  summary: Contract-first API for turning still images into canonical DALG scene assets.
+  description: |
+    This repository is still a Python/CLI research engine, but the product direction
+    is API-first. This OpenAPI document defines the intended public contract around
+    the canonical DALG artifact so the control plane, editor, and SDK work can stay
+    aligned with the current engine.
+servers:
+  - url: https://api.layerforge.dev
+    description: Shared SaaS API
+  - url: https://layerforge.customer.example
+    description: Isolated enterprise deployment
+tags:
+  - name: Jobs
+  - name: Exports
+  - name: Assets
+paths:
+  /v1/jobs:
+    post:
+      tags: [Jobs]
+      summary: Submit a decomposition job
+      operationId: createJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+      responses:
+        '202':
+          description: Job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+  /v1/jobs/{jobId}:
+    get:
+      tags: [Jobs]
+      summary: Get job status and selected outputs
+      operationId: getJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Current job state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+  /v1/jobs/{jobId}/dalg:
+    get:
+      tags: [Jobs]
+      summary: Fetch the canonical DALG manifest for a completed job
+      operationId: getJobDalg
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Canonical scene graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DalgManifest'
+  /v1/jobs/{jobId}/exports/design-manifest:
+    post:
+      tags: [Exports]
+      summary: Create or refresh the design-manifest export for a job
+      operationId: createDesignManifestExport
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format:
+                  type: string
+                  enum: [json]
+                  default: json
+      responses:
+        '200':
+          description: Export created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+  /v1/assets/{assetId}:
+    get:
+      tags: [Assets]
+      summary: Fetch immutable uploaded asset metadata
+      operationId: getAsset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Asset metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+components:
+  parameters:
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    CreateJobRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: object
+          description: Signed-upload reference or asset identifier.
+          properties:
+            assetId:
+              type: string
+            sourceUrl:
+              type: string
+              format: uri
+        recipe:
+          type: object
+          description: High-level knobs mapped to a LayerForge recipe version.
+          properties:
+            mode:
+              type: string
+              enum: [native, peeling, qwen_raw, qwen_graph_preserve, qwen_graph_reorder]
+            prompts:
+              type: array
+              items:
+                type: string
+            segmenter:
+              type: string
+            depthMethod:
+              type: string
+            orderingMethod:
+              type: string
+        callbacks:
+          type: object
+          properties:
+            webhookUrl:
+              type: string
+              format: uri
+    JobResponse:
+      type: object
+      required:
+        - id
+        - status
+        - mode
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, succeeded, failed]
+        mode:
+          type: string
+        assetId:
+          type: string
+        dalgPath:
+          type: string
+        metricsPath:
+          type: string
+        previewPaths:
+          type: object
+          additionalProperties:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+    ExportResponse:
+      type: object
+      required:
+        - jobId
+        - format
+        - path
+      properties:
+        jobId:
+          type: string
+        format:
+          type: string
+        path:
+          type: string
+    AssetResponse:
+      type: object
+      required:
+        - id
+        - checksum
+      properties:
+        id:
+          type: string
+        checksum:
+          type: string
+        filename:
+          type: string
+        contentType:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+    DalgManifest:
+      type: object
+      description: Canonical Depth-Aware Amodal Layer Graph manifest.
+      required:
+        - kind
+        - schema_version
+        - asset
+        - recipe
+        - graph
+        - metrics
+        - exports
+      properties:
+        kind:
+          type: string
+          const: layerforge.dalg
+        schema_version:
+          type: string
+        asset:
+          type: object
+          additionalProperties: true
+        recipe:
+          type: object
+          additionalProperties: true
+        graph:
+          type: object
+          additionalProperties: true
+        metrics:
+          type: object
+          additionalProperties: true
+        exports:
+          type: object
+          additionalProperties: true
