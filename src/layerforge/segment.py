@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import inspect
+import logging
+from functools import lru_cache
 from typing import Any
 
 import numpy as np
@@ -7,7 +10,100 @@ from PIL import Image
 
 from .semantic import label_to_group
 from .types import Segment
-from .utils import bbox_from_mask, mask_iou, normalize01, optional_import, touches_border
+from .utils import bbox_from_mask, mask_iou, normalize01, optional_import, touches_border, transformers_pipeline_device_index
+
+
+DEFAULT_GROUNDED_SAM2_PROMPTS = [
+    "person",
+    "animal",
+    "vehicle",
+    "furniture",
+    "plant",
+    "building",
+    "sky",
+    "road",
+]
+
+
+def _gemini_suggest_labels(pil: Image.Image, cfg: dict[str, Any]) -> list[str]:
+    from .gemini_io import gemini_suggest_labels
+
+    return gemini_suggest_labels(pil, cfg)
+
+
+def _gemini_segment_items(pil: Image.Image, cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    from .gemini_io import gemini_segment_items
+
+    return gemini_segment_items(pil, cfg)
+
+
+def _decode_segmentation_item(item: dict[str, Any], size: tuple[int, int]) -> tuple[str, np.ndarray]:
+    from .gemini_io import decode_segmentation_item
+
+    return decode_segmentation_item(item, size)
+
+
+def merge_prompt_labels(base: list[str], extra: list[str]) -> list[str]:
+    merged: list[str] = []
+    seen: set[str] = set()
+    for label in [*base, *extra]:
+        clean = str(label).strip().lower()
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        merged.append(clean)
+    return merged
+
+
+def _normalize_prompt_list(prompts: list[str] | None) -> list[str]:
+    return [str(x).strip().lower() for x in (prompts or []) if str(x).strip()]
+
+
+def _resolve_grounded_sam2_prompts(pil: Image.Image, cfg: dict[str, Any]) -> list[str]:
+    prompts = _normalize_prompt_list(cfg.get("prompts"))
+    prompt_source = str(cfg.get("prompt_source", "manual")).lower()
+    gemini_modes = {"gemini", "augment", "hybrid", "manual+gemini"}
+    if prompt_source in gemini_modes or (prompt_source == "auto" and not prompts):
+        try:
+            suggested = _gemini_suggest_labels(pil, cfg)
+            if prompt_source in {"augment", "hybrid", "manual+gemini"}:
+                prompts = merge_prompt_labels(prompts, suggested)
+            else:
+                prompts = suggested
+        except Exception:
+            if prompt_source == "gemini" and not prompts:
+                raise
+    if not prompts:
+        prompts = list(DEFAULT_GROUNDED_SAM2_PROMPTS)
+    return prompts
+
+
+@lru_cache(maxsize=8)
+def _load_mask2former_pipeline(model_name: str, device_index: int):
+    transformers = optional_import("transformers")
+    # These pipeline warnings fire for every image and swamp long benchmark runs.
+    for logger_name in [
+        "transformers.pipelines.base",
+        "transformers.models.mask2former.image_processing_mask2former",
+    ]:
+        logging.getLogger(logger_name).setLevel(logging.ERROR)
+    return transformers.pipeline("image-segmentation", model=model_name, device=device_index)
+
+
+@lru_cache(maxsize=8)
+def _load_grounding_dino(model_name: str, device_name: str):
+    transformers = optional_import("transformers")
+    proc = transformers.AutoProcessor.from_pretrained(model_name)
+    model = transformers.AutoModelForZeroShotObjectDetection.from_pretrained(model_name).to(device_name).eval()
+    return proc, model
+
+
+@lru_cache(maxsize=8)
+def _load_sam2(model_name: str, device_name: str):
+    transformers = optional_import("transformers")
+    proc = transformers.Sam2Processor.from_pretrained(model_name)
+    model = transformers.Sam2Model.from_pretrained(model_name).to(device_name).eval()
+    return proc, model
 
 
 def make_segment(seg_id: int, label: str, mask: np.ndarray, score: float, source: str, metadata: dict[str, Any] | None = None) -> Segment:
@@ -75,10 +171,9 @@ def classical_segments(rgb: np.ndarray, cfg: dict[str, Any]) -> list[Segment]:
 
 
 def mask2former_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -> list[Segment]:
-    transformers = optional_import("transformers")
     model_name = cfg.get("model", {}).get("mask2former", "facebook/mask2former-swin-large-coco-panoptic")
-    dev = 0 if device in {"auto", "cuda"} else -1
-    pipe = transformers.pipeline("image-segmentation", model=model_name, device=dev)
+    dev = transformers_pipeline_device_index(device)
+    pipe = _load_mask2former_pipeline(model_name, dev)
     outputs = pipe(pil)
     h, w = pil.height, pil.width
     segs: list[Segment] = []
@@ -93,6 +188,30 @@ def mask2former_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -> 
     return filter_segments(segs, (h, w), float(cfg.get("min_area_ratio", 0.0018)), float(cfg.get("nms_iou", 0.86)))
 
 
+def _post_process_grounding_dino(
+    processor: Any,
+    *,
+    outputs: Any,
+    input_ids: Any,
+    box_threshold: float,
+    text_threshold: float,
+    target_sizes: list[tuple[int, int]],
+) -> dict[str, Any]:
+    fn = processor.post_process_grounded_object_detection
+    params = inspect.signature(fn).parameters
+    kwargs: dict[str, Any] = {
+        "outputs": outputs,
+        "input_ids": input_ids,
+        "text_threshold": text_threshold,
+        "target_sizes": target_sizes,
+    }
+    if "threshold" in params:
+        kwargs["threshold"] = box_threshold
+    else:
+        kwargs["box_threshold"] = box_threshold
+    return fn(**kwargs)[0]
+
+
 def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -> list[Segment]:
     torch = optional_import("torch")
     transformers = optional_import("transformers")
@@ -100,18 +219,21 @@ def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -
     model_cfg = cfg.get("model", {})
     dino_name = model_cfg.get("grounding_dino", "IDEA-Research/grounding-dino-base")
     sam2_name = model_cfg.get("sam2", "facebook/sam2.1-hiera-large")
-    prompts = cfg.get("prompts") or ["person", "animal", "vehicle", "furniture", "plant", "building", "sky", "road"]
+    prompts = _resolve_grounded_sam2_prompts(pil, cfg)
     text = ". ".join([str(x).strip().rstrip(".") for x in prompts if str(x).strip()]) + "."
-    proc = transformers.AutoProcessor.from_pretrained(dino_name)
-    det_model = transformers.AutoModelForZeroShotObjectDetection.from_pretrained(dino_name).to(dev).eval()
+    proc, det_model = _load_grounding_dino(dino_name, dev)
     inputs = proc(images=pil, text=text, return_tensors="pt").to(dev)
     with torch.no_grad():
         outputs = det_model(**inputs)
     target_sizes = [(pil.height, pil.width)]
-    try:
-        det = proc.post_process_grounded_object_detection(outputs, inputs.input_ids, box_threshold=float(model_cfg.get("box_threshold", 0.28)), text_threshold=float(model_cfg.get("text_threshold", 0.25)), target_sizes=target_sizes)[0]
-    except TypeError:
-        det = proc.post_process_object_detection(outputs, threshold=float(model_cfg.get("box_threshold", 0.28)), target_sizes=target_sizes)[0]
+    det = _post_process_grounding_dino(
+        proc,
+        outputs=outputs,
+        input_ids=inputs.input_ids,
+        box_threshold=float(model_cfg.get("box_threshold", 0.28)),
+        text_threshold=float(model_cfg.get("text_threshold", 0.25)),
+        target_sizes=target_sizes,
+    )
     boxes = det.get("boxes", [])
     labels = det.get("labels", ["object"] * len(boxes))
     scores = det.get("scores", [0.7] * len(boxes))
@@ -120,8 +242,7 @@ def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -
     scores_list = [float(x.detach().cpu()) if hasattr(x, "detach") else float(x) for x in scores]
     if not boxes_list:
         return []
-    sam_proc = transformers.Sam2Processor.from_pretrained(sam2_name)
-    sam = transformers.Sam2Model.from_pretrained(sam2_name).to(dev).eval()
+    sam_proc, sam = _load_sam2(sam2_name, dev)
     segs: list[Segment] = []
     for start in range(0, len(boxes_list), 24):
         sub_boxes = boxes_list[start:start + 24]
@@ -140,6 +261,19 @@ def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -
                 mask = masks_np[j] > 0
             gi = start + j
             segs.append(make_segment(len(segs), labels_list[gi] if gi < len(labels_list) else "grounded object", mask, scores_list[gi] if gi < len(scores_list) else 0.7, "grounding-dino+sam2", {"box": boxes_list[gi]}))
+    return filter_segments(segs, (pil.height, pil.width), float(cfg.get("min_area_ratio", 0.001)), float(cfg.get("nms_iou", 0.80)))
+
+
+def gemini_segments(pil: Image.Image, cfg: dict[str, Any]) -> list[Segment]:
+    items = _gemini_segment_items(pil, cfg)
+    segs: list[Segment] = []
+    for item in items:
+        try:
+            label, mask = _decode_segmentation_item(item, pil.size)
+        except Exception:
+            continue
+        if mask.any():
+            segs.append(make_segment(len(segs), label, mask, 1.0, "gemini-segmentation"))
     return filter_segments(segs, (pil.height, pil.width), float(cfg.get("min_area_ratio", 0.001)), float(cfg.get("nms_iou", 0.80)))
 
 
@@ -165,6 +299,8 @@ def segment_image(rgb: np.ndarray, pil: Image.Image, cfg: dict[str, Any], device
         segs = mask2former_segments(pil, cfg, device)
     elif method in {"grounded_sam2", "grounded-sam2", "open_vocab", "open-vocab-sam2"}:
         segs = grounded_sam2_segments(pil, cfg, device)
+    elif method in {"gemini", "gemini_segmentation", "gemini-segmentation"}:
+        segs = gemini_segments(pil, cfg)
     else:
         raise ValueError(f"Unknown segmentation method: {method}")
     if bool(cfg.get("add_background_segment", True)):
