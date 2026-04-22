@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--native-config", default="configs/cutting_edge.yaml")
     p.add_argument("--native-segmenter", default="grounded_sam2")
     p.add_argument("--native-depth", default="depth_pro")
-    p.add_argument("--skip-native", action="store_true", help="Skip native LayerForge runs and only execute Qwen raw plus Qwen+graph")
+    p.add_argument("--skip-native", action="store_true", help="Skip native LayerForge runs and only execute raw Qwen plus the requested hybrid modes")
     p.add_argument("--qwen-model", default="Qwen/Qwen-Image-Layered")
     p.add_argument("--qwen-layers", default="3,4,6,8", help="Comma-separated layer counts")
     p.add_argument("--qwen-resolution", type=int, default=640)
@@ -28,6 +28,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--qwen-device", default="cuda")
     p.add_argument("--qwen-dtype", default="bfloat16")
     p.add_argument("--qwen-offload", default="sequential", choices=["none", "model", "sequential"])
+    p.add_argument(
+        "--qwen-hybrid-modes",
+        default="preserve,reorder",
+        help="Comma-separated hybrid modes: preserve keeps Qwen visual order, reorder exports graph order",
+    )
+    p.add_argument("--qwen-merge-external-layers", action="store_true", help="Allow enrich-qwen to merge imported external layers")
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--skip-existing", action="store_true", help="Reuse existing output directories when the expected manifest/metrics file already exists")
     p.add_argument("--dry-run", action="store_true")
@@ -69,6 +75,34 @@ def find_layerforge_bin() -> str:
     return "layerforge"
 
 
+def to_repo_relative(path: str | Path) -> str:
+    value = Path(path)
+    try:
+        resolved = value.resolve()
+    except FileNotFoundError:
+        resolved = value if value.is_absolute() else (ROOT / value).resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(value)
+
+
+def parse_hybrid_modes(raw: str) -> list[str]:
+    allowed = {"preserve", "reorder"}
+    seen: list[str] = []
+    for item in raw.split(","):
+        mode = item.strip().lower()
+        if not mode:
+            continue
+        if mode not in allowed:
+            raise SystemExit(f"Unsupported hybrid mode '{mode}'. Expected a comma-separated subset of {sorted(allowed)}.")
+        if mode not in seen:
+            seen.append(mode)
+    if not seen:
+        raise SystemExit("At least one hybrid mode must be requested.")
+    return seen
+
+
 def run_command(cmd: list[str], *, cwd: Path, dry_run: bool) -> dict:
     printable = " ".join(shlex.quote(part) for part in cmd)
     if dry_run:
@@ -97,9 +131,9 @@ def collect_row(label: str, run_dir: Path, *, image: Path, extra: dict | None = 
     metrics = load_json_if_exists(run_dir / "metrics.json") or {}
     manifest = load_json_if_exists(run_dir / "manifest.json") or {}
     row = {
-        "image": str(image),
+        "image": to_repo_relative(image),
         "label": label,
-        "run_dir": str(run_dir),
+        "run_dir": to_repo_relative(run_dir),
         "mode": metrics.get("mode", "layerforge"),
         "num_layers": metrics.get("num_layers", manifest.get("layers_requested")),
         "recompose_psnr": metrics.get("recompose_psnr"),
@@ -107,6 +141,14 @@ def collect_row(label: str, run_dir: Path, *, image: Path, extra: dict | None = 
         "mean_amodal_extra_ratio": metrics.get("mean_amodal_extra_ratio"),
         "effect_layer_count": metrics.get("effect_layer_count"),
         "ordering_method": metrics.get("ordering_method"),
+        "visual_order_mode": metrics.get("visual_order_mode"),
+        "selected_visual_order": metrics.get("selected_visual_order", metrics.get("selected_external_visual_order")),
+        "graph_order_psnr": metrics.get("graph_order_psnr"),
+        "graph_order_ssim": metrics.get("graph_order_ssim"),
+        "selected_external_order_psnr": metrics.get("selected_external_order_psnr"),
+        "selected_external_order_ssim": metrics.get("selected_external_order_ssim"),
+        "preserve_external_order": metrics.get("preserve_external_order"),
+        "merge_external_layers": metrics.get("merge_external_layers"),
         "segmentation_method": metrics.get("segmentation_method"),
         "depth_method": metrics.get("depth_method"),
         "has_graph": (run_dir / "debug" / "layer_graph.json").exists() or (run_dir / "debug" / "peeling_graph.json").exists(),
@@ -157,9 +199,34 @@ def to_markdown(rows: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def summarize_rows(rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    for row in rows:
+        if row.get("status") != "ok":
+            continue
+        grouped.setdefault(str(row["label"]), []).append(row)
+    summaries: list[dict] = []
+    for label, items in grouped.items():
+        psnr = [float(item["recompose_psnr"]) for item in items if item.get("recompose_psnr") is not None]
+        ssim = [float(item["recompose_ssim"]) for item in items if item.get("recompose_ssim") is not None]
+        amodal = [float(item["mean_amodal_extra_ratio"]) for item in items if item.get("mean_amodal_extra_ratio") is not None]
+        summaries.append(
+            {
+                "label": label,
+                "images": len(items),
+                "graph": any(bool(item.get("has_graph")) for item in items),
+                "mean_psnr": sum(psnr) / len(psnr) if psnr else None,
+                "mean_ssim": sum(ssim) / len(ssim) if ssim else None,
+                "mean_amodal_extra_ratio": sum(amodal) / len(amodal) if amodal else None,
+            }
+        )
+    return sorted(summaries, key=lambda item: item["label"])
+
+
 def main() -> int:
     args = parse_args()
     inputs = resolve_inputs(args)
+    hybrid_modes = parse_hybrid_modes(args.qwen_hybrid_modes)
     output_root = (ROOT / args.output_root).resolve() if not Path(args.output_root).is_absolute() else Path(args.output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
@@ -198,7 +265,7 @@ def main() -> int:
             if not args.dry_run and (native_dir / "metrics.json").exists():
                 rows.append(collect_row("LayerForge native", native_dir, image=image))
             elif not args.dry_run and commands[-1]["status"] == "failed":
-                rows.append({"image": str(image), "label": "LayerForge native", "run_dir": str(native_dir), "status": "failed", "error": commands[-1].get("stderr", "")})
+                rows.append({"image": to_repo_relative(image), "label": "LayerForge native", "run_dir": to_repo_relative(native_dir), "status": "failed", "error": commands[-1].get("stderr", "")})
 
         for layer_count in qwen_layers:
             qwen_dir = scene_root / f"qwen_{layer_count}"
@@ -248,44 +315,60 @@ def main() -> int:
                     )
                 )
             elif not args.dry_run and commands[-1]["status"] == "failed":
-                rows.append({"image": str(image), "label": f"Qwen raw ({layer_count})", "run_dir": str(qwen_dir), "status": "failed", "error": commands[-1].get("stderr", "")})
+                rows.append({"image": to_repo_relative(image), "label": f"Qwen raw ({layer_count})", "run_dir": to_repo_relative(qwen_dir), "status": "failed", "error": commands[-1].get("stderr", "")})
                 continue
 
-            hybrid_dir = scene_root / f"qwen_{layer_count}_hybrid"
-            hybrid_cmd = [
-                layerforge_bin,
-                "enrich-qwen",
-                "--input",
-                str(image),
-                "--layers-dir",
-                str(qwen_dir),
-                "--output",
-                str(hybrid_dir),
-                "--config",
-                args.native_config,
-                "--depth",
-                args.native_depth,
-            ]
-            if should_skip(hybrid_dir, "metrics.json", skip_existing=args.skip_existing):
-                commands.append({"command": f"skip existing {hybrid_dir}", "returncode": None, "status": "skipped"})
-            else:
-                commands.append(run_command(hybrid_cmd, cwd=ROOT, dry_run=args.dry_run))
-            if not args.dry_run and (hybrid_dir / "metrics.json").exists():
-                rows.append(
-                    collect_row(
-                        f"Qwen + graph ({layer_count})",
-                        hybrid_dir,
-                        image=image,
-                        extra={"requested_layers": layer_count},
+            for hybrid_mode in hybrid_modes:
+                hybrid_dir = scene_root / f"qwen_{layer_count}_hybrid_{hybrid_mode}"
+                hybrid_cmd = [
+                    layerforge_bin,
+                    "enrich-qwen",
+                    "--input",
+                    str(image),
+                    "--layers-dir",
+                    str(qwen_dir),
+                    "--output",
+                    str(hybrid_dir),
+                    "--config",
+                    args.native_config,
+                    "--depth",
+                    args.native_depth,
+                ]
+                if hybrid_mode == "preserve":
+                    hybrid_cmd.append("--preserve-external-order")
+                if args.qwen_merge_external_layers:
+                    hybrid_cmd.append("--merge-external-layers")
+                if should_skip(hybrid_dir, "metrics.json", skip_existing=args.skip_existing):
+                    commands.append({"command": f"skip existing {hybrid_dir}", "returncode": None, "status": "skipped"})
+                else:
+                    commands.append(run_command(hybrid_cmd, cwd=ROOT, dry_run=args.dry_run))
+                label = f"Qwen + graph {hybrid_mode} ({layer_count})"
+                if not args.dry_run and (hybrid_dir / "metrics.json").exists():
+                    rows.append(
+                        collect_row(
+                            label,
+                            hybrid_dir,
+                            image=image,
+                            extra={"requested_layers": layer_count, "hybrid_mode": hybrid_mode},
+                        )
                     )
-                )
-            elif not args.dry_run and commands[-1]["status"] == "failed":
-                rows.append({"image": str(image), "label": f"Qwen + graph ({layer_count})", "run_dir": str(hybrid_dir), "status": "failed", "error": commands[-1].get("stderr", "")})
+                elif not args.dry_run and commands[-1]["status"] == "failed":
+                    rows.append(
+                        {
+                            "image": to_repo_relative(image),
+                            "label": label,
+                            "run_dir": to_repo_relative(hybrid_dir),
+                            "status": "failed",
+                            "error": commands[-1].get("stderr", ""),
+                        }
+                    )
 
     summary = {
-        "inputs": [str(path) for path in inputs],
-        "output_root": str(output_root),
+        "inputs": [to_repo_relative(path) for path in inputs],
+        "output_root": to_repo_relative(output_root),
+        "qwen_hybrid_modes": hybrid_modes,
         "rows": rows,
+        "aggregates": summarize_rows(rows),
         "commands": commands,
     }
     (output_root / "comparison_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -293,8 +376,8 @@ def main() -> int:
     print(
         json.dumps(
             {
-                "summary_json": str(output_root / "comparison_summary.json"),
-                "summary_md": str(output_root / "comparison_summary.md"),
+                "summary_json": to_repo_relative(output_root / "comparison_summary.json"),
+                "summary_md": to_repo_relative(output_root / "comparison_summary.md"),
                 "rows": len(rows),
             },
             indent=2,

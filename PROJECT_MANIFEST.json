@@ -19,7 +19,7 @@
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "40 passed",
+    "pytest": "41 passed",
     "cli_help": true,
     "train_ranker_cli": true
   },
@@ -100,17 +100,21 @@
     },
     "qwen_five_image_review": {
       "images_evaluated": 5,
+      "layerforge_native_mean_psnr": 27.343785327586026,
+      "layerforge_native_mean_ssim": 0.9464110067478753,
       "qwen_raw_mean_psnr": 29.075732442522252,
       "qwen_raw_mean_ssim": 0.8850195543821586,
-      "qwen_graph_mean_psnr": 28.540780364773006,
-      "qwen_graph_mean_ssim": 0.8637172854242428,
-      "summary": "runs/qwen_five_image_review/comparison_summary.json"
+      "qwen_graph_preserve_mean_psnr": 28.553930610543226,
+      "qwen_graph_preserve_mean_ssim": 0.8638442376259772,
+      "qwen_graph_reorder_mean_psnr": 28.539704525143645,
+      "qwen_graph_reorder_mean_ssim": 0.8637379063051934,
+      "summary": "report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json"
     },
     "effects_groundtruth_demo_cutting_edge": {
       "effect_detected": true,
-      "predicted_effect_pixels": 411,
+      "predicted_effect_pixels": 4853,
       "ground_truth_effect_pixels": 13750,
-      "effect_iou": 0.0005652511834946654
+      "effect_iou": 0.35294545454545456
     },
     "qualitative_pack_cutting_edge": {
       "astronaut": {
@@ -218,6 +222,7 @@
     "metrics_snapshots_dir": "report_artifacts/metrics_snapshots",
     "figure_sources": "report_artifacts/figure_sources/figure_manifest.json",
     "command_log": "report_artifacts/command_log.md",
+    "final_report_markdown": "docs/final_report_pack/LayerForge_X_Final_Report_FULL.md",
     "final_report_docx": "docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"
   }
 }

@@ -482,7 +482,7 @@ Notes:
 
 - the Qwen run used the official `Qwen/Qwen-Image-Layered` diffusers pipeline
 - because the model is too large for a naive full-GPU load on a 24 GB card, the successful run used `--offload sequential`
-- the raw-Qwen recomposition metric uses the manifest layer order interpreted as far-to-near because that gave the better reconstruction on this example
+- the raw-Qwen recomposition metric now scores both manifest and reversed-manifest interpretations and keeps the better reconstruction
 - the old native LayerForge run clearly lost to Qwen on this example
 - the upgraded native LayerForge recipe now beats both the raw Qwen row and the `Q+G` hybrid on this truck image
 - the autotune-selected native winner is the strongest measured run currently in the repo on this truck benchmark
@@ -502,38 +502,43 @@ The repo now also contains a measured five-image Qwen review:
 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python scripts/run_curated_comparison.py \
   --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png \
   --output-root runs/qwen_five_image_review \
+  --native-config configs/best_score.yaml \
+  --native-segmenter grounded_sam2 \
+  --native-depth ensemble \
   --qwen-layers 4 \
   --qwen-steps 10 \
   --qwen-resolution 640 \
   --qwen-device cuda \
   --qwen-dtype bfloat16 \
   --qwen-offload sequential \
-  --skip-native \
   --skip-existing
 ```
 
 Aggregate mean results:
 
-| Method | Images | Graph | Mean PSNR | Mean SSIM |
+| Method | Images | Graph | Mean PSNR | Mean SSIM | Mean amodal extra ratio |
 |---|---:|---|---:|---:|
-| `Qwen raw (4)` | 5 | no | 29.0757 | 0.8850 |
-| `Qwen + graph (4)` | 5 | yes | 28.5408 | 0.8637 |
+| `LayerForge native` | 5 | yes | 27.3438 | 0.9464 | 0.3057 |
+| `Qwen raw (4)` | 5 | no | 29.0757 | 0.8850 | 0.0000 |
+| `Qwen + graph preserve (4)` | 5 | yes | 28.5539 | 0.8638 | 2.9970 |
+| `Qwen + graph reorder (4)` | 5 | yes | 28.5397 | 0.8637 | 2.9970 |
 
 Per-image results:
 
-| Image | Qwen raw PSNR | Qwen raw SSIM | Qwen + graph PSNR | Qwen + graph SSIM |
-|---|---:|---:|---:|---:|
-| truck | 28.8062 | 0.8614 | 26.8214 | 0.7826 |
-| astronaut | 29.4532 | 0.9091 | 29.3737 | 0.9153 |
-| coffee | 28.2737 | 0.8762 | 28.0333 | 0.8718 |
-| chelsea_cat | 29.5828 | 0.9050 | 29.4704 | 0.8918 |
-| synth image | 29.2627 | 0.8733 | 29.0052 | 0.8571 |
+| Image | Native PSNR | Native SSIM | Qwen raw PSNR | Qwen raw SSIM | Q+G preserve PSNR | Q+G preserve SSIM | Q+G reorder PSNR | Q+G reorder SSIM |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| truck | 28.8247 | 0.9732 | 28.8062 | 0.8614 | 26.8096 | 0.7829 | 26.8160 | 0.7827 |
+| astronaut | 26.1679 | 0.9299 | 29.4532 | 0.9091 | 29.3737 | 0.9153 | 29.3737 | 0.9153 |
+| coffee | 29.4754 | 0.9788 | 28.2737 | 0.8762 | 28.0643 | 0.8719 | 28.0333 | 0.8718 |
+| chelsea_cat | 27.4906 | 0.9562 | 29.5828 | 0.9050 | 29.5169 | 0.8920 | 29.4704 | 0.8918 |
+| synth image | 24.7604 | 0.8939 | 29.2627 | 0.8733 | 29.0052 | 0.8571 | 29.0052 | 0.8571 |
 
 What this means:
 
-- raw Qwen currently wins mean PSNR and mean SSIM on this five-image review;
-- the hybrid row still matters because it adds explicit graph ordering, amodal masks, intrinsic layers, and edit metadata;
-- the honest claim is therefore that the hybrid is a structured-representation complement to Qwen, not a universal raw-fidelity winner.
+- raw Qwen still wins mean PSNR on this five-image review;
+- native LayerForge now wins mean SSIM on the same images, but it does so with a much larger average stack (`16.6` layers versus Qwen's `4`);
+- `Qwen + graph preserve` is now the fair metadata-first hybrid row because it keeps the interpreted Qwen visual stack and adds graph, amodal, and intrinsic artifacts;
+- `Qwen + graph reorder` is the separate graph-order export row, and it remains only slightly below the preserve-order variant on this sweep.
 
 ## Recursive peeling and associated-effect demos
 
@@ -570,12 +575,12 @@ Measured result:
 
 | Run | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
 |---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | yes | 411 | 13750 | 0.0006 |
+| `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
 
 Notes:
 
 - the effect demo proves that the repo now has a real, exportable associated-effect artifact and a matching figure at `docs/figures/effects_layer_demo.png`;
-- the IoU is intentionally weak, so the current effect-layer claim should be framed as "early heuristic demo" rather than "solved shadow decomposition."
+- the clean-reference rerun materially improves the heuristic, but the current effect-layer claim should still be framed as "early heuristic demo" rather than "solved shadow decomposition."
 
 ## Report figure pack
 

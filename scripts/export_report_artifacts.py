@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
 
@@ -108,7 +107,12 @@ layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_truck_
 ## Five-image Qwen review
 
 ```bash
-python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-native --skip-existing
+python scripts/score_qwen_raw_layers.py --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_4
+python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_4
+python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_4
+python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_4
+python scripts/score_qwen_raw_layers.py --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_4
+python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 ```
 
 ## Associated-effect demo
@@ -142,7 +146,25 @@ def copy_snapshots() -> None:
     for name, src in SNAPSHOTS.items():
         if not src.exists():
             raise FileNotFoundError(f"Missing source artifact: {src}")
-        shutil.copy2(src, dst / name)
+        payload = json.loads(src.read_text(encoding="utf-8"))
+        (dst / name).write_text(json.dumps(_sanitize_json(payload), indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _sanitize_string(value: str) -> str:
+    root_prefix = str(ROOT) + "/"
+    if value == str(ROOT):
+        return "."
+    return value.replace(root_prefix, "")
+
+
+def _sanitize_json(value):
+    if isinstance(value, dict):
+        return {key: _sanitize_json(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_sanitize_json(item) for item in value]
+    if isinstance(value, str):
+        return _sanitize_string(value)
+    return value
 
 
 def write_figure_sources() -> None:

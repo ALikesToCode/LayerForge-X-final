@@ -9,7 +9,7 @@ from layerforge.qwen_io import score_raw_rgba_layers
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Score an existing Qwen raw RGBA export by recomposing the manifest-ordered layers.")
+    p = argparse.ArgumentParser(description="Score an existing Qwen raw RGBA export by recomposing the better of manifest or reversed manifest order.")
     p.add_argument("--input", required=True, help="Original input image used for the Qwen export")
     p.add_argument("--layers-dir", required=True, help="Directory containing Qwen RGBA layers and manifest.json")
     return p.parse_args()

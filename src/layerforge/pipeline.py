@@ -125,13 +125,29 @@ class LayerForgePipeline:
         manifest_path = write_json(out / "manifest.json", manifest)
         return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, grouped_paths, {k: Path(v) for k, v in manifest["debug"].items() if v})
 
-    def enrich_rgba_layers(self, input_path: str | Path, layers_dir: str | Path, output_dir: str | Path, *, depth_method: str | None = None, flip_depth: bool | None = None, ordering_method: str | None = None, ranker_model_path: str | Path | None = None) -> PipelineOutputs:
+    def enrich_rgba_layers(
+        self,
+        input_path: str | Path,
+        layers_dir: str | Path,
+        output_dir: str | Path,
+        *,
+        depth_method: str | None = None,
+        flip_depth: bool | None = None,
+        ordering_method: str | None = None,
+        ranker_model_path: str | Path | None = None,
+        preserve_external_order: bool | None = None,
+        merge_external_layers: bool | None = None,
+    ) -> PipelineOutputs:
         cfg = load_config(None, self.cfg)
         seed_everything(int(cfg.get("project", {}).get("seed", 7)))
         if ordering_method:
             cfg["layering"]["ordering_method"] = ordering_method
         if ranker_model_path:
             cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
+        if preserve_external_order is not None:
+            cfg.setdefault("qwen", {})["preserve_external_order"] = bool(preserve_external_order)
+        if merge_external_layers is not None:
+            cfg.setdefault("qwen", {})["merge_external_layers"] = bool(merge_external_layers)
         from .qwen_io import enrich_rgba_layers as enrich
         return enrich(input_path, layers_dir, output_dir, cfg, self.device, depth_method=depth_method, flip_depth=flip_depth)
 

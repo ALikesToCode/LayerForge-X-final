@@ -46,7 +46,11 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "matting": {"alpha_band_px": 9, "preserve_depth_edges": True},
     "inpainting": {"method": "opencv_telea", "radius": 5},
     "intrinsics": {"method": "retinex", "sigma": 28.0, "external_command": ""},
-    "qwen": {"min_alpha": 0.02},
+    "qwen": {
+        "min_alpha": 0.02,
+        "preserve_external_order": False,
+        "merge_external_layers": False,
+    },
     "peeling": {
         "max_layers": 6,
         "min_remaining_foreground_ratio": 0.001,
@@ -55,6 +59,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "enabled": True,
         "dilate_px": 22,
         "inner_dilate_px": 4,
+        "support_dilate_px": 12,
+        "support_inpaint_radius": 5,
+        "use_provided_reference": False,
         "delta_threshold": 0.05,
         "alpha_scale": 0.18,
         "min_area_px": 80,

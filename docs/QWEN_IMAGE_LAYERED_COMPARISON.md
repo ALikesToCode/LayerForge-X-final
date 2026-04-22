@@ -95,7 +95,7 @@ That writes both the per-image run trees and an aggregate `comparison_summary.js
 
 ## Measured five-image review
 
-The repo now contains a real five-image comparison in `runs/qwen_five_image_review/` covering:
+The repo now contains a same-image five-image comparison in `runs/qwen_five_image_review/` covering:
 
 - `data/demo/truck.jpg`
 - `data/qualitative_pack/astronaut.png`
@@ -103,40 +103,46 @@ The repo now contains a real five-image comparison in `runs/qwen_five_image_revi
 - `data/qualitative_pack/chelsea_cat.png`
 - `examples/synth/scene_000/image.png`
 
-Each image has both:
+Each image now has four directly comparable rows:
 
-- `Qwen raw (4)`: direct RGBA export, scored by recomposing the manifest-ordered layers;
-- `Qwen + graph (4)`: the same RGBA stack enriched with LayerForge depth ordering, graph edges, and amodal/intrinsic artifacts.
+- `LayerForge native`: native grounded-SAM2 plus ensemble-depth pipeline;
+- `Qwen raw (4)`: direct RGBA export, scored by the better of manifest or reversed-manifest interpretation;
+- `Qwen + graph preserve (4)`: the same external stack with LayerForge graph, amodal, and intrinsic metadata while preserving Qwen's interpreted visual order;
+- `Qwen + graph reorder (4)`: the same external stack exported in graph order.
 
 Aggregate mean results over the five images:
 
 | Method | Images | Graph | Mean PSNR | Mean SSIM | Mean amodal extra ratio |
 |---|---:|---|---:|---:|---:|
+| LayerForge native | 5 | yes | 27.3438 | 0.9464 | 0.3057 |
 | Qwen raw (4) | 5 | no | 29.0757 | 0.8850 | 0.0000 |
-| Qwen + graph (4) | 5 | yes | 28.5408 | 0.8637 | 2.9970 |
+| Qwen + graph preserve (4) | 5 | yes | 28.5539 | 0.8638 | 2.9970 |
+| Qwen + graph reorder (4) | 5 | yes | 28.5397 | 0.8637 | 2.9970 |
 
-Per-image measured rows:
+Per-image takeaways:
 
-| Image | Qwen raw PSNR | Qwen raw SSIM | Qwen + graph PSNR | Qwen + graph SSIM | Graph output |
-|---|---:|---:|---:|---:|---|
-| truck | 28.8062 | 0.8614 | 26.8214 | 0.7826 | yes |
-| astronaut | 29.4532 | 0.9091 | 29.3737 | 0.9153 | yes |
-| coffee | 28.2737 | 0.8762 | 28.0333 | 0.8718 | yes |
-| chelsea_cat | 29.5828 | 0.9050 | 29.4704 | 0.8918 | yes |
-| synth image | 29.2627 | 0.8733 | 29.0052 | 0.8571 | yes |
+- `truck`: native LayerForge narrowly beats raw Qwen on PSNR and wins SSIM by a large margin; preserve-order hybrid is the fairest structured comparison row.
+- `astronaut`: raw Qwen keeps the best PSNR, while both hybrid modes slightly improve SSIM over raw.
+- `coffee`: native LayerForge is the strongest row on both PSNR and SSIM.
+- `chelsea_cat`: raw Qwen keeps the best PSNR, while native LayerForge has the best SSIM.
+- `synth image`: raw Qwen keeps the best PSNR, while native LayerForge has the best SSIM.
 
 Interpretation:
 
-- on this five-image set, raw Qwen wins mean PSNR and mean SSIM;
-- the hybrid row is still valuable because it adds explicit graph structure and amodal artifacts rather than only pixels;
-- the honest framing is therefore not "hybrid beats raw Qwen visually", but "hybrid adds structure while remaining competitive on some images";
-- the best hybrid qualitative case in this sweep is `astronaut`, where SSIM slightly improves while the graph becomes explicit.
+- raw Qwen still wins mean PSNR on this five-image review, which keeps it as the clean compact generative baseline;
+- native LayerForge now wins mean SSIM on the same image set, but it does so with a much larger average stack (`16.6` layers versus Qwen's `4`);
+- `Qwen + graph preserve` is now the honest metadata-first hybrid row, because it keeps the external visual stack while adding graph, amodal, and intrinsic structure;
+- `Qwen + graph reorder` is the graph-altered export row, and its mean metrics are only slightly below the preserve-order variant on this review.
 
 ## What the hybrid row means
 
-The `Q+G` row in the report should not be described as "our model with Qwen." It is more precise to say:
+The `Q+G preserve` row in the report should not be described as "our model with Qwen." It is more precise to say:
 
-> Qwen provides the initial semantically disentangled RGBA layers, while LayerForge-X adds explicit depth estimation, near-to-far ordering, graph edges, amodal support, and intrinsic appearance layers.
+> Qwen provides the initial semantically disentangled RGBA layers, while LayerForge-X adds explicit depth estimation, graph edges, amodal support, and intrinsic appearance layers without changing the interpreted external stack.
+
+The `Q+G reorder` row is the separate answer to a different question:
+
+> What happens if the same Qwen layers are exported in the order preferred by the LayerForge depth graph?
 
 That phrasing makes the complementarity obvious and avoids confusing the baseline with the contribution.
 
@@ -146,7 +152,7 @@ The repo now contains both the original Qwen comparison and the upgraded native 
 
 | Run | Layers | PSNR | SSIM | Notes |
 |---|---:|---:|---:|---|
-| `runs/qwen_truck_layers_raw_640_20` | 4 | 26.7874 | 0.7723 | official Qwen raw RGBA export; best reconstruction obtained by interpreting manifest order as far-to-near |
+| `runs/qwen_truck_layers_raw_640_20` | 4 | 26.7874 | 0.7723 | official Qwen raw RGBA export; best reconstruction obtained by scoring both manifest and reversed-manifest interpretations |
 | `runs/qwen_truck_enriched_640_20` | 2 | 27.4612 | 0.7953 | Qwen layers enriched with LayerForge depth ordering and graph metadata |
 | `runs/demo_grounded_depthpro_final` | 45 | 14.6477 | 0.8348 | old native LayerForge decomposition before the new merge/depth recipe |
 | `runs/truck_best_score` | 26 | 30.8214 | 0.9812 | improved native LayerForge with Gemini-assisted prompting |

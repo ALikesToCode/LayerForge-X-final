@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -60,24 +61,138 @@ def _validate_rgba(arr: np.ndarray) -> np.ndarray:
     return rgba.copy()
 
 
-def load_external_rgba_segments(layers_dir: str | Path, image_shape: tuple[int, int], min_alpha: float = 0.02) -> tuple[list[Segment], dict[int, np.ndarray]]:
+def _label_from_path(path: Path) -> str:
+    return path.stem.replace("_", " ").replace("-", " ")
+
+
+def _build_layers_for_sid_order(
+    sid_order: list[int],
+    *,
+    segments: list[Segment],
+    rgba_by_sid: dict[int, np.ndarray],
+    min_alpha: float,
+    nodes: dict[int, Any] | None = None,
+    albedo: np.ndarray | None = None,
+    shading: np.ndarray | None = None,
+    amodal_enabled: bool = False,
+    amodal_expand_px: int = 16,
+    ordering_method: str = "external",
+    ordering_scores: dict[int, float] | None = None,
+    depth_source: str | None = None,
+) -> list[Layer]:
+    ordering_scores = ordering_scores or {}
+    out: list[Layer] = []
+    for rank, sid in enumerate(sid_order):
+        seg = next(s for s in segments if s.id == sid)
+        rgba = rgba_by_sid[sid]
+        alpha = rgba[..., 3].astype(np.float32) / 255.0
+        visible = alpha > float(min_alpha)
+        if not visible.any():
+            continue
+        if nodes is None:
+            depth_median = depth_p10 = depth_p90 = float(rank)
+            occludes: list[int] = []
+            occluded_by: list[int] = []
+        else:
+            node = nodes[sid]
+            depth_median = node.depth_median
+            depth_p10 = node.depth_p10
+            depth_p90 = node.depth_p90
+            occludes = sorted(node.occludes)
+            occluded_by = sorted(node.occluded_by)
+        if albedo is not None and shading is not None:
+            ar, sr = intrinsic_rgba(albedo, shading, alpha)
+        else:
+            ar = rgba.copy()
+            sr = rgba.copy()
+        amodal = amodal_complete(visible, int(amodal_expand_px)) if amodal_enabled else None
+        name = f"{rank:03d}_{safe_name(seg.group)}_{safe_name(seg.label)}"
+        out.append(
+            Layer(
+                len(out),
+                name,
+                seg.label,
+                seg.group,
+                rank,
+                depth_median,
+                depth_p10,
+                depth_p90,
+                int(visible.sum()),
+                bbox_from_mask(visible),
+                alpha,
+                rgba,
+                ar,
+                sr,
+                visible,
+                amodal,
+                [seg.id],
+                occludes,
+                occluded_by,
+                {
+                    "source": "external-rgba",
+                    "external_path": seg.metadata.get("path"),
+                    "ordering_method": ordering_method,
+                    "ordering_score": ordering_scores.get(sid),
+                    "depth_source": depth_source,
+                },
+            )
+        )
+    return out
+
+
+def _score_layer_stack(rgb: np.ndarray, layers: list[Layer]) -> dict[str, float]:
+    return compute_run_metrics(rgb, layers, cfg={})
+
+
+def _pick_best_visual_order(
+    rgb: np.ndarray,
+    *,
+    segments: list[Segment],
+    rgba_by_sid: dict[int, np.ndarray],
+    min_alpha: float,
+) -> tuple[str, dict[str, list[int]], dict[str, dict[str, float]]]:
+    orders = {
+        "manifest_order": list(range(len(segments))),
+        "reversed_manifest_order": list(reversed(range(len(segments)))),
+    }
+    scores: dict[str, dict[str, float]] = {}
+    for name, sid_order in orders.items():
+        layers = _build_layers_for_sid_order(
+            sid_order,
+            segments=segments,
+            rgba_by_sid=rgba_by_sid,
+            min_alpha=min_alpha,
+        )
+        scores[name] = _score_layer_stack(rgb, layers)
+    best_name = max(
+        orders,
+        key=lambda key: (
+            float(scores[key].get("recompose_psnr", -math.inf)),
+            float(scores[key].get("recompose_ssim", -math.inf)),
+        ),
+    )
+    return best_name, orders, scores
+
+
+def load_external_rgba_segments(layers_dir: str | Path, image_shape: tuple[int, int], min_alpha: float = 0.02) -> tuple[list[Segment], dict[int, np.ndarray], dict[str, Any]]:
     h, w = image_shape
     segments: list[Segment] = []
     rgba_by_sid: dict[int, np.ndarray] = {}
-    for p in _candidate_layer_paths(layers_dir):
+    manifest, layer_paths = _manifest_layer_paths(layers_dir)
+    for p in layer_paths:
         im = Image.open(p).convert("RGBA").resize((w, h), Image.Resampling.LANCZOS)
         rgba = _validate_rgba(np.asarray(im, dtype=np.uint8))
         alpha = rgba[..., 3].astype(np.float32) / 255.0
         mask = alpha > min_alpha
         if not mask.any():
             continue
-        label = p.stem.replace("_", " ").replace("-", " ")
+        label = _label_from_path(p)
         sid = len(segments)
         segments.append(Segment(sid, label, label_to_group(label), mask, 1.0, bbox_from_mask(mask), "external-rgba", {"path": str(p)}))
         rgba_by_sid[sid] = rgba
     if not segments:
         raise ValueError(f"No usable RGBA layer files found in {layers_dir}")
-    return segments, rgba_by_sid
+    return segments, rgba_by_sid, manifest
 
 
 def score_raw_rgba_layers(
@@ -95,47 +210,36 @@ def score_raw_rgba_layers(
     target_size = first.size
     rgb = np.asarray(Image.open(image_path).convert("RGB").resize(target_size, Image.Resampling.LANCZOS), dtype=np.uint8)
 
-    ordered_layers: list[Layer] = []
-    manifest_far_to_near = list(layer_paths)
-    for rank, path in enumerate(reversed(manifest_far_to_near)):
-        rgba = np.asarray(Image.open(path).convert("RGBA"), dtype=np.uint8)
-        alpha = rgba[..., 3].astype(np.float32) / 255.0
-        visible = alpha > float(min_alpha)
-        label = path.stem.replace("_", " ").replace("-", " ")
-        ordered_layers.append(
-            Layer(
-                id=rank,
-                name=f"{rank:03d}_{safe_name(path.stem)}",
-                label=label,
-                group=label_to_group(label),
-                rank=rank,
-                depth_median=float(rank),
-                depth_p10=float(rank),
-                depth_p90=float(rank),
-                area=int(visible.sum()),
-                bbox=bbox_from_mask(visible),
-                alpha=alpha,
-                rgba=rgba,
-                albedo_rgba=rgba.copy(),
-                shading_rgba=rgba.copy(),
-                visible_mask=visible,
-                amodal_mask=None,
-                source_segment_ids=[rank],
-                metadata={"source": "qwen_raw_rgba", "path": str(path)},
-            )
-        )
+    segments, rgba_by_sid, manifest = load_external_rgba_segments(root, rgb.shape[:2], float(min_alpha))
+    selected_order_name, candidate_orders, candidate_scores = _pick_best_visual_order(
+        rgb,
+        segments=segments,
+        rgba_by_sid=rgba_by_sid,
+        min_alpha=float(min_alpha),
+    )
+    ordered_layers = _build_layers_for_sid_order(
+        candidate_orders[selected_order_name],
+        segments=segments,
+        rgba_by_sid=rgba_by_sid,
+        min_alpha=float(min_alpha),
+    )
 
     recomposed = composite_layers_near_to_far(ordered_layers)
     save_rgba(root / "recomposed_rgba.png", recomposed)
     save_rgb(root / "recomposed_rgb.png", recomposed[..., :3])
     save_layer_contact_sheet(root / "ordered_layer_contact_sheet.png", ordered_layers)
 
-    metrics = compute_run_metrics(rgb, ordered_layers, cfg={})
+    metrics = _score_layer_stack(rgb, ordered_layers)
     metrics.update(
         {
             "mode": "qwen_raw_rgba",
             "model": manifest.get("model"),
-            "ordering_assumption": "manifest_order_interpreted_as_far_to_near",
+            "ordering_assumption": "best_of_manifest_and_reversed_manifest",
+            "selected_visual_order": selected_order_name,
+            "manifest_order_psnr": float(candidate_scores["manifest_order"]["recompose_psnr"]),
+            "manifest_order_ssim": float(candidate_scores["manifest_order"]["recompose_ssim"]),
+            "reversed_manifest_order_psnr": float(candidate_scores["reversed_manifest_order"]["recompose_psnr"]),
+            "reversed_manifest_order_ssim": float(candidate_scores["reversed_manifest_order"]["recompose_ssim"]),
             "resolution": manifest.get("resolution"),
             "num_inference_steps": manifest.get("num_inference_steps"),
             "offload": manifest.get("offload"),
@@ -175,7 +279,12 @@ def enrich_rgba_layers(
     save_rgb(dirs["debug"] / "intrinsic_albedo.png", albedo)
     save_rgb(dirs["debug"] / "intrinsic_shading.png", shading)
 
-    segments, rgba_by_sid = load_external_rgba_segments(layers_dir, depth.shape, float(cfg.get("qwen", {}).get("min_alpha", 0.02)))
+    qwen_cfg = cfg.get("qwen", {})
+    min_alpha = float(qwen_cfg.get("min_alpha", 0.02))
+    preserve_external_order = bool(qwen_cfg.get("preserve_external_order", False))
+    merge_external_layers = bool(qwen_cfg.get("merge_external_layers", False))
+
+    segments, rgba_by_sid, external_manifest = load_external_rgba_segments(layers_dir, depth.shape, min_alpha)
     nodes = build_nodes(segments, depth, cfg["layering"])
     ordering_method = str(cfg["layering"].get("ordering_method", "boundary")).lower()
     ordering_scores: dict[int, float] = {}
@@ -189,28 +298,50 @@ def enrich_rgba_layers(
     else:
         order = topo_order(nodes)
 
-    layers: list[Layer] = []
-    min_area = max(8, int(depth.size * float(cfg["layering"].get("min_layer_area_ratio", 0.001))))
-    for rank, sid in enumerate(order):
-        seg = next(s for s in segments if s.id == sid)
-        rgba = rgba_by_sid[sid]
-        alpha = rgba[..., 3].astype(np.float32) / 255.0
-        visible = alpha > float(cfg.get("qwen", {}).get("min_alpha", 0.02))
-        if int(visible.sum()) < min_area:
-            continue
-        node = nodes[sid]
-        ar, sr = intrinsic_rgba(albedo, shading, alpha)
-        amodal = amodal_complete(visible, int(cfg["layering"].get("amodal_expand_px", 16))) if bool(cfg["layering"].get("amodal_enabled", True)) else None
-        name = f"{rank:03d}_{safe_name(seg.group)}_{safe_name(seg.label)}"
-        layers.append(Layer(
-            len(layers), name, seg.label, seg.group, rank,
-            node.depth_median, node.depth_p10, node.depth_p90, int(visible.sum()), bbox_from_mask(visible),
-            alpha, rgba, ar, sr, visible, amodal, [seg.id], sorted(node.occludes), sorted(node.occluded_by),
-            {"source": "external-rgba", "external_path": seg.metadata.get("path"), "depth_source": depth_pred.source, "ordering_method": ordering_method, "ordering_score": ordering_scores.get(sid)},
-        ))
-    premerge_layer_count = len(layers)
-    layers = renumber_layers_in_place(merge_compatible_layers(layers, cfg["layering"]))
-    ordered_layers = list(layers)
+    selected_external_order_name, external_orders, external_scores = _pick_best_visual_order(
+        rgb,
+        segments=segments,
+        rgba_by_sid=rgba_by_sid,
+        min_alpha=min_alpha,
+    )
+    graph_layers_premerge = _build_layers_for_sid_order(
+        order,
+        segments=segments,
+        rgba_by_sid=rgba_by_sid,
+        min_alpha=min_alpha,
+        nodes=nodes,
+        albedo=albedo,
+        shading=shading,
+        amodal_enabled=bool(cfg["layering"].get("amodal_enabled", True)),
+        amodal_expand_px=int(cfg["layering"].get("amodal_expand_px", 16)),
+        ordering_method=ordering_method,
+        ordering_scores=ordering_scores,
+        depth_source=depth_pred.source,
+    )
+    external_layers_premerge = _build_layers_for_sid_order(
+        external_orders[selected_external_order_name],
+        segments=segments,
+        rgba_by_sid=rgba_by_sid,
+        min_alpha=min_alpha,
+        nodes=nodes,
+        albedo=albedo,
+        shading=shading,
+        amodal_enabled=bool(cfg["layering"].get("amodal_enabled", True)),
+        amodal_expand_px=int(cfg["layering"].get("amodal_expand_px", 16)),
+        ordering_method="preserve_external_order",
+        depth_source=depth_pred.source,
+    )
+
+    if merge_external_layers:
+        graph_layers = renumber_layers_in_place(merge_compatible_layers(graph_layers_premerge, cfg["layering"]))
+        external_layers = renumber_layers_in_place(merge_compatible_layers(external_layers_premerge, cfg["layering"]))
+    else:
+        graph_layers = renumber_layers_in_place(list(graph_layers_premerge))
+        external_layers = renumber_layers_in_place(list(external_layers_premerge))
+
+    ordered_layers = external_layers if preserve_external_order else graph_layers
+    visual_order_mode = "preserve_external_order" if preserve_external_order else "graph_order"
+    premerge_layer_count = len(external_layers_premerge if preserve_external_order else graph_layers_premerge)
 
     ordered_paths = []
     for l in ordered_layers:
@@ -226,7 +357,9 @@ def enrich_rgba_layers(
     save_rgb(dirs["debug"] / "recomposed_rgb.png", recomposed[..., :3])
     save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", ordered_layers)
 
-    metrics = compute_run_metrics(rgb, ordered_layers, cfg)
+    graph_metrics = _score_layer_stack(rgb, graph_layers)
+    external_metrics = _score_layer_stack(rgb, external_layers)
+    metrics = _score_layer_stack(rgb, ordered_layers)
     metrics.update({
         "mode": "external_rgba_enrichment",
         "depth_method": cfg["depth"]["method"],
@@ -234,6 +367,19 @@ def enrich_rgba_layers(
         "intrinsic_method": iid_method,
         "external_layers_dir": str(layers_dir),
         "ordering_method": ordering_method,
+        "visual_order_mode": visual_order_mode,
+        "selected_external_visual_order": selected_external_order_name,
+        "graph_order_psnr": float(graph_metrics["recompose_psnr"]),
+        "graph_order_ssim": float(graph_metrics["recompose_ssim"]),
+        "selected_external_order_psnr": float(external_metrics["recompose_psnr"]),
+        "selected_external_order_ssim": float(external_metrics["recompose_ssim"]),
+        "manifest_order_psnr": float(external_scores["manifest_order"]["recompose_psnr"]),
+        "manifest_order_ssim": float(external_scores["manifest_order"]["recompose_ssim"]),
+        "reversed_manifest_order_psnr": float(external_scores["reversed_manifest_order"]["recompose_psnr"]),
+        "reversed_manifest_order_ssim": float(external_scores["reversed_manifest_order"]["recompose_ssim"]),
+        "graph_order_available": True,
+        "merge_external_layers": merge_external_layers,
+        "preserve_external_order": preserve_external_order,
         "premerge_semantic_layers": float(premerge_layer_count),
         "merge_reduction": float(max(0, premerge_layer_count - len(ordered_layers))),
     })
@@ -243,8 +389,12 @@ def enrich_rgba_layers(
         "input": str(image_path),
         "external_layers_dir": str(layers_dir),
         "output_dir": str(out),
+        "visual_order_mode": visual_order_mode,
+        "selected_external_visual_order": selected_external_order_name,
         "metrics": str(metrics_path),
         "layer_graph": str(graph_path),
+        "external_manifest": external_manifest,
+        "graph_order_near_to_far": [{"segment_id": sid, "label": next(s.label for s in segments if s.id == sid), "group": next(s.group for s in segments if s.id == sid)} for sid in order],
         "ordered_layers_near_to_far": [{"path": str(p), "name": l.name, "rank": l.rank, "label": l.label, "group": l.group, "depth_median": l.depth_median} for p, l in zip(ordered_paths, ordered_layers)],
         "debug": {"depth_gray": str(dirs["debug"] / "depth_gray.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png")},
     }

@@ -38,5 +38,7 @@ def test_run_curated_comparison_dry_run(tmp_path: Path) -> None:
 
     summary = json.loads(summary_json.read_text(encoding="utf-8"))
     assert len(summary["inputs"]) == 1
-    assert len(summary["commands"]) == 5
+    assert summary["qwen_hybrid_modes"] == ["preserve", "reorder"]
+    assert summary["aggregates"] == []
+    assert len(summary["commands"]) == 7
     assert all(item["status"] == "dry-run" for item in summary["commands"])

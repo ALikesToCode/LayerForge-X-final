@@ -13,13 +13,16 @@ ROOT = Path(__file__).resolve().parents[1]
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Build a report DOCX from the final report pack and current figures.")
     p.add_argument("--output", default="docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx")
+    p.add_argument("--full-markdown", default="docs/final_report_pack/LayerForge_X_Final_Report_FULL.md")
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     output = (ROOT / args.output).resolve() if not Path(args.output).is_absolute() else Path(args.output)
+    full_markdown = (ROOT / args.full_markdown).resolve() if not Path(args.full_markdown).is_absolute() else Path(args.full_markdown)
     output.parent.mkdir(parents=True, exist_ok=True)
+    full_markdown.parent.mkdir(parents=True, exist_ok=True)
 
     base = ROOT / "docs" / "final_report_pack" / "LayerForge_X_Final_Report_2026_04_22.md"
     sections = [
@@ -39,6 +42,8 @@ def main() -> int:
     for marker, content in replacements.items():
         text = text.replace(marker, content)
 
+    full_markdown.write_text(text, encoding="utf-8")
+
     with tempfile.TemporaryDirectory() as tmpdir:
         stitched = Path(tmpdir) / "stitched_report.md"
         stitched.write_text(text, encoding="utf-8")
@@ -55,6 +60,7 @@ def main() -> int:
         subprocess.run(cmd, check=True, cwd=ROOT)
 
     print(output)
+    print(full_markdown)
     return 0
 
 

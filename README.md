@@ -60,7 +60,9 @@ docs/
 ## Install
 
 ```bash
-cd LayerForge-X-final
+# If you extracted a GitHub archive, the folder is usually LayerForge-X-final-main.
+# If you cloned the repo directly, just cd into the repo root.
+cd LayerForge-X-final-main
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -222,6 +224,8 @@ layerforge enrich-qwen \
   --config configs/cutting_edge.yaml \
   --depth depth_pro
 ```
+
+Add `--preserve-external-order` when you want the enriched export to keep Qwen's interpreted visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
 
 The output directory will contain ordered layers, albedo/shading layers, amodal masks, and a `debug/layer_graph.json` describing the graph structure.
 
@@ -601,7 +605,7 @@ python scripts/run_curated_comparison.py \
   --qwen-layers 3,4,6,8
 ```
 
-This writes a per-image native/Qwen/hybrid comparison tree plus `comparison_summary.json` and `comparison_summary.md`.
+This writes a per-image comparison tree covering native LayerForge, raw Qwen, `Qwen + graph preserve`, and `Qwen + graph reorder`, plus aggregate `comparison_summary.json` and `comparison_summary.md`.
 
 ## Public benchmark roadmap
 

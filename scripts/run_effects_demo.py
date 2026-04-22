@@ -68,6 +68,12 @@ def preview_rgba(rgba: np.ndarray) -> np.ndarray:
 def main() -> int:
     args = parse_args()
     cfg = load_config(args.config)
+    effect_cfg = dict(cfg.get("effects", {}))
+    effect_cfg["use_provided_reference"] = True
+    effect_cfg["delta_threshold"] = min(float(effect_cfg.get("delta_threshold", 0.015)), 0.015)
+    effect_cfg["alpha_scale"] = min(float(effect_cfg.get("alpha_scale", 0.08)), 0.08)
+    effect_cfg["dilate_px"] = max(int(effect_cfg.get("dilate_px", 36)), 36)
+    effect_cfg["support_dilate_px"] = 0
     scene_dir = Path(args.scene_dir)
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
@@ -97,7 +103,7 @@ def main() -> int:
         core_mask=core_mask,
         label="near_person",
         rank=1,
-        cfg=cfg.get("effects", {}),
+        cfg=effect_cfg,
     )
 
     save_rgb(out / "input_rgb.png", current_rgb)
@@ -110,6 +116,7 @@ def main() -> int:
         "scene_dir": str(scene_dir),
         "effect_detected": bool(effect_layer is not None),
         "ground_truth_effect_pixels": int(gt_effect_mask.sum()),
+        "effect_config": effect_cfg,
     }
     strip_frames = [current_rgb, clean_reference, preview_rgba(effect_rgba)]
 

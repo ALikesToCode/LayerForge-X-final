@@ -52,6 +52,8 @@ def test_score_qwen_raw_layers_writes_metrics_and_recomposition(tmp_path: Path) 
     assert (layers_dir / "recomposed_rgba.png").exists()
     assert (layers_dir / "ordered_layer_contact_sheet.png").exists()
     assert metrics["mode"] == "qwen_raw_rgba"
-    assert metrics["ordering_assumption"] == "manifest_order_interpreted_as_far_to_near"
+    assert metrics["ordering_assumption"] == "best_of_manifest_and_reversed_manifest"
+    assert metrics["selected_visual_order"] == "reversed_manifest_order"
+    assert metrics["reversed_manifest_order_psnr"] >= metrics["manifest_order_psnr"]
     assert metrics["num_layers"] == 2.0
     assert metrics["recompose_psnr"] > 40.0

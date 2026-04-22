@@ -1,8 +1,20 @@
 {
-  "effect_delta_mean": 0.11256778240203857,
+  "effect_config": {
+    "alpha_scale": 0.08,
+    "delta_threshold": 0.015,
+    "dilate_px": 36,
+    "enabled": true,
+    "inner_dilate_px": 4,
+    "min_area_px": 80,
+    "prefer_downward": true,
+    "support_dilate_px": 0,
+    "support_inpaint_radius": 5,
+    "use_provided_reference": true
+  },
+  "effect_delta_mean": 0.06779823452234268,
   "effect_detected": true,
-  "effect_iou": 0.0005652511834946654,
+  "effect_iou": 0.35294545454545456,
   "ground_truth_effect_pixels": 13750,
-  "predicted_effect_pixels": 411,
+  "predicted_effect_pixels": 4853,
   "scene_dir": "runs/effects_demo_source/scene_000"
 }

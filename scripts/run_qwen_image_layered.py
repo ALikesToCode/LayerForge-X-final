@@ -56,7 +56,7 @@ def main() -> int:
     elif args.offload == "sequential":
         pipe.enable_sequential_cpu_offload(device=args.device)
     else:
-        pipe = pipe.to(args.device, torch_dtype(args.dtype))
+        pipe = pipe.to(args.device, torch_dtype=torch_dtype(args.dtype))
     pipe.set_progress_bar_config(disable=None)
 
     inputs = {

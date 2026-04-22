@@ -76,20 +76,23 @@ Five-image Qwen raw versus hybrid review:
 
 | Method | Images | Graph | Mean PSNR | Mean SSIM |
 |---|---:|---|---:|---:|
+| LayerForge native | 5 | yes | 27.3438 | 0.9464 |
 | Qwen raw (4) | 5 | no | 29.0757 | 0.8850 |
-| Qwen + LayerForge graph (4) | 5 | yes | 28.5408 | 0.8637 |
+| Qwen + LayerForge graph preserve (4) | 5 | yes | 28.5539 | 0.8638 |
+| Qwen + LayerForge graph reorder (4) | 5 | yes | 28.5397 | 0.8637 |
 
 Associated-effect demo:
 
 | Artifact | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
 |---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | yes | 411 | 13750 | 0.0006 |
+| `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
 
 Interpretation:
 
-- raw Qwen remains the stronger pure pixel-fidelity baseline on the measured five-image sweep;
-- the hybrid row should be presented as a structured-representation complement that adds graphs, ordering, and amodal metadata;
-- the associated-effect path now has a real exported demo artifact, but the measured IoU is still weak, so it must be framed as an early heuristic rather than a solved component.
+- raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep;
+- native LayerForge now has the strongest mean SSIM on the same images, at the cost of a much larger stack;
+- the `Qwen + graph preserve` row is the fair metadata-first hybrid comparison because it keeps the interpreted Qwen stack and adds graphs, ordering metadata, amodal masks, and intrinsic artifacts;
+- the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 
 ### Remaining review checklist
 

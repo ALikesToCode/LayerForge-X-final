@@ -26,7 +26,7 @@ Notes:
 | boundary graph | Depth Anything V2 | boundary-local | | | | |
 | boundary graph | geometric luminance | boundary-local | 0.1667 | - | - | - |
 | learned ranker | geometric luminance | pairwise classifier | 0.1667 | - | - | - |
-| Qwen + graph | Depth Pro | boundary-local | - | - | - | - |
+| Qwen + graph reorder | Depth Pro | boundary-local | - | - | - | - |
 | recursive peeling | Depth Pro | iterative front-to-back | - | - | - | - |
 
 ## Table 3 — Recomposition
@@ -37,8 +37,10 @@ Notes:
 | soft alpha | soft | | | | |
 | fast LayerForge-X | soft + graph | 19.1589 | 0.8966 | - | - |
 | fast LayerForge-X + learned ranker | soft + graph + learned order | 19.4138 | 0.8954 | - | - |
+| LayerForge native (5-image review mean) | native graph stack | 27.3438 | 0.9464 | - | - |
 | Qwen-Image-Layered (5-image review mean) | generated RGBA | 29.0757 | 0.8850 | - | - |
-| Qwen + graph (5-image review mean) | generated + ordered | 28.5408 | 0.8637 | - | - |
+| Qwen + graph preserve (5-image review mean) | generated + metadata, preserved order | 28.5539 | 0.8638 | - | - |
+| Qwen + graph reorder (5-image review mean) | generated + graph-ordered export | 28.5397 | 0.8637 | - | - |
 | recursive peeling | soft + graph + residual completion | | | | |
 
 ## Table 4 — Amodal and completion
@@ -66,22 +68,25 @@ Notes:
 
 | Method | Images | Graph | Mean PSNR ↑ | Mean SSIM ↑ | Notes |
 |---|---:|---|---:|---:|---|
-| Qwen raw (4) | 5 | no | 29.0757 | 0.8850 | best pixel fidelity on this measured set |
-| Qwen + LayerForge graph (4) | 5 | yes | 28.5408 | 0.8637 | explicit graph, amodal masks, intrinsic layers, depth ordering |
+| LayerForge native | 5 | yes | 27.3438 | 0.9464 | strongest mean SSIM; much larger average stack |
+| Qwen raw (4) | 5 | no | 29.0757 | 0.8850 | best mean PSNR on this measured set |
+| Qwen + LayerForge graph preserve (4) | 5 | yes | 28.5539 | 0.8638 | fair metadata-first hybrid; preserves Qwen visual order |
+| Qwen + LayerForge graph reorder (4) | 5 | yes | 28.5397 | 0.8637 | explicit graph-order export |
 
 Per-image note:
 
-- raw Qwen wins PSNR on all five images in the current sweep;
-- the hybrid improves SSIM only on `astronaut`;
-- the hybrid row should therefore be framed as a structured-representation complement, not a universal visual-fidelity winner.
+- raw Qwen keeps the best mean PSNR, but native LayerForge wins on PSNR for `truck` and `coffee`;
+- native LayerForge has the best mean SSIM across the five images, albeit with a much larger stack than Qwen;
+- `Qwen + graph preserve` is the fairest hybrid row because it keeps the interpreted external order while adding graph, amodal, and intrinsic metadata;
+- the hybrid rows should therefore be framed as structured-representation complements, not universal visual-fidelity winners.
 
 ## Table 7 — Associated-effect demo
 
 | Artifact | Source scene | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
 |---|---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | `layerbench_pp` synthetic scene with `near_person_shadow` | yes | 411 | 13750 | 0.0006 |
+| `runs/effects_groundtruth_demo_cutting_edge` | `layerbench_pp` synthetic scene with `near_person_shadow` | yes | 4853 | 13750 | 0.3529 |
 
 Notes:
 
 - the repo now contains a real associated-effect demo figure at `docs/figures/effects_layer_demo.png`;
-- the extractor fires, but the current heuristic remains weak and should be described as an early demo rather than a solved effect-layer method.
+- the extractor is still an early heuristic prototype, but the clean-reference rerun is now materially stronger than the first draft and good enough to discuss without overselling it as solved shadow decomposition.

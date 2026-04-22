@@ -40,6 +40,8 @@ intrinsics:
   external_command: ""
 qwen:
   min_alpha: 0.02
+  preserve_external_order: false
+  merge_external_layers: false
 peeling:
   max_layers: 5
   min_remaining_foreground_ratio: 0.001
@@ -49,6 +51,7 @@ effects:
   inner_dilate_px: 3
   support_dilate_px: 10
   support_inpaint_radius: 5
+  use_provided_reference: false
   delta_threshold: 0.04
   alpha_scale: 0.14
   min_area_px: 36

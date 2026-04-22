@@ -79,24 +79,28 @@ def extract_associated_effect_layer(
             ring &= y_coords >= center_y
 
     reference_rgb = np.asarray(inpainted_rgb, dtype=np.uint8)
-    support_dilate_px = max(1, int(cfg.get("support_dilate_px", max(6, dilate_px // 2))))
-    support_mask = ndi.binary_dilation(core, iterations=support_dilate_px)
-    if bool(cfg.get("prefer_downward", True)):
-        ys, _ = np.where(core)
-        if ys.size:
-            center_y = int(np.median(ys))
-            y_coords = np.arange(core.shape[0], dtype=np.int32)[:, None]
-            support_mask &= y_coords >= center_y
-    if support_mask.any():
-        local_inpainted, _, _ = inpaint_background(
-            current_rgb,
-            support_mask,
-            {
-                "method": "opencv_telea",
-                "radius": float(cfg.get("support_inpaint_radius", 5)),
-            },
-        )
-        reference_rgb = local_inpainted
+    use_provided_reference = bool(cfg.get("use_provided_reference", False))
+    if not use_provided_reference:
+        support_dilate_px = max(1, int(cfg.get("support_dilate_px", max(6, dilate_px // 2))))
+        support_mask = ndi.binary_dilation(core, iterations=support_dilate_px)
+        if bool(cfg.get("prefer_downward", True)):
+            ys, _ = np.where(core)
+            if ys.size:
+                center_y = int(np.median(ys))
+                y_coords = np.arange(core.shape[0], dtype=np.int32)[:, None]
+                support_mask &= y_coords >= center_y
+        if support_mask.any():
+            local_inpainted, _, _ = inpaint_background(
+                current_rgb,
+                support_mask,
+                {
+                    "method": "opencv_telea",
+                    "radius": float(cfg.get("support_inpaint_radius", 5)),
+                },
+            )
+            reference_rgb = local_inpainted
+    else:
+        support_dilate_px = 0
     delta = np.mean(np.abs(current_rgb.astype(np.float32) - reference_rgb.astype(np.float32)), axis=2) / 255.0
     candidate = ring & (delta >= float(cfg.get("delta_threshold", 0.05)))
     if int(candidate.sum()) < int(cfg.get("min_area_px", 80)):
@@ -138,6 +142,7 @@ def extract_associated_effect_layer(
             "effect_type": "associated_residual",
             "delta_mean": float(delta[visible].mean()) if visible.any() else 0.0,
             "support_dilate_px": support_dilate_px,
+            "use_provided_reference": use_provided_reference,
         },
     )
 

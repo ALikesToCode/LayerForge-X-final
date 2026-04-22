@@ -84,7 +84,17 @@ def cmd_autotune(args: argparse.Namespace) -> int:
 def cmd_enrich_qwen(args: argparse.Namespace) -> int:
     cfg = load_config(args.config)
     pipe = LayerForgePipeline(cfg, device=args.device)
-    out = pipe.enrich_rgba_layers(args.input, args.layers_dir, args.output, depth_method=args.depth, flip_depth=args.flip_depth, ordering_method=args.ordering, ranker_model_path=args.ranker_model)
+    out = pipe.enrich_rgba_layers(
+        args.input,
+        args.layers_dir,
+        args.output,
+        depth_method=args.depth,
+        flip_depth=args.flip_depth,
+        ordering_method=args.ordering,
+        ranker_model_path=args.ranker_model,
+        preserve_external_order=args.preserve_external_order,
+        merge_external_layers=args.merge_external_layers,
+    )
     print(f"manifest: {out.manifest_path}")
     print(f"metrics:  {out.metrics_path}")
     print(f"ordered enriched layers: {len(out.ordered_layer_paths)}")
@@ -255,6 +265,8 @@ def build_parser() -> argparse.ArgumentParser:
     enrich.add_argument("--flip-depth", action="store_true")
     enrich.add_argument("--ordering", default=None, help="boundary | learned")
     enrich.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
+    enrich.add_argument("--preserve-external-order", action="store_true", help="Keep the best manifest-derived visual order and add LayerForge metadata without graph reordering")
+    enrich.add_argument("--merge-external-layers", action="store_true", help="Allow LayerForge to merge compatible external layers; disabled by default for fair Qwen comparisons")
     enrich.set_defaults(func=cmd_enrich_qwen)
 
     peel = sub.add_parser("peel", help="Run graph-guided recursive layer peeling with residual inpainting and optional effect layers")
