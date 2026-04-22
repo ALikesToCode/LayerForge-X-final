@@ -1,0 +1,15 @@
+project:
+  name: LayerForge-X-ADE20K
+  seed: 7
+io:
+  max_side: 960
+segmentation:
+  method: mask2former
+  add_background_segment: false
+  model:
+    mask2former: facebook/mask2former-swin-small-ade-semantic
+depth:
+  method: geometric_luminance
+  near_is_smaller: true
+  flip: false
+  edge_smooth: false

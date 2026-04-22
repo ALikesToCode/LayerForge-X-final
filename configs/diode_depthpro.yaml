@@ -1,0 +1,13 @@
+project:
+  seed: 7
+
+io:
+  max_side: 1024
+
+depth:
+  method: depth_pro
+  near_is_smaller: true
+  flip: false
+  edge_smooth: false
+  model:
+    depth_pro: apple/DepthPro-hf
