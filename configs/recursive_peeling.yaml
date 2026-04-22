@@ -1,0 +1,80 @@
+project:
+  name: LayerForge-X-RecursivePeeling
+  seed: 7
+io:
+  max_side: 1536
+  save_contact_sheet: true
+  save_parallax_gif: false
+segmentation:
+  method: grounded_sam2
+  prompts: []
+  prompt_source: gemini
+  min_area_ratio: 0.001
+  nms_iou: 0.80
+  slic_segments: 128
+  slic_compactness: 10.0
+  add_background_segment: true
+  model:
+    gemini: gemini-3-flash-preview
+    gemini_max_layers: 14
+    gemini_max_side: 1024
+    gemini_timeout_sec: 300
+    grounding_dino: IDEA-Research/grounding-dino-base
+    sam2: facebook/sam2.1-hiera-large
+    box_threshold: 0.24
+    text_threshold: 0.20
+depth:
+  method: ensemble
+  near_is_smaller: true
+  flip: false
+  edge_smooth: true
+  ensemble: [depth_pro, depth_anything_v2, marigold]
+  model:
+    depth_pro: apple/DepthPro-hf
+    depth_anything_v2: depth-anything/Depth-Anything-V2-Large-hf
+    marigold: prs-eth/marigold-depth-v1-1
+layering:
+  min_layer_area_ratio: 0.001
+  max_layers: 64
+  split_stuff_depth_bins: 3
+  occlusion_boundary_width: 7
+  occlusion_depth_threshold: 0.018
+  min_shared_boundary_px: 10
+  amodal_enabled: true
+  amodal_expand_px: 22
+  ordering_method: boundary
+  merge_enabled: true
+  merge_depth_threshold: 0.05
+  merge_color_threshold: 0.20
+  merge_spatial_gap_px: 26
+matting:
+  alpha_band_px: 11
+  preserve_depth_edges: true
+inpainting:
+  method: lama
+  radius: 5
+intrinsics:
+  method: retinex
+  sigma: 32.0
+qwen:
+  min_alpha: 0.02
+  preserve_external_order: false
+  merge_external_layers: false
+peeling:
+  max_layers: 8
+  min_remaining_foreground_ratio: 0.0008
+effects:
+  enabled: true
+  dilate_px: 28
+  inner_dilate_px: 4
+  support_dilate_px: 16
+  support_inpaint_radius: 5
+  use_provided_reference: false
+  delta_threshold: 0.04
+  alpha_scale: 0.16
+  min_area_px: 80
+  prefer_downward: true
+render:
+  parallax_frames: 32
+  parallax_pixels: 36
+

@@ -67,6 +67,14 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "min_area_px": 80,
         "prefer_downward": True,
     },
+    "self_eval": {
+        "weights": {
+            "fidelity": 0.40,
+            "structure": 0.25,
+            "editability": 0.20,
+            "runtime": 0.15,
+        }
+    },
     "render": {"parallax_frames": 24, "parallax_pixels": 28},
 }
 

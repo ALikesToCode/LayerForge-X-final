@@ -1,0 +1,39 @@
+project:
+  name: LayerForge-X-QwenHybrid
+  seed: 7
+io:
+  max_side: 1536
+  save_contact_sheet: true
+  save_parallax_gif: true
+depth:
+  method: ensemble
+  near_is_smaller: true
+  flip: false
+  edge_smooth: true
+  ensemble: [depth_pro, depth_anything_v2, marigold]
+  model:
+    depth_pro: apple/DepthPro-hf
+    depth_anything_v2: depth-anything/Depth-Anything-V2-Large-hf
+    marigold: prs-eth/marigold-depth-v1-1
+layering:
+  min_layer_area_ratio: 0.001
+  max_layers: 64
+  split_stuff_depth_bins: 3
+  occlusion_boundary_width: 7
+  occlusion_depth_threshold: 0.018
+  min_shared_boundary_px: 10
+  amodal_enabled: true
+  amodal_expand_px: 22
+  ordering_method: boundary
+  merge_enabled: false
+matting:
+  alpha_band_px: 11
+  preserve_depth_edges: true
+intrinsics:
+  method: retinex
+  sigma: 32.0
+qwen:
+  min_alpha: 0.02
+  preserve_external_order: true
+  merge_external_layers: false
+

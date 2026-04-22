@@ -185,6 +185,38 @@ debug/peeling_strip.png
 
 The recursive path is intentionally explicit: each iteration logs the selected layer, the residual image after inpainting, and any associated effect layer recovered from the object-local residual.
 
+## Frontier comparison and self-evaluation
+
+The repo now includes a frontier orchestration script that treats LayerForge native, recursive peeling, raw Qwen, and fair Qwen hybrids as one candidate bank, then scores the successful candidates per image and records the repo's best editable pick.
+
+```bash
+python scripts/run_frontier_comparison.py \
+  --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png \
+  --output-root runs/frontier_review \
+  --native-config configs/frontier.yaml \
+  --peeling-config configs/recursive_peeling.yaml \
+  --qwen-layers 4,6 \
+  --qwen-steps 20 \
+  --qwen-resolution 640 \
+  --qwen-device cuda \
+  --qwen-dtype bfloat16 \
+  --qwen-offload sequential \
+  --skip-existing
+```
+
+This writes:
+
+```text
+runs/frontier_review/
+  frontier_summary.json
+  frontier_summary.md
+  <image>/
+    best_decomposition.json
+    why_selected.md
+```
+
+The current self-evaluation score is deliberately heuristic. It uses measured recomposition fidelity plus structural, editability, and runtime signals to choose the most useful editable candidate for each image. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
+
 ## Qwen / external layer enrichment
 
 The idea here is simple: let a generative decomposer produce the initial RGBA layers, then use LayerForge-X to add structure (depth order, occlusion edges, amodal support, intrinsics). First generate layers with Qwen-Image-Layered or another decomposer, drop the PNGs in a folder, and then run:

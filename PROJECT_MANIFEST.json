@@ -4,24 +4,27 @@
   "contains": [
     "runnable Python package",
     "fast and cutting-edge configs",
+    "frontier comparison and self-evaluation workflow",
     "synthetic benchmark generator",
     "synthetic learned ordering ranker",
     "official Qwen baseline runner",
-    "run-metrics collection helper",
-    "submission-safe report artifact exporter",
-    "report figure generator",
     "Qwen/external RGBA layer enrichment",
     "graph-guided recursive peeling CLI",
     "heuristic associated-effects layer extraction",
+    "frontier proposal-bank orchestration",
+    "run-metrics collection helper",
+    "submission-safe report artifact exporter",
+    "report figure generator",
     "literature review and benchmarking docs",
     "novelty and ablation plan",
     "report tables"
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "41 passed",
+    "pytest": "44 passed",
     "cli_help": true,
-    "train_ranker_cli": true
+    "train_ranker_cli": true,
+    "frontier_dry_run": true
   },
   "measured_results": {
     "synthetic_fast": {
