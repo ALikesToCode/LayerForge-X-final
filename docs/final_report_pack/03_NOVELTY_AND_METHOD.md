@@ -263,6 +263,89 @@ layer_007_amodal_mask.png
 layer_007_hidden_completion_rgba.png
 ```
 
+---
+
+# 5. Novel component D: Frontier candidate bank and self-evaluation
+
+## Problem
+
+Once the repo included native LayerForge runs, recursive peeling, and fair Qwen hybrids, the next question was no longer "which single pipeline is the method?" The real question became:
+
+```text
+which decomposition should be trusted for this image?
+```
+
+That is a different problem from segmentation or ordering alone. Some images benefit from a compact generative RGBA stack. Others benefit from the larger but more explicit native graph. Others are better handled by recursive peeling because the iterative residuals expose hidden structure.
+
+## Proposed solution
+
+Instead of forcing one path, LayerForge-X now runs a **frontier candidate bank** and selects the best editable representation per image using measured evidence.
+
+Current candidate families in the repo:
+
+```text
+LayerForge native
+LayerForge peeling
+Qwen raw
+Qwen + graph preserve
+Qwen + graph reorder
+```
+
+The implementation lives in:
+
+- `src/layerforge/proposals.py`
+- `src/layerforge/self_eval.py`
+- `scripts/run_frontier_comparison.py`
+
+## Candidate scoring
+
+Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally heuristic and explicit rather than pretending to be a learned black box.
+
+The score combines:
+
+```text
+recomposition fidelity
+graph / structure availability
+editability bias toward usable layer counts
+runtime
+```
+
+The implemented weighted score is:
+
+```text
+score = 0.40 * fidelity
+      + 0.25 * structure
+      + 0.20 * editability
+      + 0.15 * runtime
+```
+
+where:
+
+- `fidelity` is computed from normalised PSNR and SSIM;
+- `structure` rewards explicit graph output, ordered layers, and recovered effect layers;
+- `editability` favours candidates with usable layer counts and graph metadata;
+- `runtime` is a light preference for cheaper candidates when quality is otherwise close.
+
+## Why this matters
+
+This changes the repo from:
+
+```text
+one pipeline with a few toggles
+```
+
+to:
+
+```text
+a self-evaluating layered-representation system
+```
+
+That is a more current framing for the project because the frontier is no longer about one monolithic decomposition method. It is about combining strong proposal sources and selecting the best editable scene representation with evidence.
+
+## Claim
+
+> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, structure, editability, and runtime signals.
+
 ## Fallback method
 
 If no amodal model is used at all, there's a usable geometric fallback:

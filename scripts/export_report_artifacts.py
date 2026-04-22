@@ -21,6 +21,7 @@ SNAPSHOTS = {
     "qwen_baseline_metrics.json": ROOT / "runs/qwen_truck_layers_raw_640_20/metrics.json",
     "qwen_enriched_metrics.json": ROOT / "runs/qwen_truck_enriched_640_20/metrics.json",
     "qwen_five_image_review_summary.json": ROOT / "runs/qwen_five_image_review/comparison_summary.json",
+    "frontier_review_summary.json": ROOT / "runs/frontier_review/frontier_summary.json",
     "effects_demo_metrics.json": ROOT / "runs/effects_groundtruth_demo_cutting_edge/metrics.json",
 }
 
@@ -76,6 +77,9 @@ FIGURE_SOURCES = {
         "runs/effects_demo_source/scene_000",
         "runs/effects_groundtruth_demo_cutting_edge",
     ],
+    "frontier_review": [
+        "runs/frontier_review",
+    ],
 }
 
 
@@ -113,6 +117,12 @@ python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/coffee.png
 python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_4
 python scripts/score_qwen_raw_layers.py --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_4
 python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+```
+
+## Frontier comparison and self-evaluation
+
+```bash
+python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 ```
 
 ## Associated-effect demo

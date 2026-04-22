@@ -1,6 +1,7 @@
 {
   "generated_figures": {
     "effects_layer_demo": "docs/figures/effects_layer_demo.png",
+    "frontier_review": "docs/figures/frontier_review.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
     "qualitative_gallery": "docs/figures/qualitative_gallery.png",
@@ -14,6 +15,9 @@
     "effects_layer_demo": [
       "runs/effects_demo_source/scene_000",
       "runs/effects_groundtruth_demo_cutting_edge"
+    ],
+    "frontier_review": [
+      "runs/frontier_review"
     ],
     "public_benchmark_comparison": [
       "results/coco_panoptic_mask2former_512",

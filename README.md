@@ -217,6 +217,23 @@ runs/frontier_review/
 
 The current self-evaluation score is deliberately heuristic. It uses measured recomposition fidelity plus structural, editability, and runtime signals to choose the most useful editable candidate for each image. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
 
+Measured five-image frontier review (`runs/frontier_review/frontier_summary.json`):
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
+Measured interpretation:
+
+- `LayerForge native` is the strongest overall representation on the current frontier score and wins `3/5` images;
+- `LayerForge peeling` is now a real measured row, and it wins the truck scene where the recursive removal path is most useful;
+- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid;
+- `Qwen raw` still matters as the compact generative baseline, but it no longer dominates once the comparison includes explicit structure and editability signals.
+
 ## Qwen / external layer enrichment
 
 The idea here is simple: let a generative decomposer produce the initial RGBA layers, then use LayerForge-X to add structure (depth order, occlusion edges, amodal support, intrinsics). First generate layers with Qwen-Image-Layered or another decomposer, drop the PNGs in a folder, and then run:

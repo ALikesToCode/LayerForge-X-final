@@ -18,6 +18,25 @@ Interpretation:
 - the current bottleneck is proposal quality, because the fast classical segmenter still produces about `65` predicted layers for `5` ground-truth layers.
 - therefore the strongest next qualitative row is the real-image `grounded_sam2 + depth_pro` system, not more tuning on the classical baseline.
 
+## Frontier candidate-bank review
+
+The repo now also contains the measured five-image frontier comparison at `runs/frontier_review/frontier_summary.json`.
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
+Interpretation:
+
+- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `3/5` measured images;
+- `LayerForge peeling` is a real measured row and wins the truck scene, which is exactly the kind of edit-heavy foreground removal case the recursive path was added for;
+- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid row;
+- `Qwen raw` remains the compact frontier generative baseline, but it is no longer the best overall editable representation once structure and editability are scored explicitly.
+
 ## Main ablation matrix
 
 The core sweep. Each row changes exactly one axis relative to the next so the contribution of each component is readable off the table:

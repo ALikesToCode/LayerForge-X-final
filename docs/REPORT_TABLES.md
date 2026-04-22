@@ -90,3 +90,19 @@ Notes:
 
 - the repo now contains a real associated-effect demo figure at `docs/figures/effects_layer_demo.png`;
 - the extractor is still an early heuristic prototype, but the clean-reference rerun is now materially stronger than the first draft and good enough to discuss without overselling it as solved shadow decomposition.
+
+## Table 8 — Frontier self-evaluation review
+
+| Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
+|---|---:|---:|---:|---:|---:|---|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 | strongest overall frontier score; wins three real images |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 | wins the truck scene; explicit recursive removal path |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 | compact generative baseline; weaker structural score |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 | fair metadata-first hybrid; wins the synthetic scene |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 | explicit graph-order export, slightly below preserve on this sweep |
+
+Notes:
+
+- measured from `runs/frontier_review/frontier_summary.json`;
+- this table is about candidate selection and representation quality, not a blanket "beats Qwen" claim;
+- the current best-image winners are `LayerForge native` for `astronaut`, `chelsea_cat`, and `coffee`, `LayerForge peeling` for `truck`, and `Qwen + graph preserve` for the synthetic scene.

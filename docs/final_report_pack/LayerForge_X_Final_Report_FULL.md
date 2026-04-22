@@ -87,10 +87,21 @@ Associated-effect demo:
 |---|---|---:|---:|---:|
 | `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
 
+Five-image frontier candidate-bank review:
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
 Interpretation:
 
 - raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep;
 - native LayerForge now has the strongest mean SSIM on the same images, at the cost of a much larger stack;
+- the measured frontier candidate bank now selects `LayerForge native` for `3/5` images, `LayerForge peeling` for the truck scene, and `Qwen + graph preserve` for the synthetic scene;
 - the `Qwen + graph preserve` row is the fair metadata-first hybrid comparison because it keeps the interpreted Qwen stack and adds graphs, ordering metadata, amodal masks, and intrinsic artifacts;
 - the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 
@@ -1077,6 +1088,89 @@ layer_007_amodal_mask.png
 layer_007_hidden_completion_rgba.png
 ```
 
+---
+
+# 5. Novel component D: Frontier candidate bank and self-evaluation
+
+## Problem
+
+Once the repo included native LayerForge runs, recursive peeling, and fair Qwen hybrids, the next question was no longer "which single pipeline is the method?" The real question became:
+
+```text
+which decomposition should be trusted for this image?
+```
+
+That is a different problem from segmentation or ordering alone. Some images benefit from a compact generative RGBA stack. Others benefit from the larger but more explicit native graph. Others are better handled by recursive peeling because the iterative residuals expose hidden structure.
+
+## Proposed solution
+
+Instead of forcing one path, LayerForge-X now runs a **frontier candidate bank** and selects the best editable representation per image using measured evidence.
+
+Current candidate families in the repo:
+
+```text
+LayerForge native
+LayerForge peeling
+Qwen raw
+Qwen + graph preserve
+Qwen + graph reorder
+```
+
+The implementation lives in:
+
+- `src/layerforge/proposals.py`
+- `src/layerforge/self_eval.py`
+- `scripts/run_frontier_comparison.py`
+
+## Candidate scoring
+
+Each candidate is scored after it actually runs. The current self-evaluation stage is intentionally heuristic and explicit rather than pretending to be a learned black box.
+
+The score combines:
+
+```text
+recomposition fidelity
+graph / structure availability
+editability bias toward usable layer counts
+runtime
+```
+
+The implemented weighted score is:
+
+```text
+score = 0.40 * fidelity
+      + 0.25 * structure
+      + 0.20 * editability
+      + 0.15 * runtime
+```
+
+where:
+
+- `fidelity` is computed from normalised PSNR and SSIM;
+- `structure` rewards explicit graph output, ordered layers, and recovered effect layers;
+- `editability` favours candidates with usable layer counts and graph metadata;
+- `runtime` is a light preference for cheaper candidates when quality is otherwise close.
+
+## Why this matters
+
+This changes the repo from:
+
+```text
+one pipeline with a few toggles
+```
+
+to:
+
+```text
+a self-evaluating layered-representation system
+```
+
+That is a more current framing for the project because the frontier is no longer about one monolithic decomposition method. It is about combining strong proposal sources and selecting the best editable scene representation with evidence.
+
+## Claim
+
+> We extend LayerForge-X with a frontier candidate bank and a self-evaluation stage that compares native, generative, hybrid, and recursive decompositions, then selects the most useful editable representation per image using measured fidelity, structure, editability, and runtime signals.
+
 ## Fallback method
 
 If no amodal model is used at all, there's a usable geometric fallback:
@@ -1539,6 +1633,25 @@ Interpretation:
 - `A2 → A3` gives a real learned-ordering result worth reporting.
 - the current bottleneck is proposal quality, because the fast classical segmenter still produces about `65` predicted layers for `5` ground-truth layers.
 - therefore the strongest next qualitative row is the real-image `grounded_sam2 + depth_pro` system, not more tuning on the classical baseline.
+
+## Frontier candidate-bank review
+
+The repo now also contains the measured five-image frontier comparison at `runs/frontier_review/frontier_summary.json`.
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
+Interpretation:
+
+- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `3/5` measured images;
+- `LayerForge peeling` is a real measured row and wins the truck scene, which is exactly the kind of edit-heavy foreground removal case the recursive path was added for;
+- `Qwen + graph preserve` wins the synthetic scene and remains the fair metadata-first hybrid row;
+- `Qwen raw` remains the compact frontier generative baseline, but it is no longer the best overall editable representation once structure and editability are scored explicitly.
 
 ## Main ablation matrix
 

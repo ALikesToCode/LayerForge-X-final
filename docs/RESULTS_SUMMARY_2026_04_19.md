@@ -540,6 +540,52 @@ What this means:
 - `Qwen + graph preserve` is now the fair metadata-first hybrid row because it keeps the interpreted Qwen visual stack and adds graph, amodal, and intrinsic artifacts;
 - `Qwen + graph reorder` is the separate graph-order export row, and it remains only slightly below the preserve-order variant on this sweep.
 
+## Frontier five-image self-evaluation review
+
+The repo now also contains the measured frontier candidate-bank run:
+
+```bash
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python scripts/run_frontier_comparison.py \
+  --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png \
+  --output-root runs/frontier_review \
+  --native-config configs/frontier.yaml \
+  --peeling-config configs/recursive_peeling.yaml \
+  --qwen-layers 4 \
+  --qwen-steps 10 \
+  --qwen-resolution 640 \
+  --qwen-device cuda \
+  --qwen-dtype bfloat16 \
+  --qwen-offload sequential \
+  --skip-existing
+```
+
+Aggregate mean results:
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| `LayerForge native` | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| `LayerForge peeling` | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| `Qwen raw (4)` | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| `Qwen + graph preserve (4)` | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| `Qwen + graph reorder (4)` | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
+Best-per-image selections from `best_decomposition.json`:
+
+| Image | Selected candidate |
+|---|---|
+| truck | `LayerForge peeling` |
+| astronaut | `LayerForge native` |
+| chelsea_cat | `LayerForge native` |
+| coffee | `LayerForge native` |
+| synth image | `Qwen + graph preserve (4)` |
+
+What this means:
+
+- the current measured frontier score now prefers `LayerForge native` overall and selects it for `3/5` images;
+- the recursive path is no longer only conceptual: `LayerForge peeling` wins the truck scene in the measured candidate bank;
+- the fair hybrid remains useful because `Qwen + graph preserve` wins the synthetic scene where the compact external stack is already strong;
+- `Qwen raw` still matters as the compact generative baseline, but the full candidate-bank comparison shows that raw RGBA quality alone is not the same as the best editable representation.
+
 ## Recursive peeling and associated-effect demos
 
 The repo also now contains measured demo artifacts for the new recursive-peeling and effect-aware paths.

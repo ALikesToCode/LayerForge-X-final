@@ -80,8 +80,30 @@ For iterative foreground removal and residual completion, use:
   --output runs/truck_peeling \
   --config configs/recursive_peeling.yaml \
   --segmenter grounded_sam2 \
-  --prompt-source gemini
+  --prompt-source manual
 ```
+
+## Measured current run
+
+The current full measured five-image run lives at `runs/frontier_review/frontier_summary.json`.
+
+Aggregate results:
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
+Best-per-image selections:
+
+- `truck`: `LayerForge peeling`
+- `astronaut`: `LayerForge native`
+- `coffee`: `LayerForge native`
+- `chelsea_cat`: `LayerForge native`
+- `synth image`: `Qwen + graph preserve (4)`
 
 ## Artifact interpretation
 

@@ -24,7 +24,8 @@
     "pytest": "44 passed",
     "cli_help": true,
     "train_ranker_cli": true,
-    "frontier_dry_run": true
+    "frontier_dry_run": true,
+    "frontier_review_full": true
   },
   "measured_results": {
     "synthetic_fast": {
@@ -112,6 +113,30 @@
       "qwen_graph_reorder_mean_psnr": 28.539704525143645,
       "qwen_graph_reorder_mean_ssim": 0.8637379063051934,
       "summary": "report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json"
+    },
+    "frontier_review": {
+      "images_evaluated": 5,
+      "layerforge_native_mean_psnr": 37.66881969404926,
+      "layerforge_native_mean_ssim": 0.9708095078479693,
+      "layerforge_native_mean_self_eval_score": 0.6596930000000001,
+      "layerforge_peeling_mean_psnr": 27.098823932859812,
+      "layerforge_peeling_mean_ssim": 0.909615156412167,
+      "layerforge_peeling_mean_self_eval_score": 0.5049942,
+      "qwen_raw_mean_psnr": 29.075732442522252,
+      "qwen_raw_mean_ssim": 0.8850195543821586,
+      "qwen_raw_mean_self_eval_score": 0.2530156,
+      "qwen_graph_preserve_mean_psnr": 28.553930610543226,
+      "qwen_graph_preserve_mean_ssim": 0.8638442376259772,
+      "qwen_graph_preserve_mean_self_eval_score": 0.495125,
+      "qwen_graph_reorder_mean_psnr": 28.539704525143645,
+      "qwen_graph_reorder_mean_ssim": 0.8637379063051934,
+      "qwen_graph_reorder_mean_self_eval_score": 0.4949172,
+      "best_image_wins": {
+        "LayerForge native": 3,
+        "LayerForge peeling": 1,
+        "Qwen + graph preserve (4)": 1
+      },
+      "summary": "report_artifacts/metrics_snapshots/frontier_review_summary.json"
     },
     "effects_groundtruth_demo_cutting_edge": {
       "effect_detected": true,

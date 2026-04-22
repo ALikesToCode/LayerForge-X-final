@@ -87,10 +87,21 @@ Associated-effect demo:
 |---|---|---:|---:|---:|
 | `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
 
+Five-image frontier candidate-bank review:
+
+| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
+|---|---:|---:|---:|---:|---:|
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6597 | 3 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5050 | 1 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2530 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.4951 | 1 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.4949 | 0 |
+
 Interpretation:
 
 - raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep;
 - native LayerForge now has the strongest mean SSIM on the same images, at the cost of a much larger stack;
+- the measured frontier candidate bank now selects `LayerForge native` for `3/5` images, `LayerForge peeling` for the truck scene, and `Qwen + graph preserve` for the synthetic scene;
 - the `Qwen + graph preserve` row is the fair metadata-first hybrid comparison because it keeps the interpreted Qwen stack and adds graphs, ordering metadata, amodal masks, and intrinsic artifacts;
 - the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 

@@ -11,6 +11,7 @@ This file records the post-fix state after the final 2026-04-22 measurement pass
 - submission-safe `report_artifacts/` snapshots are generated from measured runs already present locally;
 - the docs now distinguish coarse-group public benchmarks from planned full panoptic evaluation.
 - same-image five-image comparison has been run and summarized in `runs/qwen_five_image_review/`, covering native LayerForge, raw Qwen, `Qwen + graph preserve`, and `Qwen + graph reorder`;
+- the five-image frontier candidate-bank review has been run and summarized in `runs/frontier_review/`, covering native LayerForge, recursive peeling, raw Qwen, and both fair hybrid modes;
 - at least one measured recursive-peeling demo run is saved under `runs/effects_demo_peel/`;
 - at least one measured associated-effect demo figure is saved as `docs/figures/effects_layer_demo.png`;
 - the final report markdown and DOCX have been rebuilt around the updated figures and tables.
@@ -25,6 +26,7 @@ This file records the post-fix state after the final 2026-04-22 measurement pass
 1. The repo now contains a measured same-image five-image comparison across native LayerForge, raw Qwen, and both fair hybrid modes.
 2. The repo contains at least one measured recursive-peeling run and one measured associated-effect demo.
 3. The submission-safe report artifact bundle contains JSON snapshots for the new Qwen and effects evidence.
+4. The frontier candidate-bank evidence is measured on the same five-image set and records per-image best selections under `best_decomposition.json`.
 
 ## Review framing
 
