@@ -25,7 +25,7 @@
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "48 passed",
+    "pytest": "49 passed",
     "cli_help": true,
     "export_design_cli": true,
     "train_ranker_cli": true,
@@ -96,16 +96,18 @@
     "qwen_truck_layers_raw_640_20": {
       "num_layers": 4.0,
       "model": "Qwen/Qwen-Image-Layered",
-      "recompose_psnr": 26.787397283469158,
-      "recompose_ssim": 0.7722714474382926,
+      "recompose_psnr": 29.880624948466238,
+      "recompose_ssim": 0.8825610960005797,
       "offload": "sequential"
     },
     "qwen_truck_enriched_640_20": {
-      "num_layers": 2.0,
+      "num_layers": 4.0,
       "depth_method": "depth_pro",
       "ordering_method": "boundary",
-      "recompose_psnr": 27.4612,
-      "recompose_ssim": 0.7953
+      "visual_order_mode": "preserve_external_order",
+      "merge_external_layers": false,
+      "recompose_psnr": 27.463273263019822,
+      "recompose_ssim": 0.794905461640307
     },
     "qwen_five_image_review": {
       "images_evaluated": 5,
@@ -148,6 +150,25 @@
       "predicted_effect_pixels": 4853,
       "ground_truth_effect_pixels": 13750,
       "effect_iou": 0.35294545454545456
+    },
+    "extract_benchmark_prompted_grounded": {
+      "queries_per_prompt_type": 10,
+      "text_target_hit_rate": 1.0,
+      "text_mean_target_iou": 0.3775769160685042,
+      "text_mean_alpha_mae": 0.15028312653303147,
+      "point_target_hit_rate": 0.0,
+      "point_mean_target_iou": 0.865398796094679,
+      "point_mean_alpha_mae": 0.02221210766583681,
+      "summary": "report_artifacts/metrics_snapshots/extract_benchmark_summary.json"
+    },
+    "transparent_benchmark": {
+      "scenes_evaluated": 12,
+      "mean_transparent_alpha_mae": 0.11313118723531564,
+      "mean_background_psnr": 25.98630081943378,
+      "mean_background_ssim": 0.9541251032570154,
+      "mean_recompose_psnr": 56.00656582842,
+      "mean_recompose_ssim": 0.9996007826607337,
+      "summary": "report_artifacts/metrics_snapshots/transparent_benchmark_summary.json"
     },
     "qualitative_pack_cutting_edge": {
       "astronaut": {
@@ -230,6 +251,9 @@
     "effects_layer_demo": "docs/figures/effects_layer_demo.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
+    "frontier_review": "docs/figures/frontier_review.png",
+    "prompt_extract_benchmark": "docs/figures/prompt_extract_benchmark.png",
+    "transparent_benchmark": "docs/figures/transparent_benchmark.png",
     "figure_index": "docs/FIGURES.md",
     "state_of_art_summary": "report_artifacts/metrics_snapshots/truck_search_summary.json"
   },

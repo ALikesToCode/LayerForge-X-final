@@ -19,6 +19,9 @@ Generated assets:
 - [Effects layer demo](figures/effects_layer_demo.png): controlled synthetic `layerbench_pp` scene showing input RGB, clean reference without the object, ground-truth shadow layer, and the extracted associated-effect layer.
 - [Public benchmark comparison](figures/public_benchmark_comparison.png): COCO versus ADE20K coarse-group benchmark charts for group mIoU, thing mIoU, stuff mIoU, and mean image mIoU.
 - [Public depth comparison](figures/public_depth_comparison.png): DIODE validation charts comparing the geometric fallback against DepthPro on depth error and indoor/outdoor split metrics.
+- [Frontier review](figures/frontier_review.png): the hardened five-image self-evaluation candidate bank, comparing native, peeling, raw Qwen, and fair hybrid rows.
+- [Prompt extraction benchmark](figures/prompt_extract_benchmark.png): synthetic prompt-conditioned extraction comparison across text, point, box, and hybrid query types.
+- [Transparent benchmark](figures/transparent_benchmark.png): AlphaBlend-style synthetic transparent-scene benchmark covering alpha MAE, background PSNR, and recomposition PSNR.
 - [Figure manifest](figures/figure_manifest.json): machine-readable index of the figure files.
 
 Recommended use in the report:
@@ -32,3 +35,6 @@ Recommended use in the report:
 - associated-effect demo section: `effects_layer_demo.png`
 - public benchmark section: `public_benchmark_comparison.png`
 - public depth section: `public_depth_comparison.png`
+- hardened frontier selector section: `frontier_review.png`
+- promptable extraction section: `prompt_extract_benchmark.png`
+- transparent decomposition section: `transparent_benchmark.png`

@@ -1,24 +1,24 @@
 # LayerForge-X Final Report
 
-## Project status
+## Abstract
 
-LayerForge-X is a modular single-image layer decomposition system that exports ordered RGBA layers, amodal masks, intrinsic albedo/shading approximations, graph metadata, and edit-oriented artifacts. The current repo state also includes:
+Single-image editing systems increasingly need structured scene representations rather than a flat RGB bitmap or a folder of visible cutouts. LayerForge-X addresses that need by exporting a **Depth-Aware Amodal Layer Graph (DALG)**: ordered RGBA layers with semantic grouping, soft alpha, occlusion metadata, optional amodal support, background completion, intrinsic appearance factors, and editability-oriented diagnostics. The system combines native decomposition, Qwen/external RGBA enrichment, recursive peeling, and explicit self-evaluation so different candidate representations can be compared under one graph contract. This report focuses on the measured behavior of those components, the benchmark protocol used to evaluate them, and the practical limits that still separate the current implementation from fully generative layered scene understanding.
 
-- a hybrid `Qwen + LayerForge graph` path;
-- graph-guided recursive peeling;
-- heuristic associated-effect layers;
-- submission-safe report artifacts and figure manifests.
+## 1. Introduction
 
-Primary source files for the report narrative:
+The core goal is not just to decompose an image, but to convert it into an **editable scene asset**. That requires more than segmentation. A useful representation needs explicit near-to-far ordering, soft alpha boundaries, at least heuristic amodal support, some notion of hidden/background completion, and export surfaces that support real editing workflows. LayerForge-X therefore treats the scene graph as the canonical object and regards PNG stacks, debug artifacts, and design-manifest exports as projections of that graph.
 
-- [01_LITERATURE_REVIEW_ADVANCED.md](01_LITERATURE_REVIEW_ADVANCED.md)
-- [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md)
-- [03_NOVELTY_AND_METHOD.md](03_NOVELTY_AND_METHOD.md)
-- [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md)
-- [../RESULTS_SUMMARY_2026_04_19.md](../RESULTS_SUMMARY_2026_04_19.md)
-- [../QWEN_IMAGE_LAYERED_COMPARISON.md](../QWEN_IMAGE_LAYERED_COMPARISON.md)
+## 2. Contributions
 
-## Figures
+This report makes five concrete claims:
+
+1. LayerForge-X implements a depth-aware amodal layer graph rather than a simple bag of masks.
+2. The repo includes a fair Qwen comparison with preserve/reorder hybrid modes and a common evaluation frame.
+3. Recursive peeling is implemented as a measured alternative path rather than only a conceptual extension.
+4. The evaluation stack now includes anti-trivial editability metrics, not only recomposition fidelity.
+5. The system exports a canonical DALG manifest and a product-facing design-manifest projection suitable for future API/editor integration.
+
+## 3. Figures
 
 ### Truck recomposition comparison
 
@@ -48,6 +48,18 @@ Primary source files for the report narrative:
 
 ![Associated-effect demo](../figures/effects_layer_demo.png)
 
+### Frontier review
+
+![Frontier review](../figures/frontier_review.png)
+
+### Prompt extraction benchmark
+
+![Prompt extraction benchmark](../figures/prompt_extract_benchmark.png)
+
+### Transparent benchmark
+
+![Transparent benchmark](../figures/transparent_benchmark.png)
+
 ### Public visible-group benchmark comparison
 
 ![Public benchmark comparison](../figures/public_benchmark_comparison.png)
@@ -56,7 +68,7 @@ Primary source files for the report narrative:
 
 ![Public depth comparison](../figures/public_depth_comparison.png)
 
-## Tables and benchmark notes
+## 4. Current measured summary
 
 ### Report tables snapshot
 
@@ -116,11 +128,33 @@ Interpretation:
 - the editability suite now acts as the anti-triviality guardrail for the frontier selector, which is why raw Qwen's object-removal response stays near zero despite reasonable recomposition scores;
 - the associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it still must be framed as an early heuristic rather than a solved component.
 
-### Remaining review checklist
+Promptable extraction benchmark:
 
-The repo-level acceptance checklist lives in [../NEXT_REVIEW_CHECKLIST_2026_04_22.md](../NEXT_REVIEW_CHECKLIST_2026_04_22.md).
+| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
+|---|---:|---:|---:|---:|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 |
 
-## Failure cases
+Transparent benchmark:
+
+| Metric | Mean |
+|---|---:|
+| Transparent alpha MAE | 0.1131 |
+| Background PSNR | 25.9863 |
+| Background SSIM | 0.9541 |
+| Recompose PSNR | 56.0066 |
+| Recompose SSIM | 0.9996 |
+
+Interpretation:
+
+- promptable extraction is now a measured component instead of only a CLI feature;
+- text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation;
+- transparent decomposition is now a benchmarked prototype path and should be framed as an approximate alpha-composited recovery mode rather than a solved generative transparent-layer model.
+
+## 5. Limitations and failure cases
 
 Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md) and [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md). The report should explicitly keep:
 
@@ -132,7 +166,22 @@ Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TAB
 - bad amodal continuation under heavy occlusion;
 - intrinsic split errors.
 
-## Appendix: full source sections
+## 6. Remaining review checklist
+
+The repo-level acceptance checklist lives in [../NEXT_REVIEW_CHECKLIST_2026_04_22.md](../NEXT_REVIEW_CHECKLIST_2026_04_22.md).
+
+## Appendix A: report source map
+
+Primary source files for the report narrative:
+
+- [01_LITERATURE_REVIEW_ADVANCED.md](01_LITERATURE_REVIEW_ADVANCED.md)
+- [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md)
+- [03_NOVELTY_AND_METHOD.md](03_NOVELTY_AND_METHOD.md)
+- [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md)
+- [../RESULTS_SUMMARY_2026_04_19.md](../RESULTS_SUMMARY_2026_04_19.md)
+- [../QWEN_IMAGE_LAYERED_COMPARISON.md](../QWEN_IMAGE_LAYERED_COMPARISON.md)
+
+## Appendix B: full source sections
 
 The following sections are appended verbatim so the DOCX contains the current report text even if markdown files continue evolving independently.
 
@@ -1687,6 +1736,42 @@ Interpretation:
 - the editability suite is the anti-triviality guardrail for the frontier selector;
 - `Qwen raw (4)` is the obvious example of why recomposition alone is insufficient, because its remove/move/recolor responses are almost zero while its background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge graph metadata are still easy to move, recolor, and remove cleanly.
+
+## Promptable extraction benchmark snapshot
+
+The prompt-conditioned extraction path is now measured instead of being only a CLI affordance.
+
+| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
+|---|---:|---:|---:|---:|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+
+Interpretation:
+
+- text-bearing prompts now hit the intended semantic target on the measured synthetic set;
+- point-only and box-only prompts still lock onto a neighboring region with high overlap but wrong semantics;
+- the benchmark is therefore useful because it distinguishes semantic hit rate from overlap and alpha quality.
+
+## Transparent benchmark snapshot
+
+The transparent / alpha-composited recovery path now has a measured synthetic benchmark instead of only a qualitative smoke demo.
+
+| Metric | Mean |
+|---|---:|
+| Transparent alpha MAE | 0.1131 |
+| Background PSNR | 25.9863 |
+| Background SSIM | 0.9541 |
+| Recompose PSNR | 56.0066 |
+| Recompose SSIM | 0.9996 |
+
+Interpretation:
+
+- this path should be presented as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
+- the current prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant;
+- despite that, it is now a measured component and belongs in the report as a frontier-aligned extension.
 
 ## Main ablation matrix
 

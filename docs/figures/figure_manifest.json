@@ -9,6 +9,8 @@
     "qualitative_gallery": "docs/figures/qualitative_gallery.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
-    "frontier_review": "docs/figures/frontier_review.png"
+    "frontier_review": "docs/figures/frontier_review.png",
+    "prompt_extract_benchmark": "docs/figures/prompt_extract_benchmark.png",
+    "transparent_benchmark": "docs/figures/transparent_benchmark.png"
   }
 }

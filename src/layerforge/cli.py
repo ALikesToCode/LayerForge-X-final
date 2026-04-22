@@ -8,6 +8,7 @@ from .config import load_config
 from .dalg import export_dalg_manifest
 from .editability import export_target_assets
 from .pipeline import LayerForgePipeline
+from .transparent import export_transparent_assets
 
 
 def parse_prompts(text: str | None) -> list[str] | None:
@@ -172,6 +173,37 @@ def cmd_extract(args: argparse.Namespace) -> int:
 def cmd_export_design(args: argparse.Namespace) -> int:
     output_path = export_dalg_manifest(args.run_dir, args.output)
     print(f"dalg:     {output_path}")
+    return 0
+
+
+def cmd_transparent(args: argparse.Namespace) -> int:
+    cfg = load_config(args.config)
+    pipe = LayerForgePipeline(cfg, device=args.device)
+    prompt_values = parse_prompts(args.prompt)
+    run_dir = Path(args.output) / "base_run"
+    out = pipe.run(
+        args.input,
+        run_dir,
+        segmenter=args.segmenter,
+        depth_method=args.depth,
+        prompts=prompt_values,
+        prompt_source=args.prompt_source,
+        flip_depth=args.flip_depth,
+        save_parallax=False,
+        ordering_method=args.ordering,
+        ranker_model_path=args.ranker_model,
+    )
+    metadata = export_transparent_assets(
+        out.output_dir,
+        output_dir=Path(args.output) / "transparent_extract",
+        prompt=args.prompt,
+        point=parse_point(args.point),
+        box=parse_box(args.box),
+        target_name=args.target_name,
+    )
+    print(f"manifest: {out.manifest_path}")
+    print(f"metrics:  {(Path(args.output) / 'transparent_extract' / 'transparent_metrics.json')}")
+    print(f"selected: {metadata['selected_target']['name']}")
     return 0
 
 
@@ -359,6 +391,23 @@ def build_parser() -> argparse.ArgumentParser:
     export_design.add_argument("--run-dir", required=True, help="Run directory containing manifest.json")
     export_design.add_argument("--output", default=None, help="Optional output JSON path; defaults to <run-dir>/dalg_manifest.json")
     export_design.set_defaults(func=cmd_export_design)
+
+    transparent = sub.add_parser("transparent", help="Approximate transparent or semi-transparent foreground decomposition using clean-background estimation and alpha blending")
+    transparent.add_argument("--input", required=True)
+    transparent.add_argument("--output", required=True)
+    transparent.add_argument("--config", default="configs/fast.yaml")
+    transparent.add_argument("--segmenter", default=None, help="classical | mask2former | grounded_sam2 | gemini")
+    transparent.add_argument("--depth", default=None, help="geometric_luminance | depth_pro | depth_anything_v2 | marigold | ensemble")
+    transparent.add_argument("--prompt", default=None, help="Prompt describing the transparent target, e.g. 'glass cup' or 'watermark text'")
+    transparent.add_argument("--point", default=None, help="Optional x,y point hint in image pixels")
+    transparent.add_argument("--box", default=None, help="Optional x1,y1,x2,y2 box hint in image pixels")
+    transparent.add_argument("--target-name", default=None, help="Optional exact layer name override after decomposition")
+    transparent.add_argument("--prompt-source", default=None, help="manual | gemini | augment | hybrid | auto")
+    transparent.add_argument("--device", default="auto")
+    transparent.add_argument("--flip-depth", action="store_true")
+    transparent.add_argument("--ordering", default=None, help="boundary | learned")
+    transparent.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
+    transparent.set_defaults(func=cmd_transparent)
 
     bench = sub.add_parser("benchmark", help="Run a lightweight synthetic benchmark and write a CSV/JSON report")
     bench.add_argument("--dataset-dir", required=True)

@@ -1,0 +1,804 @@
+{
+  "dataset_dir": "data/layerbenchpp_prompt_benchmark",
+  "max_scenes": 10,
+  "output_dir": "runs/extract_benchmark_prompted_grounded",
+  "rows": [
+    {
+      "alpha_mae": 0.15037955343723297,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_000",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37654054240920953,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022220822051167488,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_000",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8652743385898606,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022220822051167488,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_000",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8652743385898606,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15037955343723297,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_000",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37654054240920953,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15037955343723297,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_000",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37654054240920953,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15010426938533783,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_001",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37886566751369943,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022167613729834557,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_001",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8657258787296104,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022167613729834557,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_001",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8657258787296104,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15010426938533783,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_001",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37886566751369943,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15010426938533783,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_001",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37886566751369943,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1503223180770874,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_002",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.379082258259503,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022218007594347,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_002",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8657995958015516,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022218007594347,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_002",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8657995958015516,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1503223180770874,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_002",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.379082258259503,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1503223180770874,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_002",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.379082258259503,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15030498802661896,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_003",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3763375801683752,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022230174392461777,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_003",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8649837133550489,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022230174392461777,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_003",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8649837133550489,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15030498802661896,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_003",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3763375801683752,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15030498802661896,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_003",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3763375801683752,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15032610297203064,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_004",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37718707359621395,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022194165736436844,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_004",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8655349928320083,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022194165736436844,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_004",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8655349928320083,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15032610297203064,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_004",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37718707359621395,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15032610297203064,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_004",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37718707359621395,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1502934694290161,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_005",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37876903947777435,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.02225630171597004,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_005",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8655648460547977,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.02225630171597004,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_005",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8655648460547977,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1502934694290161,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_005",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37876903947777435,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.1502934694290161,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_005",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.37876903947777435,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15031060576438904,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_006",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376711855028358,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.0222263652831316,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_006",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8654945986019911,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.0222263652831316,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_006",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8654945986019911,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15031060576438904,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_006",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376711855028358,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15031060576438904,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_006",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376711855028358,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15052014589309692,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_007",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3779466367325792,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022244572639465332,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_007",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8653100459448011,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022244572639465332,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_007",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8653100459448011,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15052014589309692,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_007",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3779466367325792,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15052014589309692,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_007",
+      "selected_name": "007_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3779466367325792,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15015825629234314,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_008",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3774736005253971,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022204935550689697,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_008",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8653078514753083,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022204935550689697,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_008",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8653078514753083,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15015825629234314,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_008",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3774736005253971,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15015825629234314,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_008",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.3774736005253971,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15011155605316162,
+      "box": null,
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text",
+      "scene": "scene_009",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376854906973932,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022158117964863777,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": null,
+      "query_type": "point",
+      "scene": "scene_009",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8649920995618108,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.022158117964863777,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": null,
+      "query_type": "box",
+      "scene": "scene_009",
+      "selected_name": "009_object_furniture",
+      "target_hit": false,
+      "target_iou": 0.8649920995618108,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15011155605316162,
+      "box": null,
+      "point": [
+        454,
+        207
+      ],
+      "prompt": "mid building",
+      "query_type": "text_point",
+      "scene": "scene_009",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376854906973932,
+      "target_name": "mid_building"
+    },
+    {
+      "alpha_mae": 0.15011155605316162,
+      "box": [
+        332,
+        92,
+        577,
+        324
+      ],
+      "point": null,
+      "prompt": "mid building",
+      "query_type": "text_box",
+      "scene": "scene_009",
+      "selected_name": "008_building_mid_building",
+      "target_hit": true,
+      "target_iou": 0.376854906973932,
+      "target_name": "mid_building"
+    }
+  ],
+  "summary": [
+    {
+      "mean_alpha_mae": 0.02221210766583681,
+      "mean_target_iou": 0.865398796094679,
+      "queries": 10,
+      "query_type": "box",
+      "target_hit_rate": 0.0
+    },
+    {
+      "mean_alpha_mae": 0.02221210766583681,
+      "mean_target_iou": 0.865398796094679,
+      "queries": 10,
+      "query_type": "point",
+      "target_hit_rate": 0.0
+    },
+    {
+      "mean_alpha_mae": 0.15028312653303147,
+      "mean_target_iou": 0.3775769160685042,
+      "queries": 10,
+      "query_type": "text",
+      "target_hit_rate": 1.0
+    },
+    {
+      "mean_alpha_mae": 0.15028312653303147,
+      "mean_target_iou": 0.3775769160685042,
+      "queries": 10,
+      "query_type": "text_box",
+      "target_hit_rate": 1.0
+    },
+    {
+      "mean_alpha_mae": 0.15028312653303147,
+      "mean_target_iou": 0.3775769160685042,
+      "queries": 10,
+      "query_type": "text_point",
+      "target_hit_rate": 1.0
+    }
+  ]
+}

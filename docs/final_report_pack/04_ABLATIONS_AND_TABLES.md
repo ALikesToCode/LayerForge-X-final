@@ -55,6 +55,42 @@ Interpretation:
 - `Qwen raw (4)` is the obvious example of why recomposition alone is insufficient, because its remove/move/recolor responses are almost zero while its background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge graph metadata are still easy to move, recolor, and remove cleanly.
 
+## Promptable extraction benchmark snapshot
+
+The prompt-conditioned extraction path is now measured instead of being only a CLI affordance.
+
+| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
+|---|---:|---:|---:|---:|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+
+Interpretation:
+
+- text-bearing prompts now hit the intended semantic target on the measured synthetic set;
+- point-only and box-only prompts still lock onto a neighboring region with high overlap but wrong semantics;
+- the benchmark is therefore useful because it distinguishes semantic hit rate from overlap and alpha quality.
+
+## Transparent benchmark snapshot
+
+The transparent / alpha-composited recovery path now has a measured synthetic benchmark instead of only a qualitative smoke demo.
+
+| Metric | Mean |
+|---|---:|
+| Transparent alpha MAE | 0.1131 |
+| Background PSNR | 25.9863 |
+| Background SSIM | 0.9541 |
+| Recompose PSNR | 56.0066 |
+| Recompose SSIM | 0.9996 |
+
+Interpretation:
+
+- this path should be presented as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
+- the current prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant;
+- despite that, it is now a measured component and belongs in the report as a frontier-aligned extension.
+
 ## Main ablation matrix
 
 The core sweep. Each row changes exactly one axis relative to the next so the contribution of each component is readable off the table:

@@ -113,3 +113,35 @@ Notes:
 - this table is about candidate selection and representation quality, not a blanket "beats Qwen" claim;
 - the current best-image winners are `LayerForge native` for `truck`, `astronaut`, `coffee`, and the synthetic scene, with `Qwen + graph reorder (4)` winning `chelsea_cat`;
 - the self-eval change matters: the hardened selector now penalizes trivial copy-like backgrounds instead of rewarding them for near-perfect recomposition.
+
+## Table 9 — Promptable extraction benchmark
+
+| Prompt type | Queries | Target hit rate ↑ | Mean target IoU ↑ | Mean alpha MAE ↓ | Notes |
+|---|---:|---:|---:|---:|---|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 | semantic target hit on every measured synthetic query |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 | current best practical interactive mode |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 | same measured behavior as text + point on this synthetic set |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 | high overlap with a neighboring region, but wrong semantic target |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 | same failure mode as point-only prompting |
+
+Notes:
+
+- measured from `runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`;
+- this benchmark intentionally separates semantic target hit from overlap and alpha quality;
+- the current weakness is prompt routing for point-only and box-only queries, not matte stability.
+
+## Table 10 — Transparent benchmark
+
+| Metric | Mean | Notes |
+|---|---:|---|
+| Transparent alpha MAE ↓ | 0.1131 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
+| Background PSNR ↑ | 25.9863 | clean-background estimate from inpainting plus transparent foreground recovery |
+| Background SSIM ↑ | 0.9541 | background structure remains strong despite approximate separation |
+| Recompose PSNR ↑ | 56.0066 | recomposition is very strong on the measured synthetic set |
+| Recompose SSIM ↑ | 0.9996 | reconstruction remains near-perfect once foreground and background are recombined |
+
+Notes:
+
+- measured from `runs/transparent_benchmark/transparent_benchmark_summary.json`;
+- this should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
+- the strongest scene family is `flare_ring`, while `semi_transparent_panel` remains the hardest synthetic variant in the current prototype.

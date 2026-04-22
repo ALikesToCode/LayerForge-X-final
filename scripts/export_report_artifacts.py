@@ -24,6 +24,8 @@ SNAPSHOTS = {
     "qwen_five_image_review_summary.json": ROOT / "runs/qwen_five_image_review/comparison_summary.json",
     "frontier_review_summary.json": ROOT / "runs/frontier_review/frontier_summary.json",
     "editability_suite_summary.json": ROOT / "runs/frontier_review/editability_suite_summary.json",
+    "extract_benchmark_summary.json": ROOT / "runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json",
+    "transparent_benchmark_summary.json": ROOT / "runs/transparent_benchmark/transparent_benchmark_summary.json",
     "effects_demo_metrics.json": ROOT / "runs/effects_groundtruth_demo_cutting_edge/metrics.json",
 }
 
@@ -82,6 +84,14 @@ FIGURE_SOURCES = {
     "frontier_review": [
         "runs/frontier_review",
     ],
+    "prompt_extract_benchmark": [
+        "data/layerbenchpp_prompt_benchmark",
+        "runs/extract_benchmark_prompted_grounded",
+    ],
+    "transparent_benchmark": [
+        "data/transparent_benchmark",
+        "runs/transparent_benchmark",
+    ],
 }
 
 
@@ -108,6 +118,7 @@ layerforge benchmark --dataset-dir data/synthetic_layerbench --output-dir result
 ```bash
 python scripts/run_qwen_image_layered.py --input data/demo/truck.jpg --output-dir runs/qwen_truck_layers_raw_640_20 --layers 4 --resolution 640 --steps 20 --device cuda --dtype bfloat16 --offload sequential
 layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_truck_layers_raw_640_20 --output runs/qwen_truck_enriched_640_20 --config configs/cutting_edge.yaml --depth depth_pro
+layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_truck_layers_raw_640_20 --output runs/qwen_truck_enriched_640_20 --config configs/cutting_edge.yaml --depth depth_pro --preserve-external-order
 ```
 
 ## Five-image Qwen review
@@ -126,6 +137,20 @@ python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/quali
 ```bash
 python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/frontier_summary.json --output runs/frontier_review/editability_suite_summary.json
+```
+
+## Promptable extraction benchmark
+
+```bash
+python scripts/make_synthetic_dataset.py --output data/layerbenchpp_prompt_benchmark --count 10 --output-format layerbench_pp --with-effects
+python scripts/run_extract_benchmark.py --dataset-dir data/layerbenchpp_prompt_benchmark --output-dir runs/extract_benchmark_prompted_grounded --segmenter grounded_sam2 --depth ensemble --device cuda --max-scenes 10
+```
+
+## Transparent decomposition benchmark
+
+```bash
+python scripts/make_transparent_dataset.py --output data/transparent_benchmark --count 12
+python scripts/run_transparent_benchmark.py --dataset-dir data/transparent_benchmark --output-dir runs/transparent_benchmark
 ```
 
 ## Associated-effect demo

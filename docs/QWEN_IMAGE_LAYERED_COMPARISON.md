@@ -64,7 +64,8 @@ After exporting Qwen RGBA layers into a folder, LayerForge enrichment is:
   --layers-dir runs/qwen_truck_layers_raw_640_20 \
   --output runs/qwen_truck_enriched_640_20 \
   --config configs/cutting_edge.yaml \
-  --depth depth_pro
+  --depth depth_pro \
+  --preserve-external-order
 ```
 
 That produces the same set of artifacts as a normal run:
@@ -152,8 +153,8 @@ The repo now contains both the original Qwen comparison and the upgraded native 
 
 | Run | Layers | PSNR | SSIM | Notes |
 |---|---:|---:|---:|---|
-| `runs/qwen_truck_layers_raw_640_20` | 4 | 26.7874 | 0.7723 | official Qwen raw RGBA export; best reconstruction obtained by scoring both manifest and reversed-manifest interpretations |
-| `runs/qwen_truck_enriched_640_20` | 2 | 27.4612 | 0.7953 | Qwen layers enriched with LayerForge depth ordering and graph metadata |
+| `runs/qwen_truck_layers_raw_640_20` | 4 | 29.8806 | 0.8826 | official Qwen raw RGBA export; best reconstruction obtained by scoring both manifest and reversed-manifest interpretations |
+| `runs/qwen_truck_enriched_640_20` | 4 | 27.4633 | 0.7949 | fair preserve-order Qwen + LayerForge graph enrichment with layer merging disabled |
 | `runs/demo_grounded_depthpro_final` | 45 | 14.6477 | 0.8348 | old native LayerForge decomposition before the new merge/depth recipe |
 | `runs/truck_best_score` | 26 | 30.8214 | 0.9812 | improved native LayerForge with Gemini-assisted prompting |
 | `runs/truck_best_score_manual` | 19 | 31.3040 | 0.9813 | highest measured native LayerForge run with curated prompts |

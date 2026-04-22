@@ -1,0 +1,143 @@
+{
+  "dataset_dir": "data/transparent_benchmark",
+  "mean_background_psnr": 25.98630081943378,
+  "mean_background_ssim": 0.9541251032570154,
+  "mean_recompose_psnr": 56.00656582842,
+  "mean_recompose_ssim": 0.9996007826607337,
+  "mean_transparent_alpha_mae": 0.11313118723531564,
+  "output_dir": "runs/transparent_benchmark",
+  "rows": [
+    {
+      "alpha_nonzero_ratio": 0.13834821428571428,
+      "background_psnr": 25.354497212294433,
+      "background_ssim": 0.9569057496729628,
+      "label": "glass_overlay",
+      "recompose_psnr": 55.79427767145296,
+      "recompose_ssim": 0.9995763548426636,
+      "run_dir": "runs/transparent_benchmark/runs/scene_000",
+      "scene": "scene_000",
+      "transparent_alpha_mae": 0.08562225848436356
+    },
+    {
+      "alpha_nonzero_ratio": 0.13302455357142856,
+      "background_psnr": 21.25654414992448,
+      "background_ssim": 0.9468256635679967,
+      "label": "transparent_sticker",
+      "recompose_psnr": 55.472089425032756,
+      "recompose_ssim": 0.99955092429768,
+      "run_dir": "runs/transparent_benchmark/runs/scene_001",
+      "scene": "scene_001",
+      "transparent_alpha_mae": 0.13050487637519836
+    },
+    {
+      "alpha_nonzero_ratio": 0.1260528273809524,
+      "background_psnr": 34.588949574083,
+      "background_ssim": 0.9660014598690844,
+      "label": "flare_ring",
+      "recompose_psnr": 56.12743357930378,
+      "recompose_ssim": 0.9996113231238146,
+      "run_dir": "runs/transparent_benchmark/runs/scene_002",
+      "scene": "scene_002",
+      "transparent_alpha_mae": 0.0657092034816742
+    },
+    {
+      "alpha_nonzero_ratio": 0.13903273809523808,
+      "background_psnr": 22.629386578050337,
+      "background_ssim": 0.941060658811579,
+      "label": "semi_transparent_panel",
+      "recompose_psnr": 55.708000337618586,
+      "recompose_ssim": 0.9995929902761874,
+      "run_dir": "runs/transparent_benchmark/runs/scene_003",
+      "scene": "scene_003",
+      "transparent_alpha_mae": 0.19020892679691315
+    },
+    {
+      "alpha_nonzero_ratio": 0.13850446428571428,
+      "background_psnr": 25.354627172638345,
+      "background_ssim": 0.9570184414288009,
+      "label": "glass_overlay",
+      "recompose_psnr": 55.76375565929794,
+      "recompose_ssim": 0.9995672856135044,
+      "run_dir": "runs/transparent_benchmark/runs/scene_004",
+      "scene": "scene_004",
+      "transparent_alpha_mae": 0.08564666658639908
+    },
+    {
+      "alpha_nonzero_ratio": 0.13374627976190476,
+      "background_psnr": 21.262016722509824,
+      "background_ssim": 0.946715844189706,
+      "label": "transparent_sticker",
+      "recompose_psnr": 55.54330155625426,
+      "recompose_ssim": 0.9995630601779694,
+      "run_dir": "runs/transparent_benchmark/runs/scene_005",
+      "scene": "scene_005",
+      "transparent_alpha_mae": 0.130491241812706
+    },
+    {
+      "alpha_nonzero_ratio": 0.12607142857142858,
+      "background_psnr": 34.525485080446884,
+      "background_ssim": 0.9666275754120958,
+      "label": "flare_ring",
+      "recompose_psnr": 56.18939902403064,
+      "recompose_ssim": 0.999630231688386,
+      "run_dir": "runs/transparent_benchmark/runs/scene_006",
+      "scene": "scene_006",
+      "transparent_alpha_mae": 0.06746971607208252
+    },
+    {
+      "alpha_nonzero_ratio": 0.09077380952380952,
+      "background_psnr": 23.0486114356684,
+      "background_ssim": 0.9463375787913227,
+      "label": "semi_transparent_panel",
+      "recompose_psnr": 56.06821513228411,
+      "recompose_ssim": 0.9996068838493369,
+      "run_dir": "runs/transparent_benchmark/runs/scene_007",
+      "scene": "scene_007",
+      "transparent_alpha_mae": 0.14347444474697113
+    },
+    {
+      "alpha_nonzero_ratio": 0.138515625,
+      "background_psnr": 25.313050780399045,
+      "background_ssim": 0.9567467744080721,
+      "label": "glass_overlay",
+      "recompose_psnr": 55.83287710636086,
+      "recompose_ssim": 0.9995884811808801,
+      "run_dir": "runs/transparent_benchmark/runs/scene_008",
+      "scene": "scene_008",
+      "transparent_alpha_mae": 0.08572553098201752
+    },
+    {
+      "alpha_nonzero_ratio": 0.10279017857142857,
+      "background_psnr": 21.524682079286663,
+      "background_ssim": 0.95386723757996,
+      "label": "transparent_sticker",
+      "recompose_psnr": 56.67552849485191,
+      "recompose_ssim": 0.9996491323988081,
+      "run_dir": "runs/transparent_benchmark/runs/scene_009",
+      "scene": "scene_009",
+      "transparent_alpha_mae": 0.1251000463962555
+    },
+    {
+      "alpha_nonzero_ratio": 0.09578869047619047,
+      "background_psnr": 34.34094476105846,
+      "background_ssim": 0.9700162862537067,
+      "label": "flare_ring",
+      "recompose_psnr": 57.17279040414007,
+      "recompose_ssim": 0.9996760628727328,
+      "run_dir": "runs/transparent_benchmark/runs/scene_010",
+      "scene": "scene_010",
+      "transparent_alpha_mae": 0.05761738866567612
+    },
+    {
+      "alpha_nonzero_ratio": 0.13840029761904762,
+      "background_psnr": 22.6368142868455,
+      "background_ssim": 0.9413779690988985,
+      "label": "semi_transparent_panel",
+      "recompose_psnr": 55.73112155041212,
+      "recompose_ssim": 0.9995966616068425,
+      "run_dir": "runs/transparent_benchmark/runs/scene_011",
+      "scene": "scene_011",
+      "transparent_alpha_mae": 0.19000394642353058
+    }
+  ]
+}

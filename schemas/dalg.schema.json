@@ -7,9 +7,11 @@
     "$schema",
     "kind",
     "schema_version",
+    "canvas",
     "asset",
     "recipe",
     "graph",
+    "layers",
     "metrics",
     "exports"
   ],
@@ -23,6 +25,27 @@
     },
     "schema_version": {
       "type": "string"
+    },
+    "canvas": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
     },
     "asset": {
       "type": "object",
@@ -140,6 +163,59 @@
         }
       },
       "additionalProperties": true
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "path",
+          "rank",
+          "group",
+          "depth_median",
+          "editable"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "group": {
+            "type": "string"
+          },
+          "bbox": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "depth_median": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "editable": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      }
     },
     "metrics": {
       "type": "object",

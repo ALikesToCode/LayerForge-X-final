@@ -136,7 +136,7 @@ components:
           properties:
             mode:
               type: string
-              enum: [native, peeling, qwen_raw, qwen_graph_preserve, qwen_graph_reorder]
+              enum: [native, peeling, extract, transparent, qwen_raw, qwen_graph_preserve, qwen_graph_reorder]
             prompts:
               type: array
               items:

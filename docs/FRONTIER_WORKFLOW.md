@@ -29,7 +29,7 @@ python scripts/run_frontier_comparison.py \
   --output-root runs/frontier_review \
   --native-config configs/frontier.yaml \
   --peeling-config configs/recursive_peeling.yaml \
-  --qwen-layers 4,6 \
+  --qwen-layers 4 \
   --qwen-steps 20 \
   --qwen-resolution 640 \
   --qwen-device cuda \
@@ -131,3 +131,65 @@ The frontier path is strongest when reported honestly:
 - `Qwen + graph reorder` shows what changes when the graph owns visual ordering.
 - `LayerForge peeling` is the graph-guided recursive decomposition path.
 - `best_decomposition.json` is the repo's self-selected editable representation, not a claim of state-of-the-art quality.
+
+## Promptable extraction benchmark
+
+The repo now includes a measured prompt-conditioned extraction benchmark on synthetic LayerBench++ scenes:
+
+```bash
+python scripts/make_synthetic_dataset.py \
+  --output data/layerbenchpp_prompt_benchmark \
+  --count 10 \
+  --output-format layerbench_pp \
+  --with-effects
+
+python scripts/run_extract_benchmark.py \
+  --dataset-dir data/layerbenchpp_prompt_benchmark \
+  --output-dir runs/extract_benchmark_prompted_grounded \
+  --segmenter grounded_sam2 \
+  --depth ensemble \
+  --device cuda \
+  --max-scenes 10
+```
+
+Measured summary from `runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`:
+
+| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
+|---|---:|---:|---:|---:|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+
+Interpretation:
+
+- text-bearing prompts hit the intended semantic target on the measured synthetic set;
+- point-only and box-only prompts currently lock onto a neighboring region with high overlap but wrong semantics;
+- the benchmark is therefore useful precisely because it separates semantic hit rate from raw overlap and alpha quality.
+
+## Transparent decomposition benchmark
+
+The transparent path is now benchmarked separately on a small AlphaBlend-style synthetic set:
+
+```bash
+python scripts/make_transparent_dataset.py \
+  --output data/transparent_benchmark \
+  --count 12
+
+python scripts/run_transparent_benchmark.py \
+  --dataset-dir data/transparent_benchmark \
+  --output-dir runs/transparent_benchmark
+```
+
+Measured summary from `runs/transparent_benchmark/transparent_benchmark_summary.json`:
+
+| Metric | Mean |
+|---|---:|
+| Transparent alpha MAE | 0.1131 |
+| Background PSNR | 25.9863 |
+| Background SSIM | 0.9541 |
+| Recompose PSNR | 56.0066 |
+| Recompose SSIM | 0.9996 |
+
+This path should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition.

@@ -2,10 +2,12 @@
   "generated_figures": {
     "effects_layer_demo": "docs/figures/effects_layer_demo.png",
     "frontier_review": "docs/figures/frontier_review.png",
+    "prompt_extract_benchmark": "docs/figures/prompt_extract_benchmark.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
     "qualitative_gallery": "docs/figures/qualitative_gallery.png",
     "synthetic_ordering_ablation": "docs/figures/synthetic_ordering_ablation.png",
+    "transparent_benchmark": "docs/figures/transparent_benchmark.png",
     "truck_layer_stack_comparison": "docs/figures/truck_layer_stack_comparison.png",
     "truck_metrics_comparison": "docs/figures/truck_metrics_comparison.png",
     "truck_prompt_ablation": "docs/figures/truck_prompt_ablation.png",
@@ -18,6 +20,10 @@
     ],
     "frontier_review": [
       "runs/frontier_review"
+    ],
+    "prompt_extract_benchmark": [
+      "data/layerbenchpp_prompt_benchmark",
+      "runs/extract_benchmark_prompted_grounded"
     ],
     "public_benchmark_comparison": [
       "results/coco_panoptic_mask2former_512",
@@ -40,6 +46,10 @@
       "results/synthetic_fast",
       "results/synth_boundary_test",
       "results/synth_learned_test"
+    ],
+    "transparent_benchmark": [
+      "data/transparent_benchmark",
+      "runs/transparent_benchmark"
     ],
     "truck_layer_stack_comparison": [
       "runs/qwen_truck_layers_raw_640_20",

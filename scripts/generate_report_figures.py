@@ -205,7 +205,7 @@ def load_truck_runs() -> dict[str, dict]:
         },
         "qwen_hybrid": {
             "label": "Qwen + LayerForge",
-            "subtitle": "Graph enrichment on top of the raw Qwen stack",
+            "subtitle": "Fair preserve-order graph enrichment on top of the raw Qwen stack",
             "metrics": load_json("runs/qwen_truck_enriched_640_20/metrics.json"),
             "manifest": load_json("runs/qwen_truck_enriched_640_20/manifest.json"),
             "recomposed": "runs/qwen_truck_enriched_640_20/debug/recomposed_rgb.png",
@@ -240,7 +240,7 @@ def load_truck_runs() -> dict[str, dict]:
             "accent": RED,
         },
         "layerforge_search_best": {
-            "label": "LayerForge SOTA",
+            "label": "LayerForge candidate",
             "subtitle": "Autotune-selected best native run on this image",
             "metrics": load_json("runs/truck_state_of_art_search_v2/best/metrics.json"),
             "manifest": load_json("runs/truck_state_of_art_search_v2/best/manifest.json"),
@@ -510,7 +510,7 @@ def generate_truck_layer_sheets(output_dir: Path) -> str:
             image_box=(516, 320),
         ),
         card_with_image(
-            title="LayerForge SOTA Stack",
+            title="LayerForge Candidate Stack",
             subtitle="Autotune-selected best native candidate",
             image_path=runs["layerforge_search_best"]["sheet"],
             footer_lines=[
@@ -900,13 +900,137 @@ def generate_frontier_review(output_dir: Path) -> str:
     lines = [
         f"Inputs: {len(summary.get('inputs', []))} images",
         "Best-image wins: " + ", ".join(f"{label}={win_counts.get(label, 0)}" for label in labels if label in aggregates),
-        "Measured interpretation: LayerForge native remains the strongest overall editable representation, peeling still wins the truck scene, and Qwen + graph preserve remains the metadata-first synthetic winner.",
+        "Measured interpretation: LayerForge native remains the strongest overall editable representation, Qwen + graph reorder wins the cat scene, and the hybrid preserve row remains the fairest metadata-first comparison.",
     ]
     line_y = callout_y + 78
     for line in lines:
         line_y += draw_wrapped_text(draw, (60, line_y), line, FONT_BODY, TEXT, 1660)
         line_y += 8
     return save(canvas, output_dir / "frontier_review.png")
+
+
+def generate_prompt_extract_benchmark(output_dir: Path) -> str:
+    summary = load_json("runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json")
+    rows = summary["summary"]
+    order = ["text", "text_point", "text_box", "point", "box"]
+    label_map = {
+        "text": "text",
+        "text_point": "text + point",
+        "text_box": "text + box",
+        "point": "point",
+        "box": "box",
+    }
+    accent_map = {
+        "text": BLUE,
+        "text_point": GREEN,
+        "text_box": CLAY,
+        "point": ORANGE,
+        "box": RED,
+    }
+    by_type = {row["query_type"]: row for row in rows}
+    hit_rows = [(label_map[key], float(by_type[key]["target_hit_rate"]), accent_map[key]) for key in order]
+    iou_rows = [(label_map[key], float(by_type[key]["mean_target_iou"]), accent_map[key]) for key in order]
+    mae_rows = [(label_map[key], float(by_type[key]["mean_alpha_mae"]), accent_map[key]) for key in order]
+
+    canvas = Image.new("RGB", (1820, 760), BG)
+    y = make_title_block(
+        canvas,
+        "Promptable Extraction Benchmark",
+        "Synthetic LayerBench++ prompt queries scored by semantic target hit, overlap, and alpha quality. "
+        "This benchmark separates true target selection from high-overlap but wrong-semantic picks.",
+    )
+    panels = [
+        bar_panel(
+            title="Target Hit Rate",
+            subtitle="Higher is better",
+            rows=hit_rows,
+            size=(560, 500),
+            scale_max=1.0,
+            better_note="Text-bearing prompts hit the intended target on the measured synthetic set; point-only and box-only prompts do not.",
+        ),
+        bar_panel(
+            title="Mean Target IoU",
+            subtitle="Higher is better",
+            rows=iou_rows,
+            size=(560, 500),
+            scale_max=1.0,
+            better_note="Point-only and box-only prompts still overlap strongly with a neighboring region, which is why IoU remains high despite the semantic miss.",
+        ),
+        bar_panel(
+            title="Mean Alpha MAE",
+            subtitle="Lower is better",
+            rows=mae_rows,
+            size=(560, 500),
+            scale_max=max(0.2, panel_scale_max(mae_rows, floor=0.05)),
+            better_note="Alpha quality stays strong once the target is selected; the current weakness is prompt routing, not matte stability.",
+        ),
+    ]
+    place_grid(canvas, panels, origin=(36, y), cols=3, gap=24)
+    return save(canvas, output_dir / "prompt_extract_benchmark.png")
+
+
+def generate_transparent_benchmark(output_dir: Path) -> str:
+    summary = load_json("runs/transparent_benchmark/transparent_benchmark_summary.json")
+    grouped: dict[str, list[dict]] = {}
+    for row in summary["rows"]:
+        grouped.setdefault(str(row["label"]), []).append(row)
+
+    def mean(label: str, key: str) -> float:
+        rows = grouped[label]
+        return sum(float(row[key]) for row in rows) / len(rows)
+
+    order = ["glass_overlay", "transparent_sticker", "flare_ring", "semi_transparent_panel"]
+    label_map = {
+        "glass_overlay": "glass overlay",
+        "transparent_sticker": "transparent sticker",
+        "flare_ring": "flare ring",
+        "semi_transparent_panel": "semi-transparent panel",
+    }
+    accent_map = {
+        "glass_overlay": BLUE,
+        "transparent_sticker": GREEN,
+        "flare_ring": ORANGE,
+        "semi_transparent_panel": CLAY,
+    }
+    alpha_rows = [(label_map[key], mean(key, "transparent_alpha_mae"), accent_map[key]) for key in order]
+    bg_rows = [(label_map[key], mean(key, "background_psnr"), accent_map[key]) for key in order]
+    recon_rows = [(label_map[key], mean(key, "recompose_psnr"), accent_map[key]) for key in order]
+
+    canvas = Image.new("RGB", (1820, 760), BG)
+    y = make_title_block(
+        canvas,
+        "Transparent Decomposition Benchmark",
+        "Synthetic AlphaBlend-style scenes covering glass-like overlays, stickers, flare, and semi-transparent panels. "
+        "The current mode is approximate, but it now has measured alpha, background, and recomposition behavior.",
+    )
+    panels = [
+        bar_panel(
+            title="Transparent Alpha MAE",
+            subtitle="Lower is better",
+            rows=alpha_rows,
+            size=(560, 500),
+            scale_max=max(0.25, panel_scale_max(alpha_rows, floor=0.1)),
+            better_note="Alpha recovery is strongest on flare-like overlays and weakest on the semi-transparent panel variant.",
+        ),
+        bar_panel(
+            title="Background PSNR",
+            subtitle="Higher is better",
+            rows=bg_rows,
+            size=(560, 500),
+            scale_max=40.0,
+            better_note="The recovered clean background is strongest on flare-like scenes and weakest when the transparent region behaves like a large sticker/panel.",
+        ),
+        bar_panel(
+            title="Recompose PSNR",
+            subtitle="Higher is better",
+            rows=recon_rows,
+            size=(560, 500),
+            scale_max=60.0,
+            better_note="Recomposition remains very strong across all four transparent scene families, which is why this mode is worth keeping as a measured prototype.",
+        ),
+    ]
+    place_grid(canvas, panels, origin=(36, y), cols=3, gap=24)
+    return save(canvas, output_dir / "transparent_benchmark.png")
 
 
 def write_manifest(output_dir: Path, figures: dict[str, str]) -> str:
@@ -934,6 +1058,8 @@ def main() -> int:
         "public_benchmark_comparison": generate_public_benchmark_comparison(output_dir),
         "public_depth_comparison": generate_public_depth_comparison(output_dir),
         "frontier_review": generate_frontier_review(output_dir),
+        "prompt_extract_benchmark": generate_prompt_extract_benchmark(output_dir),
+        "transparent_benchmark": generate_transparent_benchmark(output_dir),
     }
     figures["figure_manifest"] = write_manifest(output_dir, figures)
     print(json.dumps(figures, indent=2))

@@ -38,6 +38,7 @@ src/layerforge/
   qwen_io.py                 # import/enrich Qwen or external RGBA layers
   ranker.py                  # lightweight learned pairwise near/far ranker
   segment.py                 # classical, Mask2Former, GroundingDINO+SAM2 modes
+  transparent.py             # transparent / alpha-composited foreground recovery
   visualize.py               # overlays/contact sheets
 
 scripts/
@@ -45,8 +46,11 @@ scripts/
   export_report_artifacts.py # copy audit-safe metrics snapshots for ZIP submissions
   generate_report_figures.py # report-ready comparison panels and graphs
   make_synthetic_dataset.py  # synthetic LayerBench generator
+  make_transparent_dataset.py # synthetic transparent benchmark generator
   run_editability_suite.py   # editability-aware follow-up metrics for frontier runs
+  run_extract_benchmark.py   # prompt-conditioned extraction benchmark
   run_qwen_image_layered.py  # official Qwen-Image-Layered baseline runner
+  run_transparent_benchmark.py # transparent decomposition benchmark
   run_grid.py                # run ablation grids
 
 docs/
@@ -140,7 +144,7 @@ Measured truck runs already in the repo:
 
 So the repo is no longer stuck in the "interpretable but low-fidelity" regime. The upgraded native LayerForge recipe is now materially better than the old native run on both fidelity and stack compactness.
 
-## State-of-the-art search
+## Candidate search
 
 For the strongest native result on a specific image, use the search mode. It runs a small ladder of strong candidates, including manual prompts, augment mode, and Gemini-assisted prompt generation with multiple threshold presets, then keeps the best measured output.
 
@@ -231,7 +235,7 @@ python scripts/run_frontier_comparison.py \
   --output-root runs/frontier_review \
   --native-config configs/frontier.yaml \
   --peeling-config configs/recursive_peeling.yaml \
-  --qwen-layers 4,6 \
+  --qwen-layers 4 \
   --qwen-steps 20 \
   --qwen-resolution 640 \
   --qwen-device cuda \
@@ -292,6 +296,56 @@ That writes a standard run plus:
 - `target_extract/edit_preview_move.png`
 - `target_extract/target_metadata.json`
 
+Measured prompt benchmark (`runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`) on `10` synthetic LayerBench++ scenes:
+
+| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
+|---|---:|---:|---:|---:|
+| text | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
+| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
+| point | 10 | 0.0000 | 0.8654 | 0.0222 |
+| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+
+Interpretation:
+
+- text-bearing prompts now hit the intended semantic target on the measured synthetic set;
+- point-only and box-only prompts still snap to a highly overlapping neighboring object region, so the IoU is high but the semantic hit rate is correctly `0.0`;
+- this is a routing limitation in the current prompt stack, not an alpha-quality collapse.
+
+## Transparent / alpha-composited decomposition
+
+LayerForge-X also exposes a transparent-layer path for semi-transparent overlays, flare-like artifacts, and glass-style composites:
+
+```bash
+layerforge transparent \
+  --input data/transparent_benchmark/scene_000/input.png \
+  --output runs/transparent_demo \
+  --config configs/fast.yaml \
+  --segmenter classical \
+  --depth geometric_luminance \
+  --prompt "glass overlay"
+```
+
+That writes:
+
+- `transparent_extract/transparent_foreground_rgba.png`
+- `transparent_extract/estimated_clean_background.png`
+- `transparent_extract/alpha_map.png`
+- `transparent_extract/recomposition.png`
+- `transparent_extract/transparent_metrics.json`
+
+Measured transparent benchmark (`runs/transparent_benchmark/transparent_benchmark_summary.json`) on `12` synthetic scenes:
+
+| Metric | Mean |
+|---|---:|
+| Transparent alpha MAE | 0.1131 |
+| Background PSNR | 25.9863 |
+| Background SSIM | 0.9541 |
+| Recompose PSNR | 56.0066 |
+| Recompose SSIM | 0.9996 |
+
+This path is still an approximation, not a full generative transparent-layer model, but it now has a measured benchmark instead of only qualitative examples.
+
 ## Qwen / external layer enrichment
 
 The idea here is simple: let a generative decomposer produce the initial RGBA layers, then use LayerForge-X to add structure (depth order, occlusion edges, amodal support, intrinsics). First generate layers with Qwen-Image-Layered or another decomposer, drop the PNGs in a folder, and then run:
@@ -318,7 +372,8 @@ Then enrich them with LayerForge-X:
   --layers-dir runs/qwen_truck_layers_raw_640_20 \
   --output runs/qwen_truck_enriched_640_20 \
   --config configs/cutting_edge.yaml \
-  --depth depth_pro
+  --depth depth_pro \
+  --preserve-external-order
 ```
 
 For a stronger enrichment using the cutting-edge config:
@@ -329,7 +384,8 @@ layerforge enrich-qwen \
   --layers-dir path/to/qwen_rgba_layers \
   --output runs/qwen_enriched_full \
   --config configs/cutting_edge.yaml \
-  --depth depth_pro
+  --depth depth_pro \
+  --preserve-external-order
 ```
 
 Add `--preserve-external-order` when you want the enriched export to keep Qwen's interpreted visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
@@ -389,6 +445,9 @@ docs/figures/truck_layer_stack_comparison.png
 docs/figures/truck_metrics_comparison.png
 docs/figures/synthetic_ordering_ablation.png
 docs/figures/qualitative_gallery.png
+docs/figures/frontier_review.png
+docs/figures/prompt_extract_benchmark.png
+docs/figures/transparent_benchmark.png
 docs/figures/figure_manifest.json
 ```
 

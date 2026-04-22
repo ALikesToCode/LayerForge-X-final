@@ -464,15 +464,16 @@ The official Qwen baseline path is not just wired in; it has been run successful
   --layers-dir runs/qwen_truck_layers_raw_640_20 \
   --output runs/qwen_truck_enriched_640_20 \
   --config configs/cutting_edge.yaml \
-  --depth depth_pro
+  --depth depth_pro \
+  --preserve-external-order
 ```
 
 Measured truck comparison:
 
 | Run | Mode | Layers | PSNR | SSIM |
 |---|---|---:|---:|---:|
-| `runs/qwen_truck_layers_raw_640_20` | raw Qwen RGBA | 4 | 26.7874 | 0.7723 |
-| `runs/qwen_truck_enriched_640_20` | Qwen + LayerForge graph enrichment | 2 | 27.4612 | 0.7953 |
+| `runs/qwen_truck_layers_raw_640_20` | raw Qwen RGBA | 4 | 29.8806 | 0.8826 |
+| `runs/qwen_truck_enriched_640_20` | Qwen + LayerForge graph enrichment (preserve order) | 4 | 27.4633 | 0.7949 |
 | `runs/demo_grounded_depthpro_final` | old native LayerForge | 45 | 14.6477 | 0.8348 |
 | `runs/truck_best_score` | improved native LayerForge, automated | 26 | 30.8214 | 0.9812 |
 | `runs/truck_best_score_manual` | improved native LayerForge, best measured | 19 | 31.3040 | 0.9813 |

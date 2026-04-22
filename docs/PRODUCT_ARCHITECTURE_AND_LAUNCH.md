@@ -15,7 +15,7 @@ The practical promise is:
 
 - convert one still image into an editable scene asset;
 - preserve near/far order, occlusion evidence, and optional amodal support;
-- route between native, recursive, and Qwen-enriched decompositions;
+- route between native, recursive, prompt-targeted, transparent, and Qwen-enriched decompositions;
 - score those candidates with fidelity and editability metrics;
 - export a stable design manifest for downstream tools.
 
@@ -26,7 +26,7 @@ shape below:
 
 | Surface | Repo anchor | Product role |
 | --- | --- | --- |
-| Inference engine | `layerforge run`, `peel`, `enrich-qwen` | Generate candidate layer graphs |
+| Inference engine | `layerforge run`, `peel`, `extract`, `transparent`, `enrich-qwen` | Generate candidate layer graphs |
 | Evaluator | `self_eval.py`, `editability.py`, `scripts/run_frontier_comparison.py` | Select the best usable representation |
 | Canonical scene artifact | `dalg_manifest.json`, `schemas/dalg.schema.json` | Stable graph contract across modes |
 | API contract | `docs/api/openapi.yaml` | Defines how a future control plane should expose jobs and DALG assets |
@@ -45,6 +45,8 @@ LayerForge should evolve as four planes, not one giant service:
 3. Inference plane
    - native pipeline
    - recursive peeling
+   - promptable target extraction
+   - transparent/alpha-composited approximation
    - Qwen raw and Qwen graph enrichment
    - quality routing and self-evaluation
 4. Data and telemetry plane
@@ -62,6 +64,8 @@ mode-specific JSON blobs. The same schema now covers:
 
 - native LayerForge runs;
 - recursive peeling runs;
+- promptable extraction runs;
+- transparent decomposition runs;
 - Qwen/external RGBA enrichment runs.
 
 That means the future editor, API, and export adapters can consume one scene
@@ -97,7 +101,7 @@ Implemented now:
 
 - canonical DALG schema and DALG export command;
 - contract-first OpenAPI document;
-- native/Qwen/peeling normalization into one design-manifest JSON;
+- native/Qwen/peeling/extract/transparent normalization into one design-manifest JSON;
 - self-evaluation and editability metrics already wired into frontier review.
 
 Planned next:

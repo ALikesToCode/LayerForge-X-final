@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from PIL import Image
+
 
 CANONICAL_DALG_SCHEMA_VERSION = "1.0.0"
 
@@ -67,6 +69,27 @@ def _existing_only(run_dir: Path, mapping: dict[str, str | None]) -> dict[str, s
     return out
 
 
+def _infer_canvas(root: Path, manifest: dict[str, Any]) -> dict[str, int] | None:
+    candidates: list[Path] = []
+    input_path = _resolve_run_path(root, manifest.get("input"))
+    if input_path is not None:
+        candidates.append(input_path)
+    for row in manifest.get("ordered_layers_near_to_far", []):
+        rgba_path = _resolve_run_path(root, row.get("path"))
+        if rgba_path is not None:
+            candidates.append(rgba_path)
+            break
+    for candidate in candidates:
+        if candidate.exists():
+            try:
+                with Image.open(candidate) as image:
+                    width, height = image.size
+                return {"width": int(width), "height": int(height)}
+            except OSError:
+                continue
+    return None
+
+
 def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
     root = Path(run_dir)
     manifest_path = root / "manifest.json"
@@ -114,10 +137,25 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
     grouped_layers = [_rel_path(root, item) for item in manifest.get("grouped_layers", [])]
     effect_layers = [_rel_path(root, item) for item in manifest.get("effect_layers", [])]
 
+    canvas = _infer_canvas(root, manifest)
+    design_layers = [
+        {
+            "name": layer["name"],
+            "path": layer["paths"].get("rgba"),
+            "rank": layer["rank"],
+            "group": layer["group"],
+            "bbox": layer["bbox"],
+            "depth_median": layer["depth_median"],
+            "editable": layer["editable"],
+        }
+        for layer in ordered_layers
+    ]
+
     dalg = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "kind": "layerforge.dalg",
         "schema_version": CANONICAL_DALG_SCHEMA_VERSION,
+        "canvas": canvas,
         "asset": {
             "input": _rel_path(root, manifest.get("input")),
             "run_dir": ".",
@@ -141,6 +179,7 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
             "layers": ordered_layers,
             "edges": graph_edges,
         },
+        "layers": design_layers,
         "metrics": metrics,
         "exports": {
             "source_manifest": "manifest.json",
