@@ -1,6 +1,6 @@
 # LayerForge-X++ Frontier Workflow
 
-LayerForge-X++ is the repo's highest-leverage hybrid path:
+LayerForge-X++ defines the repository's primary hybrid evaluation workflow:
 
 1. generate multiple decomposition candidates;
 2. preserve both generative and graph-ordered variants where needed;
@@ -134,7 +134,7 @@ The frontier path is strongest when reported honestly:
 
 ## Promptable extraction benchmark
 
-The repo now includes a measured prompt-conditioned extraction benchmark on synthetic LayerBench++ scenes:
+The repository includes a measured prompt-conditioned extraction benchmark on synthetic LayerBench++ scenes:
 
 ```bash
 python scripts/make_synthetic_dataset.py \

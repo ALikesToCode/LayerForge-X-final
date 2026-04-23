@@ -14,7 +14,7 @@ The final representation is a **Depth-Aware Amodal Layer Graph (DALG)**:
 G = (V, E)
 ```
 
-Each node is a layer — and "layer" here means more than just an RGBA image. A node looks like this:
+Each node is a layer, where "layer" denotes more than an RGBA image. A node has the following structure:
 
 ```text
 v_i = {
@@ -49,7 +49,7 @@ e_ij = {
 
 ## Pipeline
 
-At a glance, the flow from a single raster to the graph looks like this:
+The transformation from a single raster image to the graph representation is:
 
 ```text
 Input RGB image

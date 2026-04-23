@@ -402,7 +402,7 @@ Important reading of these runs:
 - the native LayerForge path is now dramatically better than the old truck run on both recomposition fidelity and layer count;
 - Gemini-only prompting is a good automatic mode, but it is not the best measured score on this truck scene;
 - the strongest result still comes from good prompt curation plus the new depth ensemble and merge pass.
-- the strongest overall native result now comes from the new `autotune` search mode, which selects the best candidate by measured PSNR, SSIM, and layer count.
+- the highest-scoring native result in this historical snapshot comes from the `autotune` search mode, which selects the best candidate by measured PSNR, SSIM, and layer count.
 
 ### Qualitative pack
 
@@ -498,7 +498,7 @@ That means the submission can now honestly say:
 
 ### Five-image Qwen raw versus hybrid review
 
-The repo now also contains a measured five-image Qwen review:
+This historical snapshot also contains a measured five-image Qwen review:
 
 ```bash
 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python scripts/run_curated_comparison.py \
@@ -544,7 +544,7 @@ What this means:
 
 ## Frontier five-image self-evaluation review
 
-The repo now also contains the measured frontier candidate-bank run:
+This historical snapshot also contains the measured frontier candidate-bank run:
 
 ```bash
 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python scripts/run_frontier_comparison.py \
@@ -627,12 +627,12 @@ Measured result:
 
 Notes:
 
-- the effect demo proves that the repo now has a real, exportable associated-effect artifact and a matching figure at `docs/figures/effects_layer_demo.png`;
+- the effect demo shows that the historical snapshot includes an exportable associated-effect artifact and a matching figure at `docs/figures/effects_layer_demo.png`;
 - the clean-reference rerun materially improves the heuristic, but the current effect-layer claim should still be framed as "early heuristic demo" rather than "solved shadow decomposition."
 
 ## Report figure pack
 
-The repo now contains a generated figure pack derived directly from the measured runs:
+This historical snapshot contains a generated figure pack derived directly from the measured runs:
 
 ```bash
 .venv/bin/python scripts/generate_report_figures.py

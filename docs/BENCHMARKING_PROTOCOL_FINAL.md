@@ -33,7 +33,7 @@ Each dataset plays a specific role and its metrics should be interpreted accordi
 
 ## Track A: segmentation
 
-Standard visible-grouping metrics. The current repo implementation uses coarse-group IoU on COCO and ADE20K rather than official PQ:
+Standard visible-grouping metrics. The current repository implementation uses coarse-group IoU on COCO and ADE20K rather than official PQ:
 
 ```text
 mIoU
@@ -185,4 +185,4 @@ python scripts/make_synthetic_dataset.py \
 
 That second export is the right benchmark substrate for recursive peeling, associated-effect layers, and intrinsic-layer inspection.
 
-These commands are the priority reproducibility harnesses for the current repository state. Any quantitative statement in the report should be reproducible from one of these evaluation paths.
+These commands are the primary reproducibility harnesses for the present repository state. Quantitative statements in the report should be reproducible from one of these evaluation paths.

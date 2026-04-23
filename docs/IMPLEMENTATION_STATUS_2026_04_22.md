@@ -21,7 +21,7 @@ This document records the repository state after the final 2026-04-22 measuremen
 1. Official COCO-style panoptic quality would require a full PQ evaluator rather than the current coarse-group IoU path.
 2. Stronger effect-layer claims would require an improved associated-effect extractor beyond the current heuristic implementation.
 
-## Evidence supported by the current archive
+## Evidence supported by the archived submission set
 
 1. The repository contains a measured same-image five-image comparison across native LayerForge, raw Qwen, and both hybrid modes.
 2. The repository contains at least one measured recursive-peeling run and one measured associated-effect demo.

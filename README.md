@@ -95,9 +95,9 @@ On Python `3.14`, `simple-lama-inpainting` currently fails to build because of a
 pip install torch torchvision transformers accelerate diffusers safetensors
 ```
 
-## Fast smoke run
+## Fast smoke evaluation
 
-If you just want to see the pipeline move end-to-end without downloading gigabytes of checkpoints, the synthetic generator plus fast config is the way to go:
+For an end-to-end verification pass without heavyweight checkpoint downloads, use the synthetic generator together with the fast configuration:
 
 ```bash
 python scripts/make_synthetic_dataset.py --output examples/synth --count 3
@@ -119,7 +119,7 @@ For a quick regression gate that stays away from heavyweight model downloads:
 
 ## Full model-backed run
 
-Once the model extras are installed, this is the recommended "the works" invocation:
+Once the model extras are installed, the recommended full pipeline invocation is:
 
 ```bash
 layerforge run \
@@ -132,9 +132,9 @@ layerforge run \
   --prompt-source augment
 ```
 
-The strongest current recipe in the repo is `configs/best_score.yaml`: ensemble depth, stronger boundary settings, and adaptive merge. The single biggest control knob is still the prompt list. For maximum score on a known scene, use curated prompts with `--prompt-source manual`; for a stronger automatic default, use `--prompt-source augment` to keep manual seed classes and let Gemini add extras.
+The current highest-performing native configuration is `configs/best_score.yaml`: ensemble depth, stronger boundary settings, and adaptive merge. The dominant control variable remains the prompt list. For a known scene, curated prompts with `--prompt-source manual` provide the strongest measured performance; for an automated default, `--prompt-source augment` preserves the manual seed classes and adds Gemini-generated extensions.
 
-Measured truck runs already in the repo:
+Measured truck runs included in the local working tree:
 
 | Run | Layers | PSNR | SSIM |
 |---|---:|---:|---:|
@@ -144,7 +144,7 @@ Measured truck runs already in the repo:
 | `runs/truck_best_score_augment` | 19 | 31.1524 | 0.9804 |
 | `runs/truck_candidate_search_v2/best` | 20 | 32.1053 | 0.9848 |
 
-So the repo is no longer stuck in the "interpretable but low-fidelity" regime. The upgraded native LayerForge recipe is now materially better than the old native run on both fidelity and stack compactness.
+These results show that the updated native LayerForge recipe materially improves over the earlier native run in both reconstruction fidelity and stack compactness.
 
 ## Candidate search
 
@@ -172,7 +172,7 @@ The current reproducible winner on the truck scene is `manual_precision` at `PSN
 
 ## Recursive semantic peeling
 
-The repo now includes a second decomposition path aimed at the "frontier" formulation: recursively peel the frontmost editable entity, inpaint the residual canvas, and keep iterating until the background is reached.
+The repository also includes a recursive decomposition path that peels the frontmost editable entity, inpaints the residual canvas, and iterates until the background is reached.
 
 ```bash
 layerforge peel \
@@ -229,7 +229,7 @@ PNG stacks, PSD-style folders, and report artifacts are projections of that grap
 
 ## Frontier comparison and self-evaluation
 
-The repo now includes a frontier orchestration script that treats LayerForge native, recursive peeling, raw Qwen, and fair Qwen hybrids as one candidate bank, then scores the successful candidates per image and records the repo's best editable pick.
+The repository includes a frontier orchestration script that treats native LayerForge, recursive peeling, raw Qwen, and Qwen-hybrid variants as a shared candidate bank, scores the successful candidates per image, and records the highest-scoring editable representation.
 
 ```bash
 python scripts/run_frontier_comparison.py \
@@ -271,14 +271,14 @@ Measured five-image frontier review (`runs/frontier_review/frontier_summary.json
 
 Measured interpretation:
 
-- `LayerForge native` remains the strongest overall representation on the current frontier score and now wins `4/5` images once the anti-trivial editability penalties are enabled;
+- `LayerForge native` remains the highest-scoring representation under the current frontier selector and wins `4/5` images once the anti-trivial editability penalties are enabled;
 - `Qwen + graph reorder` is the lone non-native winner in the measured bank, which is a useful reminder that imported generative stacks can still beat the native pipeline on certain compact scenes;
 - `LayerForge peeling` remains a real measured row, but the new evaluator no longer lets it win truck just because the recursive path is visually dramatic;
 - `Qwen raw` still matters as the compact generative baseline, but it no longer dominates once the comparison includes explicit structure and editability signals.
 
 ## Promptable target extraction
 
-The repo now exposes promptable target export as a first-class command instead of burying it inside the general run path:
+The repository exposes promptable target export as a dedicated command rather than requiring the general run path:
 
 ```bash
 layerforge extract \
@@ -522,7 +522,7 @@ These numbers are intentionally modest. The fast fallback over-segments the synt
 
 ## Public real-data benchmarks
 
-The repo now includes a real-data evaluator for visible semantic grouping on **COCO Panoptic val2017**. This is a coarse-group benchmark, not a full panoptic PQ implementation: COCO categories are mapped into the LayerForge groups (`person`, `animal`, `vehicle`, `furniture`, `plant`, `sky`, `road`, `ground`, `building`, `water`, `stuff`, `object`) and scored with dataset-level IoU.
+The repository includes a real-data evaluator for visible semantic grouping on **COCO Panoptic val2017**. This is a coarse-group benchmark rather than a full panoptic PQ implementation: COCO categories are mapped into the LayerForge groups (`person`, `animal`, `vehicle`, `furniture`, `plant`, `sky`, `road`, `ground`, `building`, `water`, `stuff`, `object`) and scored with dataset-level IoU.
 
 Download the official validation split and panoptic annotations:
 
@@ -545,7 +545,7 @@ layerforge benchmark-coco-panoptic \
   --seed 7
 ```
 
-Measured result already in the repo:
+Measured result in the local evidence pack:
 
 | Split | Segmenter | Images | Group mIoU | Thing mIoU | Stuff mIoU | Mean predicted segments |
 |---|---|---:|---:|---:|---:|---:|
@@ -570,7 +570,7 @@ Per-group IoU from `report_artifacts/metrics_snapshots/coco_panoptic_group_bench
 
 This benchmark is intentionally scoped to what COCO can supervise honestly: visible grouping quality. Depth ordering, amodal completion, and intrinsics still need different public datasets.
 
-The repo now also includes a second real-data evaluator for **ADE20K SceneParse150 validation**. This uses the same coarse-group IoU protocol as the COCO benchmark, but on a much broader scene-parsing dataset with denser indoor/outdoor background supervision. For ADE20K, the best available in-repo setup is the ADE-tuned Mask2Former config in [configs/ade20k_mask2former.yaml](configs/ade20k_mask2former.yaml).
+The repository also includes a second real-data evaluator for **ADE20K SceneParse150 validation**. This uses the same coarse-group IoU protocol as the COCO benchmark, but on a broader scene-parsing dataset with denser indoor/outdoor background supervision. For ADE20K, the strongest measured configuration in the repository is the ADE-tuned Mask2Former setup in [configs/ade20k_mask2former.yaml](configs/ade20k_mask2former.yaml).
 
 Download the official ADE benchmark zip:
 
@@ -593,7 +593,7 @@ layerforge benchmark-ade20k \
   --seed 7
 ```
 
-Measured result already in the repo:
+Measured result in the local evidence pack:
 
 | Split | Segmenter | Images | Group mIoU | Thing mIoU | Stuff mIoU | Mean image mIoU | Mean predicted segments |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -622,7 +622,7 @@ Interpretation:
 - ADE20K is a stronger background/scene-structure benchmark than COCO for this project;
 - these public benchmarks validate visible grouping only, while synthetic LayerBench remains the primary controlled benchmark for full-layer metrics such as order and recomposition under known ground truth.
 
-The repo now also includes a public depth benchmark on **DIODE validation**. This benchmark is complementary to COCO and ADE20K: it scores the depth subsystem directly on a public RGB-D dataset with both indoor and outdoor scenes.
+The repository also includes a public depth benchmark on **DIODE validation**. This benchmark complements COCO and ADE20K by evaluating the depth subsystem directly on a public RGB-D dataset with both indoor and outdoor scenes.
 
 Download the official validation tarball:
 
@@ -666,7 +666,7 @@ layerforge benchmark-diode \
   --seed 7
 ```
 
-Measured full-split results already in the repo:
+Measured full-split results in the local evidence pack:
 
 | Variant | Alignment | Images | AbsRel | RMSE | delta1 | SILog |
 |---|---|---:|---:|---:|---:|---:|
@@ -690,7 +690,7 @@ Interpretation:
 
 ## Learned ordering experiment
 
-The repo now includes a lightweight pairwise ranker trained on the synthetic benchmark. This lets you compare hand-built boundary ordering against a learned near/far scorer without introducing a heavy external training stack.
+The repository includes a lightweight pairwise ranker trained on the synthetic benchmark. This enables a comparison between hand-built boundary ordering and a learned near/far scorer without introducing a heavyweight external training stack.
 
 Train the ranker:
 
@@ -764,7 +764,7 @@ Accordingly, Qwen is used as:
 
 This comparative framing matches the measured evidence in the repository and keeps the project claims aligned with the current frontier.
 
-To make the multi-image comparison reproducible rather than ad hoc, the repo now includes:
+To make the multi-image comparison reproducible rather than ad hoc, the repository includes:
 
 ```bash
 python scripts/run_curated_comparison.py \

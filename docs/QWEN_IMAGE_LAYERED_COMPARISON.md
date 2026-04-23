@@ -96,7 +96,7 @@ That writes both the per-image run trees and an aggregate `comparison_summary.js
 
 ## Measured five-image review
 
-The repo now contains a same-image five-image comparison in `runs/qwen_five_image_review/` covering:
+The repository contains a same-image five-image comparison in `runs/qwen_five_image_review/` covering:
 
 - `data/demo/truck.jpg`
 - `data/qualitative_pack/astronaut.png`
@@ -124,7 +124,7 @@ Aggregate mean results over the five images:
 
 Per-image takeaways:
 
-- `truck`: native LayerForge narrowly beats raw Qwen on PSNR and wins SSIM by a large margin; preserve-order hybrid is the fairest structured comparison row.
+- `truck`: native LayerForge narrowly exceeds raw Qwen on PSNR and records a substantially higher SSIM; the preserve-order hybrid remains the most direct structured comparison row.
 - `astronaut`: raw Qwen keeps the best PSNR, while both hybrid modes slightly improve SSIM over raw.
 - `coffee`: native LayerForge is the strongest row on both PSNR and SSIM.
 - `chelsea_cat`: raw Qwen keeps the best PSNR, while native LayerForge has the best SSIM.
@@ -151,7 +151,7 @@ That phrasing makes the complementarity obvious and avoids confusing the baselin
 
 ## Measured truck comparison
 
-The repo now contains both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg`:
+The repository contains both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg`:
 
 | Run | Layers | PSNR | SSIM | Notes |
 |---|---:|---:|---:|---|

@@ -83,7 +83,7 @@ Per-image note:
 
 - raw Qwen keeps the best mean PSNR, but native LayerForge wins on PSNR for `truck` and `coffee`;
 - native LayerForge has the best mean SSIM across the five images, albeit with a much larger stack than Qwen;
-- `Qwen + graph preserve` is the fairest hybrid row because it keeps the interpreted external order while adding graph, amodal, and intrinsic metadata;
+- `Qwen + graph preserve` is the most direct metadata-first hybrid row because it keeps the interpreted external order while adding graph, amodal, and intrinsic metadata;
 - the hybrid rows should therefore be framed as structured-representation complements, not universal visual-fidelity winners.
 
 ## Table 7 — Associated-effect demo
@@ -94,14 +94,14 @@ Per-image note:
 
 Notes:
 
-- the repo now contains a real associated-effect demo figure at `docs/figures/effects_layer_demo.png`;
+- the repository includes a measured associated-effect figure at `docs/figures/effects_layer_demo.png`;
 - the extractor is still an early heuristic prototype, but the clean-reference rerun is now materially stronger than the first draft and good enough to discuss without overselling it as solved shadow decomposition.
 
 ## Table 8 — Frontier self-evaluation review
 
 | Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | strongest overall frontier score after anti-triviality penalties |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | highest frontier score after anti-triviality penalties |
 | LF peel | 5 | 27.0988 | 0.9096 | 0.4783 | 0 | explicit recursive removal path; not the strongest measured row yet |
 | Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2541 | 0 | compact generative baseline; weak editability signals |
 | Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5259 | 0 | fair metadata-first hybrid; preserves the best external visual order |
@@ -128,7 +128,7 @@ Notes:
 
 - measured from `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`;
 - this benchmark intentionally separates semantic target hit from overlap and alpha quality;
-- the current weakness is prompt routing for point-only and box-only queries, not matte stability.
+- the primary limitation in this benchmark is prompt routing for point-only and box-only queries, not matte stability.
 
 ## Table 10 — Transparent benchmark
 

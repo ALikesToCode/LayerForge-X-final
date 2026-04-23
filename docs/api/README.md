@@ -1,6 +1,6 @@
 # LayerForge API Notes
 
-`openapi.yaml` is intentionally ahead of the current CLI implementation.
+`openapi.yaml` intentionally specifies the public contract beyond the current CLI surface.
 
 This repository still exposes its engine primarily through Python and the
 `layerforge` CLI, but the product direction is API-first. The OpenAPI contract
@@ -10,7 +10,7 @@ therefore serves two purposes:
 - it gives future control-plane work a stable contract before any web service is
   introduced.
 
-Current repo surface:
+Current repository surface:
 
 - `layerforge run`
 - `layerforge peel`

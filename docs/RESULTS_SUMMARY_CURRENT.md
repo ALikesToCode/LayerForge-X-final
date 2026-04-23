@@ -1,6 +1,6 @@
 # Results Summary (current submission)
 
-This file is the human-readable bridge to the current measured evidence pack.
+This document summarizes the current measured evidence pack in prose form.
 
 ## Canonical evidence pack
 

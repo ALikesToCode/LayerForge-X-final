@@ -1,7 +1,7 @@
 # LayerForge Product, Architecture, and Launch Plan
 
-This repository now has a clear product anchor: LayerForge is not "just a decomposition
-pipeline" and not "just a hosted model call". The strongest shape is a
+This repository has a clear product anchor: LayerForge is neither only a decomposition
+pipeline nor only a hosted model endpoint. The intended product shape is a
 **self-evaluating layer-representation platform** built around a canonical
 Depth-Aware Amodal Layer Graph (DALG).
 
@@ -54,7 +54,7 @@ LayerForge should evolve as four planes, not one giant service:
    - DALG manifests
    - metrics, traces, audit logs, and recipe history
 
-The current repo now reflects the object model required for that transition,
+The current repository reflects the object model required for that transition,
 even though it does not yet ship the control plane or browser editor.
 
 ## Why DALG is the canonical object

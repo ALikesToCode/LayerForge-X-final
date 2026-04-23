@@ -10,7 +10,7 @@ The output is a graph rather than only a layer stack. Nodes carry semantic RGBA 
 
 ### Claim 2 — Boundary-aware ordering with an optional learned ranker
 
-Layer ordering uses local depth evidence near shared boundaries instead of only global mean or median depth. On top of that, the repo now includes a lightweight learned pairwise ranker trained on synthetic scenes. That gives a clean heuristic-vs-learned ordering comparison without pretending the whole system is an end-to-end trained decomposer.
+Layer ordering uses local depth evidence near shared boundaries instead of only global mean or median depth. The repository also includes a lightweight learned pairwise ranker trained on synthetic scenes. This provides a direct heuristic-versus-learned ordering comparison without recasting the full system as an end-to-end trained decomposer.
 
 ### Claim 3 — Layer enrichment beyond RGBA
 
