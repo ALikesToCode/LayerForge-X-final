@@ -101,6 +101,12 @@ def cmd_autotune(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_frontier(args: argparse.Namespace) -> int:
+    from .frontier import run_frontier_comparison
+
+    return run_frontier_comparison(args)
+
+
 def cmd_enrich_qwen(args: argparse.Namespace) -> int:
     cfg = load_config(args.config)
     pipe = LayerForgePipeline(cfg, device=args.device)
@@ -346,6 +352,12 @@ def build_parser() -> argparse.ArgumentParser:
     autotune.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
     autotune.add_argument("--no-parallax", action="store_true")
     autotune.set_defaults(func=cmd_autotune)
+
+    frontier = sub.add_parser("frontier", help="Run the full measured native/Qwen/peeling candidate bank for one or more images and keep the best scored decomposition per image")
+    from .frontier import add_frontier_arguments
+
+    add_frontier_arguments(frontier)
+    frontier.set_defaults(func=cmd_frontier)
 
     enrich = sub.add_parser("enrich-qwen", help="Import RGBA layers from Qwen-Image-Layered or any external decomposer and add LayerForge graph/depth/intrinsic metadata")
     enrich.add_argument("--input", required=True, help="Original RGB image")
