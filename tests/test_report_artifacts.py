@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 
@@ -44,3 +45,19 @@ def test_report_artifact_snapshots_and_figures_are_valid() -> None:
     for rel_path in figure_manifest["generated_figures"].values():
         figure_name = Path(rel_path).name
         assert figure_name in figures_doc
+
+
+def test_report_source_shell_links_resolve() -> None:
+    source = ROOT / "docs" / "final_report_pack" / "LayerForge_X_Final_Report_SOURCE.md"
+    links = re.findall(r"\(([^)]+)\)", source.read_text(encoding="utf-8"))
+    checked = 0
+    for link in links:
+        if link.startswith(("http://", "https://", "#", "mailto:")):
+            continue
+        if link.startswith("<") and link.endswith(">"):
+            link = link[1:-1]
+        if not any(link.endswith(ext) for ext in (".png", ".md", ".json", ".yaml", ".pdf", ".docx", ".bib")):
+            continue
+        checked += 1
+        assert (source.parent / link).resolve().exists(), link
+    assert checked > 0

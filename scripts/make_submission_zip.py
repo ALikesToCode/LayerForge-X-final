@@ -47,6 +47,14 @@ EXCLUDED_SUFFIXES = {
     ".pyc",
 }
 
+EXCLUDED_NAME_PREFIXES = (
+    ".~lock.",
+)
+
+EXCLUDED_NAME_SUFFIXES = (
+    "#",
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Create a submission ZIP without heavyweight local artifacts or internal notes.")
@@ -62,6 +70,7 @@ def should_include(rel_path: Path) -> bool:
     parts = rel_path.parts
     if not parts:
         return False
+    name = rel_path.name
     top = parts[0]
     if top in EXCLUDED_DIR_NAMES:
         return False
@@ -70,6 +79,10 @@ def should_include(rel_path: Path) -> bool:
     if any(rel_path.as_posix().startswith(prefix) for prefix in EXCLUDED_PATH_PREFIXES):
         return False
     if rel_path.suffix in EXCLUDED_SUFFIXES:
+        return False
+    if any(name.startswith(prefix) for prefix in EXCLUDED_NAME_PREFIXES):
+        return False
+    if any(name.endswith(suffix) for suffix in EXCLUDED_NAME_SUFFIXES):
         return False
     if "__pycache__" in parts:
         return False

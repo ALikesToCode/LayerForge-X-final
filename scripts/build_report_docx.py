@@ -28,6 +28,13 @@ def _resolve_path(value: str) -> Path:
     return (ROOT / value).resolve() if not Path(value).is_absolute() else Path(value)
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def _require_tool(name: str) -> str:
     path = shutil.which(name)
     if not path:
@@ -47,7 +54,7 @@ def main() -> int:
     full_markdown.parent.mkdir(parents=True, exist_ok=True)
     build_manifest.parent.mkdir(parents=True, exist_ok=True)
 
-    base = ROOT / "docs" / "final_report_pack" / "sources" / "LayerForge_X_Final_Report_SOURCE.md"
+    base = ROOT / "docs" / "final_report_pack" / "LayerForge_X_Final_Report_SOURCE.md"
     sections = [
         ROOT / "docs" / "final_report_pack" / "sources" / "01_LITERATURE_REVIEW_ADVANCED.md",
         ROOT / "docs" / "final_report_pack" / "sources" / "02_BENCHMARKING_PROTOCOL.md",
@@ -113,14 +120,14 @@ def main() -> int:
 
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "source_shell": str(base.relative_to(ROOT)),
-        "sources": [str(section.relative_to(ROOT)) for section in sections],
+        "source_shell": _display_path(base),
+        "sources": [_display_path(section) for section in sections],
         "outputs": {
-            "docx": str(output.relative_to(ROOT)),
-            "markdown": str(full_markdown.relative_to(ROOT)),
-            "pdf": str(pdf_output.relative_to(ROOT)) if pdf_generated else None,
+            "docx": _display_path(output),
+            "markdown": _display_path(full_markdown),
+            "pdf": _display_path(pdf_output) if pdf_generated else None,
         },
-        "reference_doc": str(reference_doc.relative_to(ROOT)),
+        "reference_doc": _display_path(reference_doc),
         "tools": {
             "pandoc": shutil.which("pandoc"),
             "libreoffice": shutil.which("libreoffice"),

@@ -3,18 +3,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
-from layerforge.pipeline import LayerForgePipeline
-from layerforge.transparent import export_transparent_assets
-
-
 ROOT = Path(__file__).resolve().parents[1]
 
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
+
+from layerforge.pipeline import LayerForgePipeline
+from layerforge.transparent import export_transparent_assets
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Benchmark LayerForge transparent-mode approximation on synthetic transparent scenes.")

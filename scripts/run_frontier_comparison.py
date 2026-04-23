@@ -9,14 +9,15 @@ import sys
 import time
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
+
 from layerforge.config import load_config
 from layerforge.editability import evaluate_run_editability
 from layerforge.proposals import build_frontier_candidate_specs
 from layerforge.self_eval import choose_best_candidates
-
-
-ROOT = Path(__file__).resolve().parents[1]
-
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run the LayerForge-X++ frontier comparison bank and select the best decomposition per image.")

@@ -3,7 +3,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
 
 from layerforge.qwen_io import score_raw_rgba_layers
 

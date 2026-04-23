@@ -15,9 +15,12 @@ This directory contains the final report deliverables and the corresponding buil
 
 ## Source files
 
-The report build inputs live under `sources/`:
+The report build shell lives at the top level of this directory:
 
 - `LayerForge_X_Final_Report_SOURCE.md`
+
+The stitched section sources live under `sources/`:
+
 - `01_LITERATURE_REVIEW_ADVANCED.md`
 - `02_BENCHMARKING_PROTOCOL.md`
 - `03_NOVELTY_AND_METHOD.md`

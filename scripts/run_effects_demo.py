@@ -3,10 +3,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
 
 from layerforge.config import load_config
 from layerforge.peeling import extract_associated_effect_layer

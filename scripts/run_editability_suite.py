@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from layerforge.editability import evaluate_run_editability
-
-
 ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
+
+from layerforge.editability import evaluate_run_editability
 
 
 def parse_args() -> argparse.Namespace:

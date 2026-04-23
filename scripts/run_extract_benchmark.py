@@ -3,18 +3,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 
+ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT / "src"))
+
 from layerforge.editability import export_target_assets
 from layerforge.pipeline import LayerForgePipeline
 from layerforge.utils import mask_iou
-
-
-ROOT = Path(__file__).resolve().parents[1]
-
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Benchmark LayerForge promptable extraction on synthetic LayerBench-style scenes.")
