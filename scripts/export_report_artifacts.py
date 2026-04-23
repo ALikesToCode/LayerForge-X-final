@@ -144,13 +144,13 @@ layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_truck_
 ## Five-image Qwen review
 
 ```bash
-python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 3,4,6,8 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png data/qualitative_pack/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 3,4,6,8 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 ```
 
 ## Frontier comparison and self-evaluation
 
 ```bash
-python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png data/qualitative_pack/image.png --output-root runs/frontier_review --native-config configs/frontier.yaml --peeling-config configs/recursive_peeling.yaml --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/frontier_summary.json --output runs/frontier_review/editability_suite_summary.json
 ```
 
@@ -200,14 +200,92 @@ def _package_version(name: str) -> str:
         return "not-installed"
 
 
-def copy_snapshots() -> None:
+def copy_snapshots() -> dict[str, object]:
     dst = TARGET / "metrics_snapshots"
     dst.mkdir(parents=True, exist_ok=True)
+    copied: dict[str, object] = {}
     for name, src in SNAPSHOTS.items():
         if not src.exists():
             raise FileNotFoundError(f"Missing source artifact: {src}")
         payload = json.loads(src.read_text(encoding="utf-8"))
         (dst / name).write_text(json.dumps(_sanitize_json(payload), indent=2, sort_keys=True), encoding="utf-8")
+        copied[name] = payload
+    return copied
+
+
+def _aggregate_lookup(rows: list[dict[str, object]]) -> dict[str, dict[str, object]]:
+    return {str(row["label"]): row for row in rows}
+
+
+def _best_image_wins(best_by_image: list[dict[str, object]]) -> dict[str, int]:
+    wins: dict[str, int] = {}
+    for row in best_by_image:
+        label = str(row.get("label"))
+        wins[label] = wins.get(label, 0) + 1
+    return wins
+
+
+def refresh_project_manifest(snapshot_payloads: dict[str, object]) -> None:
+    manifest_path = ROOT / "PROJECT_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    measured = manifest["measured_results"]
+
+    qwen_summary = snapshot_payloads["qwen_five_image_review_summary.json"]
+    qwen_rows = _aggregate_lookup(qwen_summary["aggregates"])
+    frontier_summary = snapshot_payloads["frontier_review_summary.json"]
+    frontier_rows = _aggregate_lookup(frontier_summary["aggregates"])
+
+    qwen = measured["qwen_five_image_review"]
+    qwen["qwen_raw_mean_psnr"] = float(qwen_rows["Qwen raw (4)"]["mean_psnr"])
+    qwen["qwen_raw_mean_ssim"] = float(qwen_rows["Qwen raw (4)"]["mean_ssim"])
+    qwen["qwen_graph_preserve_mean_psnr"] = float(qwen_rows["Qwen + graph preserve (4)"]["mean_psnr"])
+    qwen["qwen_graph_preserve_mean_ssim"] = float(qwen_rows["Qwen + graph preserve (4)"]["mean_ssim"])
+    qwen["qwen_graph_reorder_mean_psnr"] = float(qwen_rows["Qwen + graph reorder (4)"]["mean_psnr"])
+    qwen["qwen_graph_reorder_mean_ssim"] = float(qwen_rows["Qwen + graph reorder (4)"]["mean_ssim"])
+    qwen["qwen_raw_mean_psnr_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen raw ({layer})"]["mean_psnr"])
+        for layer in (3, 4, 6, 8)
+    }
+    qwen["qwen_raw_mean_ssim_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen raw ({layer})"]["mean_ssim"])
+        for layer in (3, 4, 6, 8)
+    }
+    qwen["qwen_graph_preserve_mean_psnr_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen + graph preserve ({layer})"]["mean_psnr"])
+        for layer in (3, 4, 6, 8)
+    }
+    qwen["qwen_graph_preserve_mean_ssim_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen + graph preserve ({layer})"]["mean_ssim"])
+        for layer in (3, 4, 6, 8)
+    }
+    qwen["qwen_graph_reorder_mean_psnr_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen + graph reorder ({layer})"]["mean_psnr"])
+        for layer in (3, 4, 6, 8)
+    }
+    qwen["qwen_graph_reorder_mean_ssim_by_layers"] = {
+        str(layer): float(qwen_rows[f"Qwen + graph reorder ({layer})"]["mean_ssim"])
+        for layer in (3, 4, 6, 8)
+    }
+
+    frontier = measured["frontier_review"]
+    frontier["layerforge_native_mean_psnr"] = float(frontier_rows["LayerForge native"]["mean_psnr"])
+    frontier["layerforge_native_mean_ssim"] = float(frontier_rows["LayerForge native"]["mean_ssim"])
+    frontier["layerforge_native_mean_self_eval_score"] = float(frontier_rows["LayerForge native"]["mean_self_eval_score"])
+    frontier["layerforge_peeling_mean_psnr"] = float(frontier_rows["LayerForge peeling"]["mean_psnr"])
+    frontier["layerforge_peeling_mean_ssim"] = float(frontier_rows["LayerForge peeling"]["mean_ssim"])
+    frontier["layerforge_peeling_mean_self_eval_score"] = float(frontier_rows["LayerForge peeling"]["mean_self_eval_score"])
+    frontier["qwen_raw_mean_psnr"] = float(frontier_rows["Qwen raw (4)"]["mean_psnr"])
+    frontier["qwen_raw_mean_ssim"] = float(frontier_rows["Qwen raw (4)"]["mean_ssim"])
+    frontier["qwen_raw_mean_self_eval_score"] = float(frontier_rows["Qwen raw (4)"]["mean_self_eval_score"])
+    frontier["qwen_graph_preserve_mean_psnr"] = float(frontier_rows["Qwen + graph preserve (4)"]["mean_psnr"])
+    frontier["qwen_graph_preserve_mean_ssim"] = float(frontier_rows["Qwen + graph preserve (4)"]["mean_ssim"])
+    frontier["qwen_graph_preserve_mean_self_eval_score"] = float(frontier_rows["Qwen + graph preserve (4)"]["mean_self_eval_score"])
+    frontier["qwen_graph_reorder_mean_psnr"] = float(frontier_rows["Qwen + graph reorder (4)"]["mean_psnr"])
+    frontier["qwen_graph_reorder_mean_ssim"] = float(frontier_rows["Qwen + graph reorder (4)"]["mean_ssim"])
+    frontier["qwen_graph_reorder_mean_self_eval_score"] = float(frontier_rows["Qwen + graph reorder (4)"]["mean_self_eval_score"])
+    frontier["best_image_wins"] = _best_image_wins(frontier_summary["best_by_image"])
+
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 def _sanitize_string(value: str) -> str:
     root_prefix = str(ROOT) + "/"
     if value == str(ROOT):
@@ -289,7 +367,8 @@ def write_command_log() -> None:
 
 def main() -> int:
     TARGET.mkdir(parents=True, exist_ok=True)
-    copy_snapshots()
+    snapshots = copy_snapshots()
+    refresh_project_manifest(snapshots)
     write_figure_sources()
     write_command_log()
     write_readme()

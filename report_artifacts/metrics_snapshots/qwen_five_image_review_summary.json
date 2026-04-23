@@ -3,14 +3,6 @@
     {
       "graph": true,
       "images": 5,
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.3056546241507321,
-      "mean_psnr": 27.343785327586026,
-      "mean_ssim": 0.9464110067478753
-    },
-    {
-      "graph": true,
-      "images": 5,
       "label": "Qwen + graph preserve (3)",
       "mean_amodal_extra_ratio": 1.5001591598323691,
       "mean_psnr": 29.231064023047146,
@@ -61,16 +53,16 @@
       "images": 5,
       "label": "Qwen + graph reorder (6)",
       "mean_amodal_extra_ratio": 2.2337809843740524,
-      "mean_psnr": 21.40636628432062,
-      "mean_ssim": 0.8133249020206303
+      "mean_psnr": 28.696387046319433,
+      "mean_ssim": 0.8586131926469156
     },
     {
       "graph": true,
       "images": 5,
       "label": "Qwen + graph reorder (8)",
       "mean_amodal_extra_ratio": 2.234580268893457,
-      "mean_psnr": 18.45965847130124,
-      "mean_ssim": 0.7826635340527784
+      "mean_psnr": 26.754280119438885,
+      "mean_ssim": 0.844293398229145
     },
     {
       "graph": false,
@@ -107,30 +99,19 @@
   ],
   "commands": [
     {
-      "command": "skip existing runs/qwen_five_image_review/truck/native",
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_3",
       "returncode": null,
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/demo/truck.jpg --output-dir runs/qwen_five_image_review/truck/qwen_3 --model Qwen/Qwen-Image-Layered --layers 3 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/truck/qwen_3/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/truck/qwen_3/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_3_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_3 --output runs/qwen_five_image_review/truck/qwen_3_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_3_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_3_hybrid_preserve/metrics.json\nordered enriched layers: 3"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_3 --output runs/qwen_five_image_review/truck/qwen_3_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_3_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_3_hybrid_reorder/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_3_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
       "command": "skip existing runs/qwen_five_image_review/truck/qwen_4",
@@ -148,72 +129,49 @@
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/demo/truck.jpg --output-dir runs/qwen_five_image_review/truck/qwen_6 --model Qwen/Qwen-Image-Layered --layers 6 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/truck/qwen_6/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/truck/qwen_6/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_6 --output runs/qwen_five_image_review/truck/qwen_6_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_6_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_6_hybrid_preserve/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_6 --output runs/qwen_five_image_review/truck/qwen_6_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_6_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_6_hybrid_reorder/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/demo/truck.jpg --output-dir runs/qwen_five_image_review/truck/qwen_8 --model Qwen/Qwen-Image-Layered --layers 8 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/truck/qwen_8/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/truck/qwen_8/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_8 --output runs/qwen_five_image_review/truck/qwen_8_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_8_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_8_hybrid_preserve/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_8 --output runs/qwen_five_image_review/truck/qwen_8_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/truck/qwen_8_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/truck/qwen_8_hybrid_reorder/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": "skip existing runs/qwen_five_image_review/astronaut/native",
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_6",
       "returncode": null,
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/astronaut.png --output-dir runs/qwen_five_image_review/astronaut/qwen_3 --model Qwen/Qwen-Image-Layered --layers 3 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/astronaut/qwen_3/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/astronaut/qwen_3/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_6_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_3 --output runs/qwen_five_image_review/astronaut/qwen_3_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_3_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_3_hybrid_preserve/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_6_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_3 --output runs/qwen_five_image_review/astronaut/qwen_3_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_3_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_3_hybrid_reorder/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_8",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_8_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/truck/qwen_8_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_3",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_3_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_3_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
       "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_4",
@@ -231,72 +189,49 @@
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/astronaut.png --output-dir runs/qwen_five_image_review/astronaut/qwen_6 --model Qwen/Qwen-Image-Layered --layers 6 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/astronaut/qwen_6/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/astronaut/qwen_6/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_6 --output runs/qwen_five_image_review/astronaut/qwen_6_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_6_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_6_hybrid_preserve/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_6 --output runs/qwen_five_image_review/astronaut/qwen_6_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_6_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_6_hybrid_reorder/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/astronaut.png --output-dir runs/qwen_five_image_review/astronaut/qwen_8 --model Qwen/Qwen-Image-Layered --layers 8 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/astronaut/qwen_8/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/astronaut/qwen_8/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_8 --output runs/qwen_five_image_review/astronaut/qwen_8_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_8_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_8_hybrid_preserve/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_8 --output runs/qwen_five_image_review/astronaut/qwen_8_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/astronaut/qwen_8_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/astronaut/qwen_8_hybrid_reorder/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": "skip existing runs/qwen_five_image_review/coffee/native",
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_6",
       "returncode": null,
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/coffee.png --output-dir runs/qwen_five_image_review/coffee/qwen_3 --model Qwen/Qwen-Image-Layered --layers 3 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/coffee/qwen_3/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/coffee/qwen_3/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_6_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_3 --output runs/qwen_five_image_review/coffee/qwen_3_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_3_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_3_hybrid_preserve/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_6_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_3 --output runs/qwen_five_image_review/coffee/qwen_3_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_3_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_3_hybrid_reorder/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_8",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_8_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/astronaut/qwen_8_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_3",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_3_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_3_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
       "command": "skip existing runs/qwen_five_image_review/coffee/qwen_4",
@@ -314,72 +249,49 @@
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/coffee.png --output-dir runs/qwen_five_image_review/coffee/qwen_6 --model Qwen/Qwen-Image-Layered --layers 6 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/coffee/qwen_6/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/coffee/qwen_6/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_6 --output runs/qwen_five_image_review/coffee/qwen_6_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_6_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_6_hybrid_preserve/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_6 --output runs/qwen_five_image_review/coffee/qwen_6_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_6_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_6_hybrid_reorder/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/coffee.png --output-dir runs/qwen_five_image_review/coffee/qwen_8 --model Qwen/Qwen-Image-Layered --layers 8 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/coffee/qwen_8/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/coffee/qwen_8/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_8 --output runs/qwen_five_image_review/coffee/qwen_8_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_8_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_8_hybrid_preserve/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_8 --output runs/qwen_five_image_review/coffee/qwen_8_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/coffee/qwen_8_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/coffee/qwen_8_hybrid_reorder/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/native",
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_6",
       "returncode": null,
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/chelsea_cat.png --output-dir runs/qwen_five_image_review/chelsea_cat/qwen_3 --model Qwen/Qwen-Image-Layered --layers 3 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/chelsea_cat/qwen_3/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/chelsea_cat/qwen_3/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_6_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_3 --output runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_preserve/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_6_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_3 --output runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_reorder/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_8",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_8_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/coffee/qwen_8_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_3",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_3_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
       "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_4",
@@ -397,72 +309,49 @@
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/chelsea_cat.png --output-dir runs/qwen_five_image_review/chelsea_cat/qwen_6 --model Qwen/Qwen-Image-Layered --layers 6 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/chelsea_cat/qwen_6/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/chelsea_cat/qwen_6/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_6 --output runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_preserve/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_6 --output runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_reorder/metrics.json\nordered enriched layers: 6"
-    },
-    {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input data/qualitative_pack/chelsea_cat.png --output-dir runs/qwen_five_image_review/chelsea_cat/qwen_8 --model Qwen/Qwen-Image-Layered --layers 8 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/chelsea_cat/qwen_8/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/chelsea_cat/qwen_8/metrics.json\", ... [scrubbed local runtime log]"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_8 --output runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_preserve/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": ".venv/bin/layerforge enrich-qwen --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_8 --output runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_reorder/metrics.json\nordered enriched layers: 8"
-    },
-    {
-      "command": "skip existing runs/qwen_five_image_review/image/native",
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_6",
       "returncode": null,
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input examples/synth/scene_000/image.png --output-dir runs/qwen_five_image_review/image/qwen_3 --model Qwen/Qwen-Image-Layered --layers 3 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/image/qwen_3/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/image/qwen_3/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_3 --output runs/qwen_five_image_review/image/qwen_3_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_3_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_3_hybrid_preserve/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_3 --output runs/qwen_five_image_review/image/qwen_3_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_3_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_3_hybrid_reorder/metrics.json\nordered enriched layers: 3"
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_8",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_3",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_3_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
+    },
+    {
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_3_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
       "command": "skip existing runs/qwen_five_image_review/image/qwen_4",
@@ -480,46 +369,34 @@
       "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input examples/synth/scene_000/image.png --output-dir runs/qwen_five_image_review/image/qwen_6 --model Qwen/Qwen-Image-Layered --layers 6 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n.venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/image/qwen_6/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/image/qwen_6/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_6",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_6 --output runs/qwen_five_image_review/image/qwen_6_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_6_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_6_hybrid_preserve/metrics.json\nordered enriched layers: 6"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_6_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_6 --output runs/qwen_five_image_review/image/qwen_6_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_6_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_6_hybrid_reorder/metrics.json\nordered enriched layers: 6"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_6_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/python scripts/run_qwen_image_layered.py --input examples/synth/scene_000/image.png --output-dir runs/qwen_five_image_review/image/qwen_8 --model Qwen/Qwen-Image-Layered --layers 8 --resolution 640 --steps 10 --device cuda --dtype bfloat16 --offload sequential",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": ".venv/lib/python3.14/site-packages/transformers/generation/utils.py:2511: UserWarning: You are calling .generate() with the `input_ids` being on a device type different than your model's device. `input_ids` is on cuda, whereas the model is on meta. You may experience unexpected behaviors or slower generation. Please make sure that you have put `input_ids` to the correct device by calling for example input_ids = input_ids.to('meta') before running `.generate()`.\nwarnings.warn( ... [scrubbed local runtime log]",
-      "stdout": "{\n\"manifest\": \"runs/qwen_five_image_review/image/qwen_8/manifest.json\",\n\"metrics\": \"runs/qwen_five_image_review/image/qwen_8/metrics.json\", ... [scrubbed local runtime log]"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_8",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_8 --output runs/qwen_five_image_review/image/qwen_8_hybrid_preserve --config configs/best_score.yaml --depth ensemble --preserve-external-order",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_8_hybrid_preserve/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_8_hybrid_preserve/metrics.json\nordered enriched layers: 8"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_8_hybrid_preserve",
+      "returncode": null,
+      "status": "skipped"
     },
     {
-      "command": ".venv/bin/layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_8 --output runs/qwen_five_image_review/image/qwen_8_hybrid_reorder --config configs/best_score.yaml --depth ensemble",
-      "returncode": 0,
-      "status": "ok",
-      "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads. ... [scrubbed local runtime log]",
-      "stdout": "manifest: runs/qwen_five_image_review/image/qwen_8_hybrid_reorder/manifest.json\nmetrics:  runs/qwen_five_image_review/image/qwen_8_hybrid_reorder/metrics.json\nordered enriched layers: 8"
+      "command": "skip existing runs/qwen_five_image_review/image/qwen_8_hybrid_reorder",
+      "returncode": null,
+      "status": "skipped"
     }
   ],
   "inputs": [
@@ -527,7 +404,7 @@
     "data/qualitative_pack/astronaut.png",
     "data/qualitative_pack/coffee.png",
     "data/qualitative_pack/chelsea_cat.png",
-    "examples/synth/scene_000/image.png"
+    "data/qualitative_pack/image.png"
   ],
   "output_root": "runs/qwen_five_image_review",
   "qwen_hybrid_modes": [
@@ -536,33 +413,11 @@
   ],
   "rows": [
     {
-      "depth_method": "ensemble",
-      "effect_layer_count": null,
-      "graph_order_psnr": null,
-      "graph_order_ssim": null,
-      "has_graph": true,
-      "has_ordered_layers": true,
-      "image": "data/demo/truck.jpg",
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.32756056971111697,
-      "merge_external_layers": null,
-      "mode": "layerforge",
-      "num_layers": 23.0,
-      "ordering_method": "boundary",
-      "preserve_external_order": null,
-      "recompose_psnr": 28.824744670543478,
-      "recompose_ssim": 0.9732242152319729,
-      "run_dir": "runs/qwen_five_image_review/truck/native",
-      "segmentation_method": "grounded_sam2",
-      "selected_external_order_psnr": null,
-      "selected_external_order_ssim": null,
-      "selected_visual_order": null,
-      "status": "ok",
-      "visual_order_mode": null
-    },
-    {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -589,6 +444,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 26.81404069790235,
       "graph_order_ssim": 0.782291232575928,
       "has_graph": true,
@@ -616,6 +474,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 26.81404069790235,
       "graph_order_ssim": 0.782291232575928,
       "has_graph": true,
@@ -643,6 +504,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -669,6 +533,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 26.81600276608984,
       "graph_order_ssim": 0.7826687598485224,
       "has_graph": true,
@@ -696,6 +563,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 26.81600276608984,
       "graph_order_ssim": 0.7826687598485224,
       "has_graph": true,
@@ -723,6 +593,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -749,6 +622,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 18.331188047587457,
       "graph_order_ssim": 0.735515101385596,
       "has_graph": true,
@@ -776,6 +652,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 18.331188047587457,
       "graph_order_ssim": 0.735515101385596,
       "has_graph": true,
@@ -789,8 +668,8 @@
       "num_layers": 6.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 18.331188047587457,
-      "recompose_ssim": 0.735515101385596,
+      "recompose_psnr": 26.265510518265955,
+      "recompose_ssim": 0.7779858291942796,
       "requested_layers": 6,
       "run_dir": "runs/qwen_five_image_review/truck/qwen_6_hybrid_reorder",
       "segmentation_method": null,
@@ -798,11 +677,14 @@
       "selected_external_order_ssim": 0.7779858291942796,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -829,6 +711,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 15.607762486098288,
       "graph_order_ssim": 0.6917518198390135,
       "has_graph": true,
@@ -856,6 +741,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 15.607762486098288,
       "graph_order_ssim": 0.6917518198390135,
       "has_graph": true,
@@ -863,14 +751,14 @@
       "hybrid_mode": "reorder",
       "image": "data/demo/truck.jpg",
       "label": "Qwen + graph reorder (8)",
-      "mean_amodal_extra_ratio": 1.5843158381717926,
+      "mean_amodal_extra_ratio": 1.584315838171793,
       "merge_external_layers": false,
       "mode": "external_rgba_enrichment",
       "num_layers": 8.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 15.607762486098288,
-      "recompose_ssim": 0.6917518198390135,
+      "recompose_psnr": 26.406841742040406,
+      "recompose_ssim": 0.7799293261103538,
       "requested_layers": 8,
       "run_dir": "runs/qwen_five_image_review/truck/qwen_8_hybrid_reorder",
       "segmentation_method": null,
@@ -878,36 +766,14 @@
       "selected_external_order_ssim": 0.7799293261103538,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
-    },
-    {
-      "depth_method": "ensemble",
-      "effect_layer_count": null,
-      "graph_order_psnr": null,
-      "graph_order_ssim": null,
-      "has_graph": true,
-      "has_ordered_layers": true,
-      "image": "data/qualitative_pack/astronaut.png",
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.372298510373954,
-      "merge_external_layers": null,
-      "mode": "layerforge",
-      "num_layers": 18.0,
-      "ordering_method": "boundary",
-      "preserve_external_order": null,
-      "recompose_psnr": 26.167853517516914,
-      "recompose_ssim": 0.929949983053585,
-      "run_dir": "runs/qwen_five_image_review/astronaut/native",
-      "segmentation_method": "grounded_sam2",
-      "selected_external_order_psnr": null,
-      "selected_external_order_ssim": null,
-      "selected_visual_order": null,
-      "status": "ok",
-      "visual_order_mode": null
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -934,6 +800,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.731305512106122,
       "graph_order_ssim": 0.9192325714969386,
       "has_graph": true,
@@ -961,6 +830,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.731305512106122,
       "graph_order_ssim": 0.9192325714969386,
       "has_graph": true,
@@ -988,6 +860,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1014,6 +889,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.373676777242494,
       "graph_order_ssim": 0.9153193835009308,
       "has_graph": true,
@@ -1041,6 +919,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.373676777242494,
       "graph_order_ssim": 0.9153193835009308,
       "has_graph": true,
@@ -1068,6 +949,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1094,6 +978,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.324482444288552,
       "graph_order_ssim": 0.9129866844975472,
       "has_graph": true,
@@ -1121,6 +1008,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.324482444288552,
       "graph_order_ssim": 0.9129866844975472,
       "has_graph": true,
@@ -1148,6 +1038,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1174,6 +1067,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 19.37386904584319,
       "graph_order_ssim": 0.8331755194578552,
       "has_graph": true,
@@ -1201,6 +1097,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 19.37386904584319,
       "graph_order_ssim": 0.8331755194578552,
       "has_graph": true,
@@ -1208,14 +1107,14 @@
       "hybrid_mode": "reorder",
       "image": "data/qualitative_pack/astronaut.png",
       "label": "Qwen + graph reorder (8)",
-      "mean_amodal_extra_ratio": 6.140977126052379,
+      "mean_amodal_extra_ratio": 6.140977126052378,
       "merge_external_layers": false,
       "mode": "external_rgba_enrichment",
       "num_layers": 8.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 19.37386904584319,
-      "recompose_ssim": 0.8331755194578552,
+      "recompose_psnr": 29.308434460362548,
+      "recompose_ssim": 0.9170634530808949,
       "requested_layers": 8,
       "run_dir": "runs/qwen_five_image_review/astronaut/qwen_8_hybrid_reorder",
       "segmentation_method": null,
@@ -1223,36 +1122,14 @@
       "selected_external_order_ssim": 0.9170634530808949,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
-    },
-    {
-      "depth_method": "ensemble",
-      "effect_layer_count": null,
-      "graph_order_psnr": null,
-      "graph_order_ssim": null,
-      "has_graph": true,
-      "has_ordered_layers": true,
-      "image": "data/qualitative_pack/coffee.png",
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.2533150480310287,
-      "merge_external_layers": null,
-      "mode": "layerforge",
-      "num_layers": 10.0,
-      "ordering_method": "boundary",
-      "preserve_external_order": null,
-      "recompose_psnr": 29.475353457908096,
-      "recompose_ssim": 0.9788061272074766,
-      "run_dir": "runs/qwen_five_image_review/coffee/native",
-      "segmentation_method": "grounded_sam2",
-      "selected_external_order_psnr": null,
-      "selected_external_order_ssim": null,
-      "selected_visual_order": null,
-      "status": "ok",
-      "visual_order_mode": null
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1279,6 +1156,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 28.328064037912295,
       "graph_order_ssim": 0.8744913513521685,
       "has_graph": true,
@@ -1306,6 +1186,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 28.328064037912295,
       "graph_order_ssim": 0.8744913513521685,
       "has_graph": true,
@@ -1333,6 +1216,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1359,6 +1245,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 28.033253045975336,
       "graph_order_ssim": 0.871770444846358,
       "has_graph": true,
@@ -1386,6 +1275,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 28.033253045975336,
       "graph_order_ssim": 0.871770444846358,
       "has_graph": true,
@@ -1413,6 +1305,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1439,6 +1334,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 28.389910722476092,
       "graph_order_ssim": 0.870336122614443,
       "has_graph": true,
@@ -1466,6 +1364,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 28.389910722476092,
       "graph_order_ssim": 0.870336122614443,
       "has_graph": true,
@@ -1493,6 +1394,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1519,6 +1423,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 26.857023868191668,
       "graph_order_ssim": 0.8637706470043708,
       "has_graph": true,
@@ -1546,6 +1453,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 26.857023868191668,
       "graph_order_ssim": 0.8637706470043708,
       "has_graph": true,
@@ -1571,33 +1481,11 @@
       "visual_order_mode": "graph_order"
     },
     {
-      "depth_method": "ensemble",
-      "effect_layer_count": null,
-      "graph_order_psnr": null,
-      "graph_order_ssim": null,
-      "has_graph": true,
-      "has_ordered_layers": true,
-      "image": "data/qualitative_pack/chelsea_cat.png",
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.49339626030386885,
-      "merge_external_layers": null,
-      "mode": "layerforge",
-      "num_layers": 15.0,
-      "ordering_method": "boundary",
-      "preserve_external_order": null,
-      "recompose_psnr": 27.490603605682985,
-      "recompose_ssim": 0.9561997892799677,
-      "run_dir": "runs/qwen_five_image_review/chelsea_cat/native",
-      "segmentation_method": "grounded_sam2",
-      "selected_external_order_psnr": null,
-      "selected_external_order_ssim": null,
-      "selected_visual_order": null,
-      "status": "ok",
-      "visual_order_mode": null
-    },
-    {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1624,6 +1512,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.58647768637682,
       "graph_order_ssim": 0.8935290127916841,
       "has_graph": true,
@@ -1651,6 +1542,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.58647768637682,
       "graph_order_ssim": 0.8935290127916841,
       "has_graph": true,
@@ -1678,6 +1572,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1704,6 +1601,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.47039938443625,
       "graph_order_ssim": 0.8918272146955438,
       "has_graph": true,
@@ -1731,6 +1631,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.47039938443625,
       "graph_order_ssim": 0.8918272146955438,
       "has_graph": true,
@@ -1758,6 +1661,9 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1784,6 +1690,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 18.888620664881476,
       "graph_order_ssim": 0.7989839466595497,
       "has_graph": true,
@@ -1811,6 +1720,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 18.888620664881476,
       "graph_order_ssim": 0.7989839466595497,
       "has_graph": true,
@@ -1824,8 +1736,8 @@
       "num_layers": 6.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 18.888620664881476,
-      "recompose_ssim": 0.7989839466595497,
+      "recompose_psnr": 28.00312148509121,
+      "recompose_ssim": 0.8786215882664005,
       "requested_layers": 6,
       "run_dir": "runs/qwen_five_image_review/chelsea_cat/qwen_6_hybrid_reorder",
       "segmentation_method": null,
@@ -1833,11 +1745,14 @@
       "selected_external_order_ssim": 0.8786215882664005,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
@@ -1864,6 +1779,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 18.94065070330656,
       "graph_order_ssim": 0.8072375845785077,
       "has_graph": true,
@@ -1891,6 +1809,9 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 18.94065070330656,
       "graph_order_ssim": 0.8072375845785077,
       "has_graph": true,
@@ -1904,8 +1825,8 @@
       "num_layers": 8.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 18.94065070330656,
-      "recompose_ssim": 0.8072375845785077,
+      "recompose_psnr": 27.084140775734102,
+      "recompose_ssim": 0.856989377807595,
       "requested_layers": 8,
       "run_dir": "runs/qwen_five_image_review/chelsea_cat/qwen_8_hybrid_reorder",
       "segmentation_method": null,
@@ -1913,41 +1834,19 @@
       "selected_external_order_ssim": 0.856989377807595,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
-    },
-    {
-      "depth_method": "ensemble",
-      "effect_layer_count": null,
-      "graph_order_psnr": null,
-      "graph_order_ssim": null,
-      "has_graph": true,
-      "has_ordered_layers": true,
-      "image": "examples/synth/scene_000/image.png",
-      "label": "LayerForge native",
-      "mean_amodal_extra_ratio": 0.08170273233369187,
-      "merge_external_layers": null,
-      "mode": "layerforge",
-      "num_layers": 17.0,
-      "ordering_method": "boundary",
-      "preserve_external_order": null,
-      "recompose_psnr": 24.76037138627867,
-      "recompose_ssim": 0.8938749189663739,
-      "run_dir": "runs/qwen_five_image_review/image/native",
-      "segmentation_method": "grounded_sam2",
-      "selected_external_order_psnr": null,
-      "selected_external_order_ssim": null,
-      "selected_visual_order": null,
-      "status": "ok",
-      "visual_order_mode": null
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
       "has_ordered_layers": false,
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen raw (3)",
       "mean_amodal_extra_ratio": 0.0,
       "merge_external_layers": null,
@@ -1969,12 +1868,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 31.671706397335928,
       "graph_order_ssim": 0.8618361891184567,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "preserve",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph preserve (3)",
       "mean_amodal_extra_ratio": 0.1809930475232111,
       "merge_external_layers": false,
@@ -1996,12 +1898,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 31.671706397335928,
       "graph_order_ssim": 0.8618361891184567,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "reorder",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph reorder (3)",
       "mean_amodal_extra_ratio": 0.1809930475232111,
       "merge_external_layers": false,
@@ -2023,11 +1928,14 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
       "has_ordered_layers": false,
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen raw (4)",
       "mean_amodal_extra_ratio": 0.0,
       "merge_external_layers": null,
@@ -2049,12 +1957,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 29.005190651974303,
       "graph_order_ssim": 0.8571037286346126,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "preserve",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph preserve (4)",
       "mean_amodal_extra_ratio": 0.45132151998147885,
       "merge_external_layers": false,
@@ -2076,12 +1987,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": true,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": false,
       "graph_order_psnr": 29.005190651974303,
       "graph_order_ssim": 0.8571037286346126,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "reorder",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph reorder (4)",
       "mean_amodal_extra_ratio": 0.45132151998147885,
       "merge_external_layers": false,
@@ -2103,11 +2017,14 @@
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
       "has_ordered_layers": false,
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen raw (6)",
       "mean_amodal_extra_ratio": 0.0,
       "merge_external_layers": null,
@@ -2129,12 +2046,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 12.097629542369532,
       "graph_order_ssim": 0.7488026549460155,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "preserve",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph preserve (6)",
       "mean_amodal_extra_ratio": 0.14342047436065397,
       "merge_external_layers": false,
@@ -2156,21 +2076,24 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 12.097629542369532,
       "graph_order_ssim": 0.7488026549460155,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "reorder",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph reorder (6)",
-      "mean_amodal_extra_ratio": 0.14342047436065394,
+      "mean_amodal_extra_ratio": 0.14342047436065397,
       "merge_external_layers": false,
       "mode": "external_rgba_enrichment",
       "num_layers": 6.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 12.097629542369532,
-      "recompose_ssim": 0.7488026549460155,
+      "recompose_psnr": 31.498910061475357,
+      "recompose_ssim": 0.8531357386619072,
       "requested_layers": 6,
       "run_dir": "runs/qwen_five_image_review/image/qwen_6_hybrid_reorder",
       "segmentation_method": null,
@@ -2178,16 +2101,19 @@
       "selected_external_order_ssim": 0.8531357386619072,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
+      "visual_order_mode": "graph_order_guarded_fallback"
     },
     {
       "depth_method": null,
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": null,
       "graph_order_ssim": null,
       "has_graph": false,
       "has_ordered_layers": false,
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen raw (8)",
       "mean_amodal_extra_ratio": 0.0,
       "merge_external_layers": null,
@@ -2209,12 +2135,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": null,
+      "graph_order_guardrail_reason": null,
+      "graph_order_guardrail_triggered": null,
       "graph_order_psnr": 11.518986253066487,
       "graph_order_ssim": 0.7173820993841451,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "preserve",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph preserve (8)",
       "mean_amodal_extra_ratio": 0.18873507952056784,
       "merge_external_layers": false,
@@ -2236,12 +2165,15 @@
     {
       "depth_method": "ensemble",
       "effect_layer_count": null,
+      "graph_order_applied": false,
+      "graph_order_guardrail_reason": "psnr_drop",
+      "graph_order_guardrail_triggered": true,
       "graph_order_psnr": 11.518986253066487,
       "graph_order_ssim": 0.7173820993841451,
       "has_graph": true,
       "has_ordered_layers": true,
       "hybrid_mode": "reorder",
-      "image": "examples/synth/scene_000/image.png",
+      "image": "data/qualitative_pack/image.png",
       "label": "Qwen + graph reorder (8)",
       "mean_amodal_extra_ratio": 0.18873507952056784,
       "merge_external_layers": false,
@@ -2249,8 +2181,8 @@
       "num_layers": 8.0,
       "ordering_method": "boundary",
       "preserve_external_order": false,
-      "recompose_psnr": 11.518986253066487,
-      "recompose_ssim": 0.7173820993841451,
+      "recompose_psnr": 24.11495975086572,
+      "recompose_ssim": 0.8037141871425103,
       "requested_layers": 8,
       "run_dir": "runs/qwen_five_image_review/image/qwen_8_hybrid_reorder",
       "segmentation_method": null,
@@ -2258,7 +2190,7 @@
       "selected_external_order_ssim": 0.8037141871425103,
       "selected_visual_order": "reversed_manifest_order",
       "status": "ok",
-      "visual_order_mode": "graph_order"
+      "visual_order_mode": "graph_order_guarded_fallback"
     }
   ]
 }

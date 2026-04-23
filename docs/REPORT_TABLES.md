@@ -101,11 +101,11 @@ Notes:
 
 | Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 | highest frontier score after editability penalties against copy-like decompositions |
-| LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 | explicit recursive removal path; not the strongest measured row yet |
-| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 | compact generative baseline; weak editability signals |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 | fair metadata-first hybrid; preserves the selected external visual stack |
-| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 | explicit graph-order export; wins the cat image in the hardened review |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | highest frontier score after editability penalties against copy-like decompositions |
+| LF peel | 5 | 27.0988 | 0.9096 | 0.4783 | 0 | explicit recursive removal path; not the strongest measured row yet |
+| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2541 | 0 | compact generative baseline; weak editability signals |
+| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5259 | 0 | fair metadata-first hybrid; preserves the selected external visual stack |
+| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5251 | 1 | explicit graph-order export; wins the cat image in the hardened review |
 
 Notes:
 

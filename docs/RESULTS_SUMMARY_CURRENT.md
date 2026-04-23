@@ -32,11 +32,11 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 - **Five-Image Layer-Count Sweep:** `qwen_five_image_review`
   - **Best raw mean PSNR / SSIM:** `Qwen raw (3)` at `29.7574 / 0.8874`
   - **Best preserve-hybrid mean PSNR / SSIM:** `Qwen + graph preserve (3)` at `29.2311 / 0.8663`
-  - **Observed failure mode:** graph-driven reorder remains acceptable at `3/4` layers but degrades sharply at `6/8`
+  - **Observed reorder behavior:** graph-driven reorder remains a true graph-order export at `3/4` layers, while the fidelity guardrail now triggers on `3/5` six-layer runs and `4/5` eight-layer runs to fall back to the selected external visual stack instead of exporting catastrophic graph-order results
 
 ### Frontier Review and Generalization
 - **Aggregate Performance:** `frontier_review`
-  - **Mean Self-Evaluation Score (LayerForge Native):** `0.6981`
+  - **Mean Self-Evaluation Score (LayerForge Native):** `0.6283`
   - **Target Image Success Rate:** 4 out of 5 images correctly decomposed and ordered.
 
 ### Prompt-Conditioned Extraction
@@ -59,7 +59,7 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 - **Recomposition Fidelity:** The high recomposition PSNR in the transparent benchmark serves as a verification of the alpha-blending logic, while alpha error and background inpainting quality remain the primary performance indicators for transparent-layer recovery.
 - **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the open-vocabulary grounded segmentation pipeline.
 - **Effect Extraction:** The current associated-effect extractor represents a heuristic approach; while it successfully identifies shadow and reflection regions, it remains an area for further refinement.
-- **Qwen Layer Count:** The measured `3/4/6/8` sweep indicates that compact raw stacks (`3` or `6` layers) preserve fidelity better than deeper exported stacks on the shipped five-image bank, while preserve-style hybrid enrichment remains substantially more stable than graph reorder at higher layer counts.
+- **Qwen Layer Count:** The measured `3/4/6/8` sweep indicates that compact raw stacks (`3` or `6` layers) preserve fidelity better than deeper exported stacks on the shipped five-image bank. Preserve-style hybrid enrichment remains the cleanest metadata-first comparison, while deeper reorder rows are now held at usable fidelity by an explicit fallback guardrail instead of being allowed to collapse.
 
 ## Scope of Documentation
 

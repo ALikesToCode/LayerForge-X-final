@@ -42,7 +42,7 @@
       "images": 5,
       "label": "LayerForge native",
       "mean_psnr": 37.66881969404926,
-      "mean_self_eval_score": 0.698088,
+      "mean_self_eval_score": 0.6282792,
       "mean_ssim": 0.9708095078479693
     },
     {
@@ -50,7 +50,7 @@
       "images": 5,
       "label": "Qwen + graph preserve (4)",
       "mean_psnr": 28.553930610543226,
-      "mean_self_eval_score": 0.5842786,
+      "mean_self_eval_score": 0.5258506,
       "mean_ssim": 0.8638442376259772
     },
     {
@@ -58,7 +58,7 @@
       "images": 5,
       "label": "Qwen + graph reorder (4)",
       "mean_psnr": 28.539704525143645,
-      "mean_self_eval_score": 0.5834262,
+      "mean_self_eval_score": 0.5250836,
       "mean_ssim": 0.8637379063051934
     },
     {
@@ -66,7 +66,7 @@
       "images": 5,
       "label": "LayerForge peeling",
       "mean_psnr": 27.098823932859812,
-      "mean_self_eval_score": 0.5314428,
+      "mean_self_eval_score": 0.4782986,
       "mean_ssim": 0.909615156412167
     },
     {
@@ -74,7 +74,7 @@
       "images": 5,
       "label": "Qwen raw (4)",
       "mean_psnr": 29.075732442522252,
-      "mean_self_eval_score": 0.28237639999999997,
+      "mean_self_eval_score": 0.254139,
       "mean_ssim": 0.8850195543821586
     }
   ],
@@ -129,10 +129,58 @@
   ],
   "figures": [
     {
-      "caption": "Direct truck comparison between the strongest native search result, raw Qwen layers, and the graph-enriched Qwen export.",
-      "key": "truck_recomposition_comparison",
-      "path": "figures/truck_recomposition_comparison.png",
-      "title": "Truck recomposition study"
+      "caption": "Prototype effect-layer extraction on a controlled synthetic scene with a measured IoU readout.",
+      "key": "effects_layer_demo",
+      "path": "figures/effects_layer_demo.png",
+      "title": "Associated-effect prototype"
+    },
+    {
+      "caption": "Five-image comparison across native LayerForge, recursive peeling, raw Qwen, and Qwen-plus-graph hybrids.",
+      "key": "frontier_review",
+      "path": "figures/frontier_review.png",
+      "title": "Frontier comparison"
+    },
+    {
+      "caption": "Per-layer albedo and shading export shown as a stretch-level intrinsic decomposition capability.",
+      "key": "intrinsic_layer_demo",
+      "path": "figures/intrinsic_layer_demo.png",
+      "title": "Intrinsic layer export"
+    },
+    {
+      "caption": "Measured prompt extraction behavior for text, point, box, and text-plus-geometry queries.",
+      "key": "prompt_extract_benchmark",
+      "path": "figures/prompt_extract_benchmark.png",
+      "title": "Prompt-conditioned extraction benchmark"
+    },
+    {
+      "caption": "Visible semantic grouping on COCO Panoptic and ADE20K using coarse LayerForge groups.",
+      "key": "public_benchmark_comparison",
+      "path": "figures/public_benchmark_comparison.png",
+      "title": "Public semantic grouping benchmarks"
+    },
+    {
+      "caption": "DIODE validation comparisons for geometric depth, Depth Pro, and scaled Depth Pro alignment.",
+      "key": "public_depth_comparison",
+      "path": "figures/public_depth_comparison.png",
+      "title": "Public depth benchmarks"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge comparisons.",
+      "key": "qualitative_gallery",
+      "path": "figures/qualitative_gallery.png",
+      "title": "Qualitative Gallery"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge comparisons.",
+      "key": "synthetic_ordering_ablation",
+      "path": "figures/synthetic_ordering_ablation.png",
+      "title": "Synthetic Ordering Ablation"
+    },
+    {
+      "caption": "Alpha-quality and clean-background measurements on synthetic transparent and semi-transparent scenes.",
+      "key": "transparent_benchmark",
+      "path": "figures/transparent_benchmark.png",
+      "title": "Transparent-layer benchmark"
     },
     {
       "caption": "Generated figure from the measured LayerForge comparisons.",
@@ -153,68 +201,20 @@
       "title": "Truck Prompt Ablation"
     },
     {
-      "caption": "Generated figure from the measured LayerForge comparisons.",
-      "key": "synthetic_ordering_ablation",
-      "path": "figures/synthetic_ordering_ablation.png",
-      "title": "Synthetic Ordering Ablation"
-    },
-    {
-      "caption": "Generated figure from the measured LayerForge comparisons.",
-      "key": "qualitative_gallery",
-      "path": "figures/qualitative_gallery.png",
-      "title": "Qualitative Gallery"
-    },
-    {
-      "caption": "Prototype effect-layer extraction on a controlled synthetic scene with a measured IoU readout.",
-      "key": "effects_layer_demo",
-      "path": "figures/effects_layer_demo.png",
-      "title": "Associated-effect prototype"
-    },
-    {
-      "caption": "Per-layer albedo and shading export shown as a stretch-level intrinsic decomposition capability.",
-      "key": "intrinsic_layer_demo",
-      "path": "figures/intrinsic_layer_demo.png",
-      "title": "Intrinsic layer export"
-    },
-    {
-      "caption": "Visible semantic grouping on COCO Panoptic and ADE20K using coarse LayerForge groups.",
-      "key": "public_benchmark_comparison",
-      "path": "figures/public_benchmark_comparison.png",
-      "title": "Public semantic grouping benchmarks"
-    },
-    {
-      "caption": "DIODE validation comparisons for geometric depth, Depth Pro, and scaled Depth Pro alignment.",
-      "key": "public_depth_comparison",
-      "path": "figures/public_depth_comparison.png",
-      "title": "Public depth benchmarks"
-    },
-    {
-      "caption": "Five-image comparison across native LayerForge, recursive peeling, raw Qwen, and Qwen-plus-graph hybrids.",
-      "key": "frontier_review",
-      "path": "figures/frontier_review.png",
-      "title": "Frontier comparison"
-    },
-    {
-      "caption": "Measured prompt extraction behavior for text, point, box, and text-plus-geometry queries.",
-      "key": "prompt_extract_benchmark",
-      "path": "figures/prompt_extract_benchmark.png",
-      "title": "Prompt-conditioned extraction benchmark"
-    },
-    {
-      "caption": "Alpha-quality and clean-background measurements on synthetic transparent and semi-transparent scenes.",
-      "key": "transparent_benchmark",
-      "path": "figures/transparent_benchmark.png",
-      "title": "Transparent-layer benchmark"
+      "caption": "Direct truck comparison between the strongest native search result, raw Qwen layers, and the graph-enriched Qwen export.",
+      "key": "truck_recomposition_comparison",
+      "path": "figures/truck_recomposition_comparison.png",
+      "title": "Truck recomposition study"
     }
   ],
   "hero_metrics": [
     {
       "label": "Pytest",
-      "value": "60 passed"
+      "value": "62 passed"
     },
     {
       "label": "Frontier native self-eval",
-      "value": "0.6981"
+      "value": "0.6283"
     },
     {
       "label": "Prompt text hit rate",
@@ -272,7 +272,7 @@
     "frontier_dry_run": true,
     "frontier_review_full": true,
     "py_compile": true,
-    "pytest": "60 passed",
+    "pytest": "62 passed",
     "train_ranker_cli": true
   }
 }

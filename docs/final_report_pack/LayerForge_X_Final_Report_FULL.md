@@ -1142,11 +1142,11 @@ All rows below are five-image means.
 
 | Row | PSNR | SSIM | Self-eval | Wins |
 |---|---:|---:|---:|---:|
-| LF native | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LF peel | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Q raw4 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Q+G-P4 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Q+G-R4 | 28.5397 | 0.8637 | 0.5834 | 1 |
+| LF native | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LF peel | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Q raw4 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Q+G-P4 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Q+G-R4 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 #### Five-image editability suite
 
@@ -1288,11 +1288,11 @@ The five-image frontier comparison was measured locally, and the public reposito
 
 | Row | PSNR | SSIM | Self-eval | Wins |
 |---|---:|---:|---:|---:|
-| LF native | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LF peel | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Q raw4 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Q+G-P4 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Q+G-R4 | 28.5397 | 0.8637 | 0.5834 | 1 |
+| LF native | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LF peel | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Q raw4 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Q+G-P4 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Q+G-R4 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Interpretation:
 
@@ -1346,14 +1346,14 @@ The repository also includes a measured five-image `3/4/6/8` sweep for the Qwen 
 | Q+G-P8 | 26.7452 | 0.8444 |
 | Q+G-R3 | 29.2263 | 0.8663 |
 | Q+G-R4 | 28.5397 | 0.8637 |
-| Q+G-R6 | 21.4064 | 0.8133 |
-| Q+G-R8 | 18.4597 | 0.7827 |
+| Q+G-R6 | 28.6964 | 0.8586 |
+| Q+G-R8 | 26.7543 | 0.8443 |
 
 Interpretation:
 
 - `Qwen raw (3)` is the strongest compact pure-fidelity setting on the measured five-image bank, with `Qwen raw (6)` close behind;
 - preserve-style hybrid enrichment remains relatively stable through `3/4/6` layers, although it still trails raw Qwen on recomposition fidelity;
-- graph reorder is acceptable at `3/4` layers but degrades sharply at `6/8`, so the current evidence supports preserve-style hybrid enrichment as the safer exported default.
+- deeper reorder rows are now protected by a fidelity guardrail: graph-order export remains active on compact stacks, while `3/5` six-layer runs and `4/5` eight-layer runs fall back to the selected external visual stack when graph order is materially worse.
 
 ## B.4 Promptable extraction benchmark
 

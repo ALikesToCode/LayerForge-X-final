@@ -48,11 +48,11 @@ The following table summarizes the performance of LayerForge-X variants against 
 
 | Method | Mean PSNR | Mean SSIM | Mean Self-Eval | Observations |
 |---|---:|---:|---:|---|
-| **LayerForge Native** | 37.6688 | 0.9708 | 0.6981 | Highest structural fidelity and selector score |
-| LayerForge Peeling | 27.0988 | 0.9096 | 0.5314 | Recursive residual decomposition approach |
-| Qwen Raw (4) | 29.0757 | 0.8850 | 0.2824 | Direct Qwen-Image-Layered baseline |
-| Qwen + Graph Preserve (4) | 28.5539 | 0.8638 | 0.5843 | Optimized visual order with DALG metadata |
-| Qwen + Graph Reorder (4) | 28.5397 | 0.8637 | 0.5834 | Reordered graph-based Qwen stack |
+| **LayerForge Native** | 37.6688 | 0.9708 | 0.6283 | Highest structural fidelity and selector score |
+| LayerForge Peeling | 27.0988 | 0.9096 | 0.4783 | Recursive residual decomposition approach |
+| Qwen Raw (4) | 29.0757 | 0.8850 | 0.2541 | Direct Qwen-Image-Layered baseline |
+| Qwen + Graph Preserve (4) | 28.5539 | 0.8638 | 0.5259 | Optimized visual order with DALG metadata |
+| Qwen + Graph Reorder (4) | 28.5397 | 0.8637 | 0.5251 | Reordered graph-based Qwen stack |
 
 ## Project Objectives and Representation
 
@@ -376,11 +376,11 @@ Measured five-image frontier review, summarized in `report_artifacts/metrics_sna
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Measured interpretation:
 
@@ -503,7 +503,7 @@ layerforge enrich-qwen \
   --preserve-external-order
 ```
 
-Add `--preserve-external-order` when you want the enriched export to keep the selected external visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
+Add `--preserve-external-order` when you want the enriched export to keep the selected external visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph, subject to the fidelity guardrail that falls back to the selected external stack when graph order is materially worse.
 
 The output directory will contain ordered layers, albedo/shading layers, amodal masks, and a `debug/layer_graph.json` describing the graph structure.
 
@@ -903,14 +903,14 @@ Measured five-image `3/4/6/8` Qwen sweep, summarized in `runs/qwen_five_image_re
 | Qwen + graph preserve (8) | 26.7452 | 0.8444 |
 | Qwen + graph reorder (3) | 29.2263 | 0.8663 |
 | Qwen + graph reorder (4) | 28.5397 | 0.8637 |
-| Qwen + graph reorder (6) | 21.4064 | 0.8133 |
-| Qwen + graph reorder (8) | 18.4597 | 0.7827 |
+| Qwen + graph reorder (6) | 28.6964 | 0.8586 |
+| Qwen + graph reorder (8) | 26.7543 | 0.8443 |
 
 Measured interpretation:
 
 - `Qwen raw (3)` is the strongest compact pure-fidelity setting on the shipped five-image bank, with `Qwen raw (6)` close behind;
-- `Qwen + graph preserve` stays relatively stable through `3/4/6` layers and remains the safer structural-enrichment mode;
-- `Qwen + graph reorder` is acceptable at `3/4` layers but becomes materially unstable at `6/8`, which is why the repository keeps preserve-style enrichment as the default documented hybrid.
+- `Qwen + graph preserve` stays relatively stable through `3/4/6` layers and remains the cleaner metadata-first comparison row;
+- `Qwen + graph reorder` now stays numerically competitive at `6/8` because the new fidelity guardrail falls back to the selected external stack when graph order is clearly worse; on the measured five-image bank that guardrail triggers for `3/5` six-layer runs and `4/5` eight-layer runs, so the deeper reorder rows should be read as mixed graph-order and guarded-fallback exports rather than as pure graph-order success.
 
 ## Public benchmark roadmap
 

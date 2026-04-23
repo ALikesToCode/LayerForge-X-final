@@ -59,14 +59,14 @@ Our evaluation includes a measured five-image sweep across `3`, `4`, `6`, and `8
 | Qwen + Graph Preserve (8) | 26.7452 | 0.8444 |
 | Qwen + Graph Reorder (3) | 29.2263 | 0.8663 |
 | Qwen + Graph Reorder (4) | 28.5397 | 0.8637 |
-| Qwen + Graph Reorder (6) | 21.4064 | 0.8133 |
-| Qwen + Graph Reorder (8) | 18.4597 | 0.7827 |
+| Qwen + Graph Reorder (6) | 28.6964 | 0.8586 |
+| Qwen + Graph Reorder (8) | 26.7543 | 0.8443 |
 
 ### Interpretative Analysis
 
 1. **Compact raw stacks remain strongest on fidelity.** `Qwen raw (3)` is the best pure-PSNR/SSIM setting on the shipped five-image bank, with `Qwen raw (6)` close behind and both outperforming the deeper `8`-layer raw export.
-2. **Preserve-style enrichment is the stable hybrid.** `Qwen + graph preserve` drops below raw Qwen on recomposition fidelity, but the degradation remains moderate through `3/4/6` layers while adding explicit graph, amodal, and intrinsic structure.
-3. **Graph reorder does not scale monotonically with layer count.** Reorder is acceptable at `3/4` layers, but the `6`- and `8`-layer runs degrade sharply. The current measured evidence therefore supports preserve-style enrichment as the safer default hybrid path.
+2. **Preserve-style enrichment is still the cleanest hybrid comparison.** `Qwen + graph preserve` drops below raw Qwen on recomposition fidelity, but the degradation remains moderate through `3/4/6` layers while adding explicit graph, amodal, and intrinsic structure.
+3. **Deeper reorder rows are now guardrailed rather than brittle.** The new reorder guardrail keeps true graph-order export for compact stacks, but at `6` and `8` layers it falls back to the selected external visual stack whenever graph order is materially worse. On the measured five-image bank that fallback triggers for `3/5` six-layer runs and `4/5` eight-layer runs, so the deeper reorder rows should be read as mixed graph-order and guarded-fallback exports rather than as pure graph-order results.
 
 ## Experimental Results: Five-Image Frontier Review
 
@@ -76,16 +76,16 @@ The repository also keeps a five-image frontier candidate-bank review that compa
 
 | Method | Mean PSNR | Mean SSIM | Mean Self-Eval Score | Evaluation Wins |
 |---|---:|---:|---:|---:|
-| **LayerForge Native** | 37.6688 | 0.9708 | 0.6981 | 4 / 5 |
-| Qwen Raw (4) | 29.0757 | 0.8850 | 0.2824 | 0 / 5 |
-| Qwen + Graph Preserve (4) | 28.5539 | 0.8638 | 0.5843 | 0 / 5 |
-| Qwen + Graph Reorder (4) | 28.5397 | 0.8637 | 0.5834 | 1 / 5 |
+| **LayerForge Native** | 37.6688 | 0.9708 | 0.6283 | 4 / 5 |
+| Qwen Raw (4) | 29.0757 | 0.8850 | 0.2541 | 0 / 5 |
+| Qwen + Graph Preserve (4) | 28.5539 | 0.8638 | 0.5259 | 0 / 5 |
+| Qwen + Graph Reorder (4) | 28.5397 | 0.8637 | 0.5251 | 1 / 5 |
 
 ### Frontier Interpretation
 
 1. **Fidelity vs. structure:** raw generative outputs remain competitive on PSNR, but the native LayerForge candidate-bank winner still leads on the explicit editability-aware selector.
 2. **Hybrid row utility:** the hybrid rows show what is gained when strong generative layers are augmented with explicit structural metadata. Their value is graph, amodal, and intrinsic representation, not a blanket claim of higher raw fidelity.
-3. **Ordering influence:** the `4`-layer frontier comparison remains a useful controlled view of preserve vs reorder under the current selector, even though the broader `3/4/6/8` sweep shows that reorder becomes brittle at higher layer counts.
+3. **Ordering influence:** the `4`-layer frontier comparison remains a useful controlled view of preserve vs reorder under the current selector. The broader `3/4/6/8` sweep now shows that deeper reorder exports can be kept usable through an explicit fidelity guardrail, but those rows are no longer pure graph-order exports once the fallback triggers.
 
 ## Formal Comparative Statement
 
