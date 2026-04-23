@@ -8,7 +8,7 @@
 - diffusers: `0.37.1`
 - accelerate: `1.13.0`
 - safetensors: `0.7.0`
-- commit: `53dff33ab05ff5c245fb74c54e606f409046fa9c`
+- commit: `1e8c3ce6bbcb7a5c92abd7ebe8147dbe091a150f`
 
 These are the exact command families used to produce the auditable summaries copied into `report_artifacts/metrics_snapshots/`.
 
