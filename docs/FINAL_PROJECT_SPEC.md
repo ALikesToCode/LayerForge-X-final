@@ -6,9 +6,9 @@
 
 ## Core idea
 
-A normal RGB image collapses an absurd amount of information into one 2D array: object identity, occlusion, depth, shading, transparency, and background all get squashed into a single raster. The whole point of LayerForge-X is to partially unpack that, converting the raster into an editable scene-layer representation.
+A normal RGB image collapses object identity, occlusion, depth, shading, transparency, and background into a single raster. LayerForge-X is designed to partially unpack that raster into an editable scene-layer representation.
 
-The final representation is what I call a **Depth-Aware Amodal Layer Graph (DALG)**:
+The final representation is a **Depth-Aware Amodal Layer Graph (DALG)**:
 
 ```text
 G = (V, E)
@@ -79,7 +79,7 @@ RGBA layers + graph JSON + debug visualizations + metrics
 
 ## Why the graph matters
 
-An unordered folder of transparent PNGs is not a scene representation — it's a filing cabinet. You can't tell which layer is closer, what occludes what, where hidden support should live, or how to evaluate the output component-by-component.
+An unordered folder of transparent PNGs is not, by itself, a scene representation. It does not encode which layer is closer, what occludes what, where hidden support should reside, or how the output should be evaluated component-by-component.
 
 The graph fixes that by making the output inspectable. A node in the exported JSON reads like this:
 

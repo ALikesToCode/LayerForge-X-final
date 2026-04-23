@@ -42,7 +42,7 @@ thing mIoU
 stuff mIoU
 ```
 
-Table template:
+Illustrative summary table:
 
 | Method | Dataset | group mIoU ↑ | thing mIoU ↑ | stuff mIoU ↑ | pixel acc ↑ | Avg layers | Runtime ↓ |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -76,7 +76,7 @@ Recall    = correct predicted edges / ground-truth edges
 F1        = 2PR / (P + R)
 ```
 
-Table template:
+Illustrative summary table:
 
 | Method | Depth | Ordering | PLOA ↑ | BW-PLOA ↑ | Edge F1 ↑ | Kendall τ ↑ |
 |---|---|---|---:|---:|---:|---:|
@@ -185,4 +185,4 @@ python scripts/make_synthetic_dataset.py \
 
 That second export is the right benchmark substrate for recursive peeling, associated-effect layers, and intrinsic-layer inspection.
 
-Run these first. Any numbers you quote in the report should at least be reproducible through one of those harnesses.
+These commands are the priority reproducibility harnesses for the current repository state. Any quantitative statement in the report should be reproducible from one of these evaluation paths.

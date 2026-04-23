@@ -2,7 +2,7 @@
 
 ## Problem
 
-One RGB image goes in. A stack of semantic RGBA layers comes out — layers that can be recomposed, reordered, edited, recoloured, relit, or animated. That's the whole pitch.
+The task is to convert one RGB image into a stack of semantic RGBA layers that can be recomposed, reordered, edited, recolored, relit, or animated.
 
 ## DALG: Depth-Aware Amodal Layer Graph
 
@@ -43,11 +43,11 @@ This keeps the learned component easy to reproduce on a single GPU workstation w
 
 ## Defensible novelty
 
-The honest place to plant the novelty flag is the representation and the fusion, not any individual module:
+The main novelty lies in the representation and the integration strategy rather than in any single upstream module:
 
 > A single-image editable layer graph that combines semantic grouping, monocular geometry, amodal extent, soft alpha, completed background, and intrinsic appearance factors in a single inspectable output.
 
-I am very explicitly *not* claiming to have invented SAM, depth estimation, or intrinsic decomposition. The contribution is that they get integrated into a coherent, benchmarkable layered representation, and that the representation is the graph rather than a bag of PNGs.
+LayerForge-X does not claim novelty in SAM, monocular depth estimation, or intrinsic decomposition individually. The contribution is the integration of those capabilities into a coherent, benchmarkable layered representation in which the graph, rather than an unordered folder of PNGs, is the primary output.
 
 ## Current benchmark readout
 

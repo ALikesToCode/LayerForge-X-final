@@ -1,4 +1,4 @@
-# Public Benchmarks (2026-04-22)
+# Public Benchmarks
 
 This file tracks which public benchmarks are actually usable for LayerForge-X today, what each benchmark supervises, and what still needs new loaders or metric code.
 
@@ -122,10 +122,10 @@ layerforge benchmark-diode \
 Notes:
 
 - this gives the repo a real public **depth** benchmark instead of leaving depth validated only on synthetic data;
-- the raw `depth_pro` run is the honest metric-depth result;
+- the raw `depth_pro` run is the direct metric-depth result;
 - the scale-aligned `depth_pro` run is the fair head-to-head comparison against the geometric fallback.
 
-## Best next public benchmarks
+## Planned public benchmark extensions
 
 ### NYU Depth V2
 
@@ -154,7 +154,7 @@ Notes:
 - public sources:
   - MAW: https://measuredalbedo.github.io/
   - OpenSurfaces / IIW-related Cornell resources: https://opensurfaces.cs.cornell.edu/
-- why it matters: intrinsic decomposition is a stretch goal in this project, and these datasets are the honest public path for evaluating it.
+- why it matters: intrinsic decomposition is a stretch goal in this project, and these datasets are the most direct public path for evaluating it.
 - status: not integrated yet; good next target after visible grouping and depth/order benchmarks.
 
 ## Recommended benchmark narrative

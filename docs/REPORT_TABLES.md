@@ -1,6 +1,6 @@
 # Report Tables
 
-These tables are partly filled with the runs that have already been executed in this repo. Leave the remaining cells blank in the report until those experiments are actually run.
+This document collects table-ready values from the measured runs currently present in the repository. Cells corresponding to unmeasured experiments remain blank by design.
 
 ## Table 1 — Visible grouping on public datasets
 

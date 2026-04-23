@@ -1,4 +1,4 @@
-# 2026-04-23 productization design
+# 2026-04-23 Productization Design Note
 
 ## Goal
 
@@ -22,10 +22,11 @@ document the intended API and launch shape around what already exists.
 
 ## Why this slice
 
-The review feedback is correct that LayerForge should win on structure,
-evaluation, editability, and export rather than trying to out-model Qwen. A
-canonical graph export and contract-first API are the smallest real changes that
-push the repo in that direction while staying honest about what is implemented.
+The highest-value differentiation for LayerForge lies in structure, evaluation,
+editability, and export rather than in attempting to out-scale a generative
+baseline. A canonical graph export and a contract-first API are the smallest
+concrete changes that advance the repository in that direction while remaining
+aligned with the implemented scope.
 
 ## Deliverables
 

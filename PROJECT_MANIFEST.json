@@ -263,7 +263,7 @@
       "ADE20K SceneParse150 visible-group benchmark",
       "DIODE validation depth benchmark"
     ],
-    "roadmap_doc": "docs/PUBLIC_BENCHMARKS_2026_04_22.md",
+    "roadmap_doc": "docs/PUBLIC_BENCHMARKS.md",
     "coco_panoptic_dataset_dir": "data/coco_panoptic_val",
     "coco_panoptic_summary": "report_artifacts/metrics_snapshots/coco_panoptic_group_benchmark_summary.json",
     "ade20k_dataset_dir": "data/ade20k/ADEChallengeData2016",

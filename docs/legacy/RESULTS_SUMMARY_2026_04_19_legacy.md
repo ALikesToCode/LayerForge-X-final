@@ -1,6 +1,6 @@
 # Results Summary (2026-04-22 update)
 
-This file is the ground-truth snapshot of what has actually been run in the repo so far. Use it when writing the report, slides, or viva notes.
+This file is an archived development snapshot of the repository state as of 2026-04-19. It is retained for historical reference only and is superseded by the current submission evidence pack.
 
 ## Environment
 

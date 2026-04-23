@@ -2,7 +2,7 @@
 
 ## Main novelty claims
 
-These are the things LayerForge-X actually introduces, and the things I'm prepared to defend when asked.
+The points below summarize the elements that are distinct within LayerForge-X and defensible as project-level contributions.
 
 ### Claim 1 — Depth-Aware Amodal Layer Graph
 
@@ -68,7 +68,7 @@ Q/Q+G: compares against frontier generative layer decomposition
 
 ## Claims to avoid
 
-A few versions of phrasing to stay away from, and the versions to use instead. These are small but the difference between the two columns genuinely changes how a reviewer reads the report.
+The phrasing below keeps the project claims aligned with the measured evidence and avoids overstating the current implementation.
 
 Don't write:
 

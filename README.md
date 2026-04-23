@@ -1,19 +1,19 @@
 # LayerForge-X
 
-**LayerForge-X** takes a single RGB image and turns it into a depth-aware, semantically grouped, amodal RGBA layer graph.
+**LayerForge-X** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
 
-The assignment it was built against reads roughly like this:
+The project specification can be summarized as follows:
 
 > Given a single bitmap RGB image, output re-composable RGBA layers with semantic grouping, depth order, and optional per-layer albedo/shading.
 
-Nothing about the wording forces you to export more than a bag of cutouts, but that felt unsatisfying to me. LayerForge-X goes a step further and builds what I call a **Depth-Aware Amodal Layer Graph (DALG)**:
+LayerForge-X formalizes that goal as a **Depth-Aware Amodal Layer Graph (DALG)**:
 
 - every node is an editable RGBA layer;
 - each node carries a semantic label, a semantic group, the visible mask, a soft alpha, the estimated amodal mask, some depth statistics, and (optionally) matched albedo/shading layers;
 - edges record pairwise occlusion and near/far evidence between neighbouring nodes;
 - the final stack is written out near → far, together with debug visualisations and quantitative metrics.
 
-Qwen-Image-Layered deserves special mention. It's a strong frontier baseline for this same problem, and I didn't want to pretend it doesn't exist. The repo therefore ships an `enrich-qwen` command that imports RGBA layers produced by Qwen (or any other external decomposer) and bolts LayerForge-X's depth ordering, occlusion graph metadata, amodal masks, and intrinsic layers on top.
+Qwen-Image-Layered is an important frontier baseline for the same problem class. The repository therefore includes an `enrich-qwen` command that imports RGBA layers produced by Qwen (or another external decomposer) and augments them with LayerForge-X depth ordering, occlusion-graph metadata, amodal masks, and intrinsic layers.
 
 ## Repo layout
 
@@ -458,7 +458,7 @@ Use `docs/FIGURES.md` as the index of which figure says what.
 
 ## Synthetic benchmark
 
-Because real images don't come with ground-truth layers, a synthetic benchmark is essential for honest numbers. Generate one and run the benchmark harness:
+Because real images do not provide ground-truth editable layer stacks, a synthetic benchmark is required for controlled evaluation. Generate one and run the benchmark harness:
 
 ```bash
 python scripts/make_synthetic_dataset.py --output data/synthetic_layerbench --count 20
@@ -506,7 +506,7 @@ scene_metadata.json
 
 The original `basic` mode is still the default so the existing lightweight benchmark path remains reproducible.
 
-For the next external review, the remaining measured-work checklist is tracked in [docs/NEXT_REVIEW_CHECKLIST_2026_04_22.md](docs/NEXT_REVIEW_CHECKLIST_2026_04_22.md).
+A dated implementation-status note for the April 2026 measurement pass is tracked in [docs/IMPLEMENTATION_STATUS_2026_04_22.md](docs/IMPLEMENTATION_STATUS_2026_04_22.md).
 
 ### Measured fast-path baseline
 
@@ -618,7 +618,7 @@ Interpretation:
 
 - COCO and ADE20K are now both covered by the same coarse-group external benchmark path;
 - ADE20K is a stronger background/scene-structure benchmark than COCO for this project;
-- these public benchmarks validate visible grouping only, while synthetic LayerBench remains the source of truth for full-layer metrics like order and recomposition under known ground truth.
+- these public benchmarks validate visible grouping only, while synthetic LayerBench remains the primary controlled benchmark for full-layer metrics such as order and recomposition under known ground truth.
 
 The repo now also includes a public depth benchmark on **DIODE validation**. This benchmark is complementary to COCO and ADE20K: it scores the depth subsystem directly on a public RGB-D dataset with both indoor and outdoor scenes.
 
@@ -752,15 +752,15 @@ metrics.json
 
 ## Final project thesis
 
-LayerForge-X is not trying to be "another Qwen." Qwen-Image-Layered is a genuinely strong generative RGB→RGBA decomposer, and I'm not going to win a pixel-perfect generation contest against it. What LayerForge-X offers instead is an interpretable, depth-aware, benchmarked layer representation — one that adds explicit near/far ordering, occlusion edges, amodal support, intrinsic appearance factors, and component-level evaluation.
+LayerForge-X is not positioned as a replacement for Qwen-Image-Layered. Qwen remains a strong generative RGB→RGBA baseline. LayerForge-X instead provides an interpretable, depth-aware, benchmarked layer representation with explicit near/far ordering, occlusion edges, amodal support, intrinsic appearance factors, and component-level evaluation.
 
-So the honest framing is: use Qwen as
+Accordingly, Qwen is used as:
 
 1. a baseline to compare against,
 2. a proposal source when its generative layers are better than classical segmentation,
 3. a hybrid partner: Qwen layers + LayerForge graph enrichment.
 
-That positioning is, I think, the strongest defense for grading.
+This comparative framing matches the measured evidence in the repository and keeps the project claims aligned with the current frontier.
 
 To make the multi-image comparison reproducible rather than ad hoc, the repo now includes:
 
@@ -778,4 +778,4 @@ This writes a per-image comparison tree covering native LayerForge, raw Qwen, `Q
 
 ## Public benchmark roadmap
 
-The current public-benchmark status and links for the next datasets are tracked in [docs/PUBLIC_BENCHMARKS_2026_04_22.md](docs/PUBLIC_BENCHMARKS_2026_04_22.md).
+The current public-benchmark status and the planned dataset extensions are tracked in [docs/PUBLIC_BENCHMARKS.md](docs/PUBLIC_BENCHMARKS.md).

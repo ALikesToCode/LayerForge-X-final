@@ -2,7 +2,7 @@
 
 This file is the human-readable bridge to the current measured evidence pack.
 
-## Source of truth
+## Canonical evidence pack
 
 Treat these artifacts as the canonical submission evidence:
 
@@ -45,4 +45,4 @@ The heavyweight raw `runs/`, `results/`, and `data/` directories are used to pro
 
 ## Legacy note
 
-The previous development-era summary now lives at `docs/legacy/RESULTS_SUMMARY_2026_04_19_legacy.md`. It is kept only as historical working material and should not be treated as the final submission source of truth.
+The previous development-era summary now lives at `docs/legacy/RESULTS_SUMMARY_2026_04_19_legacy.md`. It is retained only as historical working material and should not be treated as the final submission evidence pack.

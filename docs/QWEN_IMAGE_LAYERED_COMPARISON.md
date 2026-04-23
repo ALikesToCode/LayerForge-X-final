@@ -4,13 +4,11 @@ Submission note: the raw local `runs/` and `data/` directories used for these ex
 
 ## Why Qwen matters
 
-Qwen-Image-Layered is the elephant in the room. It targets more or less the same endpoint LayerForge-X does — producing semantically meaningful RGBA layers from one image — and it does so with a big end-to-end generative model. Pretending it doesn't exist would be a weak way to write this project up. So instead, LayerForge-X treats it as a **frontier baseline** and an optional **proposal source**.
+Qwen-Image-Layered targets the same broad endpoint as LayerForge-X: semantically meaningful RGBA layers from one image, produced by a large end-to-end generative model. LayerForge-X therefore treats Qwen as a **frontier baseline** and an optional **proposal source** rather than ignoring it.
 
 As of April 2026, the official public baseline is the Apache-2.0 release `Qwen/Qwen-Image-Layered` together with the paper *Qwen-Image-Layered: Towards Inherent Editability via Layer Decomposition* (arXiv `2512.15603`, published December 17, 2025).
 
 ## Difference in project positioning
-
-The quick version of the comparison:
 
 | Aspect | Qwen-Image-Layered | LayerForge-X |
 |---|---|---|
@@ -28,7 +26,7 @@ Short version: Qwen is still the clean frontier generative baseline, while Layer
 
 ## Recommended experiment
 
-The sweep I'd actually run:
+Recommended sweep:
 
 ```text
 M0: classical + luminance depth
@@ -40,7 +38,7 @@ Q: Qwen-Image-Layered
 Q+G: Qwen layers + LayerForge graph enrichment
 ```
 
-M0 through M4 gives you a clean ablation ladder. Q is the generative frontier. Q+G is the hybrid that — I suspect — is the most interesting single row in the table, because it shows what each system is actually contributing.
+M0 through M4 form a clean ablation ladder. `Q` is the generative frontier baseline. `Q+G` is the most informative hybrid row because it isolates the contribution of external generative layers from the contribution of explicit graph enrichment.
 
 ## How to run Qwen enrichment
 
@@ -141,11 +139,11 @@ Interpretation:
 
 ## What the hybrid row means
 
-The `Q+G preserve` row in the report should not be described as "our model with Qwen." It is more precise to say:
+The `Q+G preserve` row should not be described as “our model with Qwen.” A more precise description is:
 
 > Qwen provides the initial semantically disentangled RGBA layers, while LayerForge-X adds explicit depth estimation, graph edges, amodal support, and intrinsic appearance layers without changing the best interpreted external visual stack.
 
-The `Q+G reorder` row is the separate answer to a different question:
+The `Q+G reorder` row answers a different question:
 
 > What happens if the same Qwen layers are exported in the order preferred by the LayerForge depth graph?
 
@@ -179,8 +177,8 @@ Companion figures:
 - `docs/figures/truck_metrics_comparison.png`
 - `docs/figures/truck_prompt_ablation.png`
 
-## Viva answer
+## Concise comparative statement
 
-In case someone in the viva asks "Isn't this just Qwen-Image-Layered?", the answer I'd give is roughly:
+For a concise comparative statement:
 
-> Qwen-Image-Layered is the strongest recent generative baseline for RGB-to-RGBA layer decomposition, and I compare against it directly. My project targets a different part of the problem: turning layer decomposition into an interpretable, benchmarkable scene representation. LayerForge-X adds explicit near-to-far ordering, pairwise occlusion graph edges, amodal visible/hidden masks, background-completion metadata, per-layer albedo/shading, and component-level metrics. It can use Qwen as a baseline or a proposal source, but the actual contribution is the depth-aware amodal layer graph and the evaluation protocol built around it. After the latest upgrades, the native LayerForge recipe is also competitive on recomposition fidelity on the truck benchmark in this repo, not just on structure.
+> Qwen-Image-Layered is the strongest recent generative baseline for RGB-to-RGBA layer decomposition, and this project compares against it directly. LayerForge-X targets a different part of the problem: turning layer decomposition into an interpretable, benchmarkable scene representation. It adds explicit near-to-far ordering, pairwise occlusion graph edges, amodal visible/hidden masks, background-completion metadata, per-layer albedo/shading, and component-level metrics. Qwen can be used as a baseline or proposal source, while the main contribution remains the depth-aware amodal layer graph and the associated evaluation protocol.
