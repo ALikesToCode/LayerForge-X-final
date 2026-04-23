@@ -4,5 +4,8 @@ __pycache__/
 runs/
 results/
 data/
+docs/internal/
+docs/plans/
+docs/legacy/
 *.pyc
 .DS_Store

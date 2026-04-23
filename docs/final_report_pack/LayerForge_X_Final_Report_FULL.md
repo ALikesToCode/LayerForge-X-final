@@ -1268,7 +1268,7 @@ This appendix collects the extended quantitative tables, measured ablations, and
 
 ## B.1 Completed runs snapshot
 
-The rows below are measured runs rather than placeholders. All three use the deterministic classical segmenter with geometric-luminance depth; the changing factor is the ordering rule and the held-out split.
+The rows below report measured runs. All three use the deterministic classical segmenter with geometric-luminance depth; the changing factor is the ordering rule and the held-out split.
 
 | Variant | Split | Ordering | Mean best IoU | PLOA | Recompose PSNR |
 |---|---|---|---:|---:|---:|

@@ -25,7 +25,7 @@
   ],
   "validated": {
     "py_compile": true,
-    "pytest": "54 passed",
+    "pytest": "59 passed",
     "cli_help": true,
     "export_design_cli": true,
     "train_ranker_cli": true,
