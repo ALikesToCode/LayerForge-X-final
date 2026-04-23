@@ -16,7 +16,7 @@ Interpretation:
 
 - `A2 → A3` provides the measured learned-ordering result;
 - the dominant bottleneck remains proposal quality, because the fast classical segmenter still produces roughly `65` predicted layers for `5` ground-truth layers;
-- the strongest qualitative path is therefore the real-image `grounded_sam2 + depth_pro` system rather than further tuning of the deterministic baseline.
+- the most credible qualitative path is therefore the real-image `grounded_sam2 + depth_pro` system rather than further tuning of the deterministic baseline.
 
 ## B.2 Frontier candidate-bank review
 
@@ -32,7 +32,7 @@ The repository contains a measured five-image frontier comparison in `runs/front
 
 Interpretation:
 
-- `LayerForge native` is the strongest overall candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- `LayerForge native` is the highest-scoring candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
 - `Qwen + graph reorder` wins the cat scene, showing that imported generative stacks can still outperform the native path on specific compact images;
 - `Qwen raw` remains the compact generative baseline, but it is no longer the strongest editable representation once structure and editability are scored explicitly.
 

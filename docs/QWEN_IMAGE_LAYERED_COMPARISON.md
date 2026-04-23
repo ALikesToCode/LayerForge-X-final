@@ -80,7 +80,7 @@ metrics.json
 manifest.json
 ```
 
-For the multi-image review run, use the harness instead of ad hoc one-off commands:
+For the multi-image review run, use the harness rather than isolated manual commands:
 
 ```bash
 python scripts/run_curated_comparison.py \

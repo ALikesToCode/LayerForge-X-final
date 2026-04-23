@@ -123,7 +123,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep.
 - Native LayerForge posts the strongest mean SSIM on the same images, at the cost of a larger average stack.
 - The measured frontier candidate bank selects `LF native` for `4/5` images, with `Q+G reorder 4` winning the cat scene.
-- The `Q+G preserve 4` row is the fair metadata-first hybrid comparison because it keeps the **best external visual order** while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
+- The `Q+G preserve 4` row is the most direct metadata-first hybrid comparison because it keeps the **best external visual order** while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
 - The editability suite is the anti-triviality guardrail for the selector, which is why raw Qwen's object-removal response remains near zero despite reasonable recomposition scores.
 - Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
@@ -132,7 +132,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 
 ## 7. Discussion
 
-The strongest reading of the current results is not that LayerForge-X universally beats generative decomposers on raw pixels. The stronger claim is that it turns native, generative, and recursive decompositions into one explicit editable graph representation with auditable metrics and exportable structure. Qwen remains the right generative RGBA baseline. LayerForge-X remains strongest when framed as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
+The current results do not support the claim that LayerForge-X universally exceeds generative decomposers on raw pixel fidelity. The defensible claim is narrower and more important: native, generative, and recursive decompositions are normalized into a single editable graph representation with auditable metrics and exportable structure. Qwen remains the appropriate generative RGBA baseline, while LayerForge-X is most compelling as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
 
 ## 8. Limitations
 
@@ -150,7 +150,7 @@ Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TAB
 
 ## 9. Conclusion
 
-LayerForge-X is now best understood as a self-evaluating layer-representation system rather than a simple decomposition script. It can produce native graph layers, enrich frontier RGBA layers, run recursive peeling, measure editability, benchmark prompt extraction, approximate transparent recovery, and export a canonical DALG manifest. That combination is the core project contribution.
+LayerForge-X is best interpreted as a self-evaluating layer-representation system rather than a simple decomposition script. It produces native graph layers, enriches frontier RGBA layers, runs recursive peeling, measures editability, benchmarks prompt extraction, approximates transparent recovery, and exports a canonical DALG manifest. That combination defines the central project contribution.
 
 <!-- include: 05 -->
 

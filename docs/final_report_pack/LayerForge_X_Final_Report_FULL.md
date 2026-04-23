@@ -363,7 +363,7 @@ The representation can be modeled either as an extended object alpha or as a sep
 person_core --associated_effect--> person_shadow
 ```
 
-A simple heuristic is used in the current repository:
+The current repository uses a lightweight heuristic:
 
 1. identify pixels near the bottom or contact region of the object mask;
 2. search for connected darkened or structured residual regions relative to a local background estimate;
@@ -557,7 +557,7 @@ The project is evaluated across multiple measurable properties rather than throu
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
+For the present repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` provides a prose summary of those artifacts.
 
 ---
 
@@ -613,7 +613,7 @@ mIoU = mean_c IoU_c
 | Grounded-SAM2 | curated prompts | | | | | | |
 | LayerForge-X | mixed | | | | | | |
 
-For the current repo state, note the distinction clearly:
+For the present repository state, note the distinction clearly:
 
 - the implemented COCO and ADE20K evaluators are **coarse-group IoU** benchmarks rather than official PQ pipelines;
 - PQ/SQ/RQ remain reserved for a future full panoptic evaluator;
@@ -865,7 +865,7 @@ intrinsic_recompose_error = mean(|I_layer - A_layer * S_layer| inside alpha > 0)
 
 ## Why this matters
 
-The whole point of layers is editing. The most compelling final section should demonstrate that the representation supports practical operations, not just that it scores well on segmentation benchmarks.
+The principal motivation for layered representations is editing. The evaluation should therefore demonstrate that the representation supports practical operations rather than only scoring well on segmentation benchmarks.
 
 ## Edits to evaluate
 
@@ -973,7 +973,7 @@ Even that is a big improvement over hand-picked demos alone.
 
 ## Rich synthetic export now implemented
 
-The repo now supports:
+The repository currently supports:
 
 ```bash
 python scripts/make_synthetic_dataset.py \
@@ -1006,7 +1006,7 @@ That format is the right one to use for recursive-peeling and effect-layer evalu
 
 # Ablation protocol
 
-Run a controlled set where one component changes at a time. The reason to do this rather than one giant comparison is simple: only this kind of diff can attribute credit to an individual component.
+Run a controlled set in which one component changes at a time. Only this type of comparison can attribute gains to a specific component.
 
 | ID | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsics |
 |---|---|---|---|---|---|---|---|
@@ -1177,7 +1177,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep.
 - Native LayerForge posts the strongest mean SSIM on the same images, at the cost of a larger average stack.
 - The measured frontier candidate bank selects `LF native` for `4/5` images, with `Q+G reorder 4` winning the cat scene.
-- The `Q+G preserve 4` row is the fair metadata-first hybrid comparison because it keeps the **best external visual order** while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
+- The `Q+G preserve 4` row is the most direct metadata-first hybrid comparison because it keeps the **best external visual order** while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
 - The editability suite is the anti-triviality guardrail for the selector, which is why raw Qwen's object-removal response remains near zero despite reasonable recomposition scores.
 - Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
@@ -1186,7 +1186,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 
 ## 7. Discussion
 
-The strongest reading of the current results is not that LayerForge-X universally beats generative decomposers on raw pixels. The stronger claim is that it turns native, generative, and recursive decompositions into one explicit editable graph representation with auditable metrics and exportable structure. Qwen remains the right generative RGBA baseline. LayerForge-X remains strongest when framed as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
+The current results do not support the claim that LayerForge-X universally exceeds generative decomposers on raw pixel fidelity. The defensible claim is narrower and more important: native, generative, and recursive decompositions are normalized into a single editable graph representation with auditable metrics and exportable structure. Qwen remains the appropriate generative RGBA baseline, while LayerForge-X is most compelling as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
 
 ## 8. Limitations
 
@@ -1204,7 +1204,7 @@ Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TAB
 
 ## 9. Conclusion
 
-LayerForge-X is now best understood as a self-evaluating layer-representation system rather than a simple decomposition script. It can produce native graph layers, enrich frontier RGBA layers, run recursive peeling, measure editability, benchmark prompt extraction, approximate transparent recovery, and export a canonical DALG manifest. That combination is the core project contribution.
+LayerForge-X is best interpreted as a self-evaluating layer-representation system rather than a simple decomposition script. It produces native graph layers, enriches frontier RGBA layers, runs recursive peeling, measures editability, benchmarks prompt extraction, approximates transparent recovery, and exports a canonical DALG manifest. That combination defines the central project contribution.
 
 # 10. References
 
@@ -1264,7 +1264,7 @@ Interpretation:
 
 - `A2 → A3` provides the measured learned-ordering result;
 - the dominant bottleneck remains proposal quality, because the fast classical segmenter still produces roughly `65` predicted layers for `5` ground-truth layers;
-- the strongest qualitative path is therefore the real-image `grounded_sam2 + depth_pro` system rather than further tuning of the deterministic baseline.
+- the most credible qualitative path is therefore the real-image `grounded_sam2 + depth_pro` system rather than further tuning of the deterministic baseline.
 
 ## B.2 Frontier candidate-bank review
 
@@ -1280,7 +1280,7 @@ The repository contains a measured five-image frontier comparison in `runs/front
 
 Interpretation:
 
-- `LayerForge native` is the strongest overall candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- `LayerForge native` is the highest-scoring candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
 - `Qwen + graph reorder` wins the cat scene, showing that imported generative stacks can still outperform the native path on specific compact images;
 - `Qwen raw` remains the compact generative baseline, but it is no longer the strongest editable representation once structure and editability are scored explicitly.
 

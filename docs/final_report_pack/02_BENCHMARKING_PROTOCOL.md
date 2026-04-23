@@ -14,7 +14,7 @@ The project is evaluated across multiple measurable properties rather than throu
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
+For the present repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` provides a prose summary of those artifacts.
 
 ---
 
@@ -70,7 +70,7 @@ mIoU = mean_c IoU_c
 | Grounded-SAM2 | curated prompts | | | | | | |
 | LayerForge-X | mixed | | | | | | |
 
-For the current repo state, note the distinction clearly:
+For the present repository state, note the distinction clearly:
 
 - the implemented COCO and ADE20K evaluators are **coarse-group IoU** benchmarks rather than official PQ pipelines;
 - PQ/SQ/RQ remain reserved for a future full panoptic evaluator;
@@ -322,7 +322,7 @@ intrinsic_recompose_error = mean(|I_layer - A_layer * S_layer| inside alpha > 0)
 
 ## Why this matters
 
-The whole point of layers is editing. The most compelling final section should demonstrate that the representation supports practical operations, not just that it scores well on segmentation benchmarks.
+The principal motivation for layered representations is editing. The evaluation should therefore demonstrate that the representation supports practical operations rather than only scoring well on segmentation benchmarks.
 
 ## Edits to evaluate
 
@@ -430,7 +430,7 @@ Even that is a big improvement over hand-picked demos alone.
 
 ## Rich synthetic export now implemented
 
-The repo now supports:
+The repository currently supports:
 
 ```bash
 python scripts/make_synthetic_dataset.py \
@@ -463,7 +463,7 @@ That format is the right one to use for recursive-peeling and effect-layer evalu
 
 # Ablation protocol
 
-Run a controlled set where one component changes at a time. The reason to do this rather than one giant comparison is simple: only this kind of diff can attribute credit to an individual component.
+Run a controlled set in which one component changes at a time. Only this type of comparison can attribute gains to a specific component.
 
 | ID | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsics |
 |---|---|---|---|---|---|---|---|

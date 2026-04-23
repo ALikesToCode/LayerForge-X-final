@@ -222,7 +222,7 @@ The representation can be modeled either as an extended object alpha or as a sep
 person_core --associated_effect--> person_shadow
 ```
 
-A simple heuristic is used in the current repository:
+The current repository uses a lightweight heuristic:
 
 1. identify pixels near the bottom or contact region of the object mask;
 2. search for connected darkened or structured residual regions relative to a local background estimate;
