@@ -2,6 +2,10 @@
 
 **LayerForge-X** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
 
+<p>
+  <img src="docs/assets/brand/layerforge-logo.png" alt="LayerForge-X logo" width="720" />
+</p>
+
 ## Submission quick links
 
 - Submission index: `docs/SUBMISSION_INDEX.md`

@@ -8,6 +8,16 @@
             name="description"
             content="Local LayerForge-X browser interface for editors, reviewers, and non-CLI users."
         />
+        <meta property="og:title" content="LayerForge-X Local Web UI" />
+        <meta
+            property="og:description"
+            content="Browser surface for running the local LayerForge-X pipeline without using the CLI directly."
+        />
+        <meta property="og:image" content="assets/brand/layerforge-logo.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16x16.png" />
+        <link rel="shortcut icon" href="assets/brand/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -19,7 +29,10 @@
     <body data-page="webui">
         <header class="site-shell">
             <nav class="site-nav">
-                <a class="brandmark" href="./">LayerForge-X</a>
+                <a class="brandmark" href="./" aria-label="LayerForge-X home">
+                    <img class="brandmark__icon" src="assets/brand/layerforge-mark.png" alt="" />
+                    <span class="brandmark__text">LayerForge-X</span>
+                </a>
                 <div class="site-nav__links">
                     <a href="index.html">Project site</a>
                     <a href="about.html">About</a>
