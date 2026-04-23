@@ -4,12 +4,47 @@
 
 ## Submission quick links
 
+- Public project site: `https://alikestocode.github.io/LayerForge-X-final/`
+- Local browser interface: `layerforge webui --open-browser`
 - Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
 - Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
 - Canonical manifest: `PROJECT_MANIFEST.json`
 - Submission evidence pack: `report_artifacts/README.md`
 - Current results summary: `docs/RESULTS_SUMMARY_CURRENT.md`
 - Figure index: `docs/FIGURES.md`
+- GitHub Pages source: `docs/index.html`
+
+## Visual evidence at a glance
+
+The repository now ships two browser-facing surfaces:
+
+- a static GitHub Pages site in `docs/` for browsing the final report, figures, and evidence pack;
+- a lightweight local browser UI, started with `layerforge webui --open-browser`, for editors or reviewers who want to upload an image and run the existing LayerForge modes without working directly from the CLI.
+
+The comparison panels below summarize the measured LayerForge/Qwen story and the auxiliary prompt/transparent tracks that are part of the shipped evidence pack.
+
+<p>
+  <img src="docs/figures/frontier_review.png" alt="LayerForge frontier comparison figure" width="100%" />
+</p>
+<p>
+  <img src="docs/figures/truck_recomposition_comparison.png" alt="Truck comparison between LayerForge and Qwen variants" width="100%" />
+</p>
+<p>
+  <img src="docs/figures/prompt_extract_benchmark.png" alt="Prompt extraction benchmark figure" width="100%" />
+</p>
+<p>
+  <img src="docs/figures/transparent_benchmark.png" alt="Transparent decomposition benchmark figure" width="100%" />
+</p>
+
+The measured five-image frontier review currently reports:
+
+| Method | Mean PSNR | Mean SSIM | Mean self-eval | Notes |
+|---|---:|---:|---:|---|
+| LayerForge native | 37.6688 | 0.9708 | 0.6981 | strongest archived structural selector score |
+| LayerForge peeling | 27.0988 | 0.9096 | 0.5314 | recursive residual decomposition path |
+| Qwen raw (4) | 29.0757 | 0.8850 | 0.2824 | direct Qwen-Image-Layered baseline |
+| Qwen + graph preserve (4) | 28.5539 | 0.8638 | 0.5843 | best external visual order plus DALG metadata |
+| Qwen + graph reorder (4) | 28.5397 | 0.8637 | 0.5834 | graph-reordered Qwen stack |
 
 The project specification can be summarized as follows:
 
@@ -105,6 +140,33 @@ On Python `3.14`, `simple-lama-inpainting` currently fails to build because of a
 ```bash
 pip install torch torchvision transformers accelerate diffusers safetensors
 ```
+
+## Browser surfaces
+
+### GitHub Pages project site
+
+The repository includes a static project site rooted at `docs/`. Once GitHub Pages is enabled for the repository, the published entry point is:
+
+```text
+https://alikestocode.github.io/LayerForge-X-final/
+```
+
+The site is data-driven from the committed evidence pack and links directly to the final report, figures, and submission-safe JSON summaries.
+
+### Local web UI
+
+For a local browser interface that can run the existing Python pipeline on uploaded images:
+
+```bash
+layerforge webui --open-browser
+```
+
+This starts a lightweight server and opens `webui.html`, where non-CLI users can:
+
+- upload an image,
+- choose `run`, `extract`, `transparent`, or `peel`,
+- inspect the generated previews,
+- open the manifest, metrics, and DALG outputs directly from the browser.
 
 ## Fast smoke evaluation
 
