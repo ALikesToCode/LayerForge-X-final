@@ -96,7 +96,7 @@ That writes both the per-image run trees and an aggregate `comparison_summary.js
 
 ## Measured five-image review
 
-The repository contains a same-image five-image comparison in `runs/qwen_five_image_review/` covering:
+The local working tree contains a same-image five-image comparison in `runs/qwen_five_image_review/`, and the submission archive ships its summary in `report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json`. The review covers:
 
 - `data/demo/truck.jpg`
 - `data/qualitative_pack/astronaut.png`
@@ -151,7 +151,7 @@ That phrasing makes the complementarity obvious and avoids confusing the baselin
 
 ## Measured truck comparison
 
-The repository contains both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg`:
+The local working tree contains both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg`. The submission archive ships their measured summaries through the copied metric snapshots and the manifest.
 
 | Run | Layers | PSNR | SSIM | Notes |
 |---|---:|---:|---:|---|
@@ -165,7 +165,7 @@ The repository contains both the original Qwen comparison and the upgraded nativ
 Interpretation:
 
 - the old native LayerForge run clearly lost to Qwen on this image;
-- the `Q+G` hybrid still improves over the raw Qwen stack in both PSNR and SSIM;
+- the `Q+G` hybrid adds graph, amodal, and intrinsic structure to the raw Qwen layers, but on this truck run it scores below raw Qwen on PSNR and SSIM; its value is structural enrichment rather than raw-fidelity gain;
 - after the new proposal, depth, and merge upgrades, the best measured native LayerForge run now exceeds both Qwen rows on this truck example while staying interpretable and explicitly ordered;
 - the strongest row is now the autotune-selected native LayerForge run, which formalises per-image recipe search instead of relying on a hand-picked single command;
 - the honest comparative story is now stronger: Qwen remains the right frontier baseline, but LayerForge-X is no longer confined to "worse pixels, better metadata."

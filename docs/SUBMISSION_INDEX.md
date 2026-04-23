@@ -1,0 +1,31 @@
+# Submission Index
+
+This file is the shortest path through the submission archive.
+
+## Primary documents
+
+- Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
+- Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
+- Current prose summary: `docs/RESULTS_SUMMARY_CURRENT.md`
+
+## Canonical evidence pack
+
+- Manifest: `PROJECT_MANIFEST.json`
+- Artifact README: `report_artifacts/README.md`
+- Metrics snapshots: `report_artifacts/metrics_snapshots/`
+- Figure-source manifest: `report_artifacts/figure_sources/figure_manifest.json`
+- Command log: `report_artifacts/command_log.md`
+
+## Figures
+
+- Figure index: `docs/FIGURES.md`
+- Figure files: `docs/figures/`
+
+## API and schema
+
+- DALG schema: `schemas/dalg.schema.json`
+- OpenAPI contract: `docs/api/openapi.yaml`
+
+## Submission note
+
+The heavyweight local `runs/`, `results/`, and `data/` directories used to generate the measurements are commonly omitted from the submission ZIP. The documents and JSON snapshots above are the intended source of truth for the submitted evidence pack.

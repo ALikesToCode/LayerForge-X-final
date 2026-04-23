@@ -2,6 +2,15 @@
 
 **LayerForge-X** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
 
+## Submission quick links
+
+- Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
+- Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
+- Canonical manifest: `PROJECT_MANIFEST.json`
+- Submission evidence pack: `report_artifacts/README.md`
+- Current results summary: `docs/RESULTS_SUMMARY_CURRENT.md`
+- Figure index: `docs/FIGURES.md`
+
 The project specification can be summarized as follows:
 
 > Given a single bitmap RGB image, output re-composable RGBA layers with semantic grouping, depth order, and optional per-layer albedo/shading.
@@ -16,6 +25,8 @@ LayerForge-X formalizes that goal as a **Depth-Aware Amodal Layer Graph (DALG)**
 Qwen-Image-Layered is an important frontier baseline for the same problem class. The repository therefore includes an `enrich-qwen` command that imports RGBA layers produced by Qwen (or another external decomposer) and augments them with LayerForge-X depth ordering, occlusion-graph metadata, amodal masks, and intrinsic layers.
 
 The optional intrinsic split is surfaced in the measured artifact pack as a stretch-level export path rather than a standalone headline claim. The shipped report and figure index therefore include a dedicated intrinsic-layer demonstration alongside the main decomposition comparisons.
+
+Submission note: the heavyweight local `runs/`, `results/`, and `data/` directories used to generate the measurements are commonly excluded from the ZIP deliverable. In the submission archive, treat `PROJECT_MANIFEST.json`, `report_artifacts/`, and `docs/figures/` as the canonical evidence pack.
 
 ## Repo layout
 
@@ -134,7 +145,7 @@ layerforge run \
 
 The current highest-performing native configuration is `configs/best_score.yaml`: ensemble depth, stronger boundary settings, and adaptive merge. The dominant control variable remains the prompt list. For a known scene, curated prompts with `--prompt-source manual` provide the strongest measured performance; for an automated default, `--prompt-source augment` preserves the manual seed classes and adds Gemini-generated extensions.
 
-Measured truck runs included in the local working tree:
+Measured truck runs in the local working tree, summarized in the shipped evidence pack:
 
 | Run | Layers | PSNR | SSIM |
 |---|---:|---:|---:|
@@ -144,7 +155,7 @@ Measured truck runs included in the local working tree:
 | `runs/truck_best_score_augment` | 19 | 31.1524 | 0.9804 |
 | `runs/truck_candidate_search_v2/best` | 20 | 32.1053 | 0.9848 |
 
-These results show that the updated native LayerForge recipe materially improves over the earlier native run in both reconstruction fidelity and stack compactness.
+These results show that the updated native LayerForge recipe materially improves over the earlier native run in both reconstruction fidelity and stack compactness. In the submission archive, those local runs are represented by the copied summaries under `report_artifacts/metrics_snapshots/`.
 
 ## Candidate search
 
@@ -186,7 +197,7 @@ layerforge peel \
   --max-layers 6
 ```
 
-This writes:
+This writes the local working-tree run artifacts:
 
 ```text
 iterations/iteration_00/input.png
@@ -257,17 +268,17 @@ runs/frontier_review/
     why_selected.md
 ```
 
-The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. It now combines measured recomposition fidelity with anti-trivial editability signals, semantic separation, alpha quality, graph confidence, and runtime so that easy copy-like decompositions are penalized instead of rewarded. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
+The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. In the archived evidence pack it combines measured recomposition fidelity with anti-trivial editability signals, semantic separation, alpha quality, and graph confidence so that easy copy-like decompositions are penalized instead of rewarded. Runtime is currently reserved for future selector tuning because the shipped five-image summary was rescored from cached runs rather than from a fresh timed sweep. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
 
 Measured five-image frontier review (`runs/frontier_review/frontier_summary.json`):
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 Measured interpretation:
 
@@ -508,7 +519,7 @@ scene_metadata.json
 
 The original `basic` mode is still the default so the existing lightweight benchmark path remains reproducible.
 
-A dated implementation-status note for the April 2026 measurement pass is tracked in [docs/IMPLEMENTATION_STATUS_2026_04_22.md](docs/IMPLEMENTATION_STATUS_2026_04_22.md).
+A dated implementation-status note for the April 2026 measurement pass is tracked in [docs/internal/IMPLEMENTATION_STATUS_2026_04_22.md](docs/internal/IMPLEMENTATION_STATUS_2026_04_22.md).
 
 ### Measured fast-path baseline
 

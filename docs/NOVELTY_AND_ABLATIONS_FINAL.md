@@ -22,7 +22,7 @@ Qwen-Image-Layered is treated as a modern generative baseline *and* an optional 
 
 ### Claim 5 — Multi-axis benchmark
 
-Evaluation covers segmentation, ordering, graph quality, recomposition, amodal masks, intrinsic decomposition, editing utility, and runtime. Each axis addresses a different failure mode and therefore contributes distinct evidence.
+Evaluation covers segmentation, ordering, graph quality, recomposition, amodal masks, intrinsic decomposition, and editing utility. Each axis addresses a different failure mode and therefore contributes distinct evidence. Runtime remains an optional future selector signal rather than an active component of the archived five-image frontier summary.
 
 ## Ablation table
 

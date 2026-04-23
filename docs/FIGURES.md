@@ -1,6 +1,6 @@
 # Figure Pack
 
-This is the figure index for the measured runs currently present in the local repo.
+This is the figure index for the measured local runs summarized in the submission evidence pack.
 
 Regenerate everything with:
 

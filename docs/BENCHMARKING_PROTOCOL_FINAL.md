@@ -156,7 +156,7 @@ runtime
 memory
 ```
 
-Some of these (preference score) require a small user study. Even 5 – 10 people with 10 – 20 scenes is enough to spot big differences.
+Some of these (preference score) require a small user study. Even 5 – 10 people with 10 – 20 scenes is enough to spot big differences. Runtime and memory are useful operational diagnostics, but the shipped frontier evidence pack does not currently use runtime as an active selector term because the archived five-image comparison was rescored from cached runs rather than from a fresh timed sweep.
 
 ## Lightweight benchmark included in repo
 

@@ -28,7 +28,7 @@ The heavyweight raw `runs/`, `results/`, and `data/` directories are used to pro
   - PSNR: `27.4633`
   - SSIM: `0.7949`
 - `frontier_review`
-  - `LF native` mean self-eval: `0.6283`
+  - `LF native` mean self-eval: `0.6981`
   - `LF native` best-image wins: `4/5`
 - `extract_benchmark_prompted_grounded`
   - text hit rate: `1.0000`
@@ -48,4 +48,4 @@ The heavyweight raw `runs/`, `results/`, and `data/` directories are used to pro
 
 ## Legacy note
 
-The previous development-era summary now lives at `docs/legacy/RESULTS_SUMMARY_2026_04_19_legacy.md`. It is retained only as historical working material and should not be treated as the final submission evidence pack.
+The previous development-era summary now lives at `docs/internal/legacy/RESULTS_SUMMARY_2026_04_19_legacy.md`. It is retained only as historical working material and should not be treated as the final submission evidence pack.

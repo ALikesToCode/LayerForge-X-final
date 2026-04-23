@@ -48,16 +48,18 @@ Outputs:
 
 ## Self-evaluation
 
-The current self-evaluation stage is intentionally explicit. It scores each successful candidate per image using:
+The current self-evaluation stage is intentionally explicit. In the archived five-image evidence pack it scores each successful candidate per image using:
 
 - recomposition fidelity;
 - edit-preservation and anti-trivial copy penalties;
 - semantic separation;
 - alpha quality;
 - graph confidence;
-- runtime.
+- graph confidence.
 
 The score is not a claim of universal quality. It is a routing metric for selecting the most useful editable decomposition among the candidates the repo can already measure, and it now includes explicit penalties for stacks that reconstruct well only because the background layer copies too much of the source image.
+
+The local implementation still supports a runtime component, but the shipped `frontier_review_summary.json` was rescored from cached runs with `duration_sec = null`. Runtime is therefore not an active differentiator in the archived comparison and is reserved for future selector tuning unless the full bank is rerun with fresh timings.
 
 Default weights live in `configs/frontier.yaml` under `self_eval.weights`.
 
@@ -102,17 +104,17 @@ For iterative foreground removal and residual completion, use:
 
 ## Measured current run
 
-The current full measured five-image run lives at `runs/frontier_review/frontier_summary.json`.
+The local full measured five-image run lives at `runs/frontier_review/frontier_summary.json`. The submission archive ships the corresponding copied summary at `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
 
 Aggregate results:
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 Best-per-image selections:
 
