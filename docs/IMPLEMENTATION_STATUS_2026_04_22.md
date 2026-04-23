@@ -1,6 +1,6 @@
 # Implementation Status (2026-04-22)
 
-This note records the repository state after the final 2026-04-22 measurement pass.
+This document records the repository state after the final 2026-04-22 measurement pass.
 
 ## Implemented and measured components
 
@@ -30,4 +30,4 @@ This note records the repository state after the final 2026-04-22 measurement pa
 
 ## Repository position
 
-LayerForge-X is now best described as a structured, benchmarked layer-representation system with a fair Qwen comparison path, recursive peeling, associated-effect layers, and auditable artifact snapshots. The main remaining limitation is not missing implementation breadth but that the associated-effect extractor remains heuristic and should be framed accordingly.
+LayerForge-X is best characterized as a structured, benchmarked layer-representation system with a fair Qwen comparison path, recursive peeling, associated-effect layers, and auditable artifact snapshots. The principal remaining limitation is that the associated-effect extractor remains heuristic and should be framed accordingly.

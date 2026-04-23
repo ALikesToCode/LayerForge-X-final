@@ -6,7 +6,7 @@ The points below summarize the elements that are distinct within LayerForge-X an
 
 ### Claim 1 — Depth-Aware Amodal Layer Graph
 
-The output is a graph, not just a stack. Nodes carry semantic RGBA layers plus a pile of metadata; edges carry depth and occlusion relations with confidence scores. A PNG folder doesn't let you reason about any of that.
+The output is a graph rather than only a layer stack. Nodes carry semantic RGBA layers together with structured metadata, while edges encode depth and occlusion relations with confidence scores. A flat folder of PNG files does not preserve that information.
 
 ### Claim 2 — Boundary-aware ordering with an optional learned ranker
 
@@ -22,7 +22,7 @@ Qwen-Image-Layered is treated as a modern generative baseline *and* an optional 
 
 ### Claim 5 — Multi-axis benchmark
 
-Evaluation covers segmentation, ordering, graph quality, recomposition, amodal masks, intrinsic decomposition, editing utility, and runtime. Eight axes sounds like a lot, but each one catches a different class of failure.
+Evaluation covers segmentation, ordering, graph quality, recomposition, amodal masks, intrinsic decomposition, editing utility, and runtime. Each axis addresses a different failure mode and therefore contributes distinct evidence.
 
 ## Ablation table
 
@@ -66,41 +66,41 @@ G → H: intrinsic split enables appearance edits
 Q/Q+G: compares against frontier generative layer decomposition
 ```
 
-## Claims to avoid
+## Claim boundaries
 
 The phrasing below keeps the project claims aligned with the measured evidence and avoids overstating the current implementation.
 
-Don't write:
+Avoid:
 
 ```text
 We solve single-image layer decomposition.
 ```
 
-Do write:
+Prefer:
 
 ```text
 We provide a practical and inspectable approximation to single-image layer decomposition.
 ```
 
-Don't write:
+Avoid:
 
 ```text
 We recover true hidden object appearance.
 ```
 
-Do write:
+Prefer:
 
 ```text
 We synthesize plausible hidden/background content for editing and evaluate it when ground truth is available.
 ```
 
-Don't write:
+Avoid:
 
 ```text
 We beat Qwen-Image-Layered.
 ```
 
-Do write:
+Prefer:
 
 ```text
 We compare against Qwen-Image-Layered and show complementary strengths in explicit ordering, graph metadata, and component-level evaluation.

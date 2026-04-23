@@ -1,6 +1,6 @@
 # Benchmarking Protocol
 
-Layer decomposition is multi-dimensional, and any single metric will lie to you. A method can nail semantic segmentation and still order the layers wrong. It can order the layers perfectly and still leave visible seams when you recompose them. Because of that, this protocol splits the evaluation into tracks that each stress a different part of the pipeline.
+Layer decomposition is multi-dimensional, and no single metric is sufficient. A method can achieve strong semantic segmentation while producing incorrect layer order, or achieve correct ordering while leaving visible seams after recomposition. This protocol therefore separates evaluation into tracks that stress different parts of the pipeline.
 
 ## Methods
 
@@ -18,7 +18,7 @@ Layer decomposition is multi-dimensional, and any single metric will lie to you.
 
 ## Dataset plan
 
-Each dataset plays a specific role — don't mix their metrics:
+Each dataset plays a specific role and its metrics should be interpreted accordingly:
 
 | Dataset | Role |
 |---|---|
@@ -51,7 +51,7 @@ Illustrative summary table:
 
 ### Pairwise Layer Order Accuracy
 
-Pairwise accuracy over valid layer pairs — the pair is included only if the depth gap exceeds a threshold, so near-ties don't penalise the method:
+Pairwise accuracy over valid layer pairs. A pair is included only if the depth gap exceeds a threshold, so near-ties do not penalize the method:
 
 ```text
 PLOA = correct ordered valid layer pairs / valid layer pairs
@@ -59,7 +59,7 @@ PLOA = correct ordered valid layer pairs / valid layer pairs
 
 ### Boundary-Weighted PLOA
 
-The weighting focuses evaluation on pairs that actually touch, because that's where ordering is visually consequential:
+The weighting focuses evaluation on pairs that actually touch, because those cases are the most visually consequential:
 
 ```text
 BW-PLOA = Σ w_ij correct_ij / Σ w_ij
@@ -104,7 +104,7 @@ alpha coverage error
 
 ## Track D: amodal and completion
 
-This is the track most baselines can't compete on. The metrics split the evaluation between visible mask quality, full-extent amodal quality, and hidden-region completion quality:
+This track distinguishes visible mask quality, full-extent amodal quality, and hidden-region completion quality:
 
 ```text
 Visible IoU
@@ -134,7 +134,7 @@ WHDR is only defined on IIW-style reflectance-judgement data; the rest can be co
 
 ## Track F: editing utility
 
-The goal here is to demonstrate that the representation isn't just segmentation with extra metadata — it's actually useful for editing. Six operations to evaluate:
+The purpose of this track is to demonstrate that the representation supports editing rather than functioning only as segmentation augmented with metadata. The evaluation covers six operations:
 
 ```text
 object removal

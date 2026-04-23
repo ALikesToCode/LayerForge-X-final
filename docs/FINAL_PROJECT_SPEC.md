@@ -100,9 +100,9 @@ The graph fixes that by making the output inspectable. A node in the exported JS
 
 ### Boundary-weighted occlusion ordering
 
-Sorting by global median (or mean) depth sounds reasonable until you try it on real scenes. It fails embarrassingly on large or slanted regions — a sloped floor or a tall wall has pixels all over the depth distribution, so its "average depth" doesn't correspond to where it actually sits relative to its neighbours.
+Sorting by global median or mean depth appears reasonable, but it breaks down on real scenes with large or slanted regions. A sloped floor or tall wall spans a wide depth range, so its average depth does not reliably describe its local relationship to adjacent regions.
 
-LayerForge-X side-steps this by comparing depth *near the shared boundary* of adjacent layers instead:
+LayerForge-X addresses this by comparing depth near the shared boundary of adjacent layers:
 
 ```text
 B_ij = local shared boundary support

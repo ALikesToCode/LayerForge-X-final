@@ -7,7 +7,7 @@ LayerForge-X++ is the repo's highest-leverage hybrid path:
 3. compare native, peeling, raw Qwen, and hybrid rows on the same images;
 4. run an explicit self-evaluation pass to select the best editable representation per image.
 
-The goal is not "more models". The goal is a better structured representation.
+The objective is not arbitrary model accumulation. The objective is a stronger structured representation.
 
 ## Candidate bank
 

@@ -2,7 +2,7 @@
 
 ## Goal
 
-The project is evaluated across multiple measurable properties rather than through a single qualitative comparison. A layered representation can fail in several ways:
+The project is evaluated across multiple measurable properties rather than through a single qualitative comparison. A layered representation can fail in several distinct ways:
 
 1. Are the layer regions semantically correct?
 2. Is the near-to-far depth and occlusion order correct?
@@ -149,7 +149,7 @@ F1        = 2PR / (P + R)
 
 ### Kendall tau / inversion count
 
-For images with a total ground-truth layer order, also report Kendall tau or the normalised inversion count — it's a cleaner single number than PLOA when the order is fully defined.
+For images with a total ground-truth layer order, also report Kendall tau or the normalised inversion count, which provides a compact summary when the order is fully defined.
 
 ## Report table
 
@@ -195,7 +195,7 @@ SSIM or MS-SSIM.
 
 ### Perceptual similarity
 
-LPIPS if it's available. Lower is better.
+LPIPS, when available. Lower values are better.
 
 ### Alpha coverage error
 

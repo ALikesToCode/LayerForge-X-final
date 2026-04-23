@@ -21,8 +21,8 @@ Each node in the graph carries more than a cutout. Concretely, a node stores:
 1. **Segment proposal.** Pick a segmenter: SLIC for the deterministic fallback, Mask2Former for closed-set panoptic segmentation, or GroundingDINO + SAM2 for open-vocabulary prompts.
 2. **Depth estimation.** One of: the geometric luminance baseline, Depth Anything V2, Depth Pro, Marigold, or an ensemble.
 3. **Overlap resolution.** Where proposed masks overlap, pixels are assigned to the nearer or higher-priority mask.
-4. **Stuff-plane splitting.** Large regions like sky, road, wall, or background get split into depth quantile planes so they don't dominate the ordering.
-5. **Alpha refinement.** Binary masks are converted to soft alpha, with depth edges used to harden boundaries where the depth map says there's genuine discontinuity.
+4. **Stuff-plane splitting.** Large regions such as sky, road, wall, or background are split into depth-quantile planes so they do not dominate the ordering stage.
+5. **Alpha refinement.** Binary masks are converted to soft alpha, with depth edges used to harden boundaries where the depth map indicates a genuine discontinuity.
 6. **Ordering and occlusion graph.** Adjacent regions with distinct depth near their shared boundary become front-to-back edges. The default fast path uses this boundary-local evidence directly; the learned variant trains a lightweight pairwise ranker on synthetic scenes and uses the predicted near/far probabilities to sort the layer stack.
 7. **Amodal completion.** Masks are expanded conservatively through closing, hole filling, and hull-limited dilation.
 8. **Background completion.** Removable foreground is inpainted to create an edit-ready background layer.

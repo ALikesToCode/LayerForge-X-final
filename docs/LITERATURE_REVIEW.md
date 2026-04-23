@@ -1,6 +1,6 @@
 # Literature Review Structure
 
-This is the compact version of the related work — the long-form version lives in `final_report_pack/01_LITERATURE_REVIEW_ADVANCED.md`.
+This is the compact version of the related-work review. The long-form version lives in `final_report_pack/01_LITERATURE_REVIEW_ADVANCED.md`.
 
 ## Layered representations
 
@@ -8,7 +8,7 @@ Layered Depth Images are the natural ancestor here: they store multiple samples 
 
 ## Segmentation
 
-Panoptic segmentation is the right closed-set starting point, since the project genuinely needs both object instances *and* stuff regions — you can't decompose a street scene with a thing-only detector. Mask2Former is a reasonable universal baseline. For novelty and user control, open-vocabulary detection plus SAM2 is the stronger story: it lets users define layer groups outside the COCO vocabulary using plain-language prompts.
+Panoptic segmentation is the appropriate closed-set starting point because the project requires both object instances and stuff regions. A thing-only detector is insufficient for scenes such as roads, interiors, or street environments. Mask2Former is a reasonable universal baseline. For user control and open-vocabulary coverage, GroundingDINO plus SAM2 is stronger because it lets users define layer groups beyond the fixed COCO vocabulary using natural-language prompts.
 
 ## Monocular geometry
 
@@ -20,8 +20,8 @@ Hard binary masks are where most segmentation-for-editing pipelines fall over. H
 
 ## Amodal segmentation and inpainting
 
-Amodal segmentation predicts hidden object extent; inpainting predicts hidden appearance. Together they cover the "what's behind this object?" question that editing always eventually raises. LaMa is a solid baseline for background completion; newer object-removal diffusion methods are obvious upgrades when compute is available.
+Amodal segmentation predicts hidden object extent, while inpainting predicts hidden appearance. Together they address the hidden-scene question that editing operations eventually expose. LaMa is a solid baseline for background completion, while newer object-removal diffusion methods are plausible upgrades when additional compute is available.
 
 ## Intrinsic decomposition
 
-Albedo/shading decomposition is the stretch module. The reason it matters is practical — if you want to recolour or relight without baking the original illumination into the texture, you need some notion of factored appearance. The IIW/WHDR benchmark is the traditional evaluation path when you want to compare against prior work.
+Albedo/shading decomposition is an advanced extension. It matters for practical reasons: recolouring or relighting without baking the original illumination into the texture requires some notion of factored appearance. The IIW/WHDR benchmark remains the standard evaluation path for comparison against prior work.

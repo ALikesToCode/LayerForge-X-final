@@ -1,6 +1,6 @@
 # Benchmarking Plan
 
-Here's the shape of what needs measuring, and where the data for each track comes from:
+This document summarizes the evaluation tracks and the data sources used for each one.
 
 | Goal | Dataset | Metric |
 |---|---|---|
@@ -15,7 +15,7 @@ Here's the shape of what needs measuring, and where the data for each track come
 
 ## Synthetic benchmark
 
-Real photos don't come with a z-order answer key, so the synthetic generator in `scripts/make_synthetic_dataset.py` does the heavy lifting for quantitative evaluation. The richer `layerbench_pp` export format adds:
+Real photographs do not include ground-truth layer order, so the synthetic generator in `scripts/make_synthetic_dataset.py` provides the controlled data required for quantitative evaluation. The richer `layerbench_pp` export format adds:
 
 - visible masks;
 - amodal masks;
@@ -48,7 +48,7 @@ For the updated repo state, add one explicit recursive-peeling storyboard:
 - final completed background;
 - any exported associated-effect layer.
 
-That's a lot of panels per image, but it's the only way to make the components legible at a glance.
+This multi-panel layout is necessary to keep the individual components legible within a single qualitative figure.
 
 ## Ablation table
 

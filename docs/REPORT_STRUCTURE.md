@@ -1,6 +1,6 @@
 # Report Structure
 
-This note records the intended structure of the final write-up.
+This document records the intended structure of the final report.
 
 1. **Abstract** — one paragraph summarizing the DALG representation and the headline results.
 2. **Introduction** — why flat RGB images are difficult to edit, what an editable layer representation requires, and what LayerForge-X provides.
