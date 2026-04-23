@@ -50,6 +50,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "min_alpha": 0.02,
         "preserve_external_order": False,
         "merge_external_layers": False,
+        "graph_reorder_guardrail_enabled": True,
+        "max_graph_reorder_psnr_drop": 0.75,
+        "max_graph_reorder_ssim_drop": 0.03,
     },
     "peeling": {
         "max_layers": 6,

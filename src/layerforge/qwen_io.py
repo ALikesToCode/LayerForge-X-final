@@ -145,6 +145,32 @@ def _score_layer_stack(rgb: np.ndarray, layers: list[Layer]) -> dict[str, float]
     return compute_run_metrics(rgb, layers, cfg={})
 
 
+def _graph_reorder_guardrail_decision(
+    *,
+    preserve_external_order: bool,
+    graph_metrics: dict[str, float],
+    external_metrics: dict[str, float],
+    qwen_cfg: dict[str, Any],
+) -> tuple[bool, bool, str | None]:
+    if preserve_external_order:
+        return False, False, None
+    if not bool(qwen_cfg.get("graph_reorder_guardrail_enabled", True)):
+        return True, False, None
+
+    graph_psnr = float(graph_metrics.get("recompose_psnr", -math.inf))
+    graph_ssim = float(graph_metrics.get("recompose_ssim", -math.inf))
+    external_psnr = float(external_metrics.get("recompose_psnr", -math.inf))
+    external_ssim = float(external_metrics.get("recompose_ssim", -math.inf))
+    max_psnr_drop = float(qwen_cfg.get("max_graph_reorder_psnr_drop", 0.75))
+    max_ssim_drop = float(qwen_cfg.get("max_graph_reorder_ssim_drop", 0.03))
+
+    if external_psnr - graph_psnr > max_psnr_drop:
+        return False, True, "psnr_drop"
+    if external_ssim - graph_ssim > max_ssim_drop:
+        return False, True, "ssim_drop"
+    return True, False, None
+
+
 def _pick_best_visual_order(
     rgb: np.ndarray,
     *,
@@ -340,9 +366,26 @@ def enrich_rgba_layers(
         graph_layers = renumber_layers_in_place(list(graph_layers_premerge))
         external_layers = renumber_layers_in_place(list(external_layers_premerge))
 
-    ordered_layers = external_layers if preserve_external_order else graph_layers
-    visual_order_mode = "preserve_external_order" if preserve_external_order else "graph_order"
-    premerge_layer_count = len(external_layers_premerge if preserve_external_order else graph_layers_premerge)
+    graph_metrics = _score_layer_stack(rgb, graph_layers)
+    external_metrics = _score_layer_stack(rgb, external_layers)
+    graph_order_applied, graph_order_guardrail_triggered, graph_order_guardrail_reason = _graph_reorder_guardrail_decision(
+        preserve_external_order=preserve_external_order,
+        graph_metrics=graph_metrics,
+        external_metrics=external_metrics,
+        qwen_cfg=cfg.get("qwen", {}),
+    )
+    if preserve_external_order:
+        ordered_layers = external_layers
+        visual_order_mode = "preserve_external_order"
+        premerge_layer_count = len(external_layers_premerge)
+    elif graph_order_applied:
+        ordered_layers = graph_layers
+        visual_order_mode = "graph_order"
+        premerge_layer_count = len(graph_layers_premerge)
+    else:
+        ordered_layers = external_layers
+        visual_order_mode = "graph_order_guarded_fallback"
+        premerge_layer_count = len(external_layers_premerge)
 
     ordered_paths = []
     for l in ordered_layers:
@@ -358,8 +401,6 @@ def enrich_rgba_layers(
     save_rgb(dirs["debug"] / "recomposed_rgb.png", recomposed[..., :3])
     save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", ordered_layers)
 
-    graph_metrics = _score_layer_stack(rgb, graph_layers)
-    external_metrics = _score_layer_stack(rgb, external_layers)
     metrics = _score_layer_stack(rgb, ordered_layers)
     metrics.update({
         "mode": "external_rgba_enrichment",
@@ -379,6 +420,9 @@ def enrich_rgba_layers(
         "reversed_manifest_order_psnr": float(external_scores["reversed_manifest_order"]["recompose_psnr"]),
         "reversed_manifest_order_ssim": float(external_scores["reversed_manifest_order"]["recompose_ssim"]),
         "graph_order_available": True,
+        "graph_order_applied": graph_order_applied,
+        "graph_order_guardrail_triggered": graph_order_guardrail_triggered,
+        "graph_order_guardrail_reason": graph_order_guardrail_reason,
         "merge_external_layers": merge_external_layers,
         "preserve_external_order": preserve_external_order,
         "premerge_semantic_layers": float(premerge_layer_count),
