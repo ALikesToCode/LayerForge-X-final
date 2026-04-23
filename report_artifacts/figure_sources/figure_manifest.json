@@ -2,6 +2,7 @@
   "generated_figures": {
     "effects_layer_demo": "docs/figures/effects_layer_demo.png",
     "frontier_review": "docs/figures/frontier_review.png",
+    "intrinsic_layer_demo": "docs/figures/intrinsic_layer_demo.png",
     "prompt_extract_benchmark": "docs/figures/prompt_extract_benchmark.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
@@ -20,6 +21,9 @@
     ],
     "frontier_review": [
       "runs/frontier_review"
+    ],
+    "intrinsic_layer_demo": [
+      "runs/truck_candidate_search_v2/best"
     ],
     "prompt_extract_benchmark": [
       "data/layerbenchpp_prompt_benchmark",

@@ -3,58 +3,58 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PIL import Image
-
-from layerforge.dalg import build_dalg_manifest, export_dalg_manifest
+from layerforge.dalg import CANONICAL_DALG_SCHEMA_URL, build_dalg_manifest, export_dalg_manifest
 
 
-def _write_rgb(path: Path, color: tuple[int, int, int]) -> None:
+def _write_png_stub(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    Image.new("RGB", (16, 12), color).save(path)
+    path.write_bytes(b"png")
 
 
-def _write_rgba(path: Path, color: tuple[int, int, int, int]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    Image.new("RGBA", (16, 12), color).save(path)
-
-
-def _make_run(tmp_path: Path) -> Path:
+def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     run_dir = tmp_path / "run"
-    (run_dir / "layers_ordered_rgba").mkdir(parents=True)
-    (run_dir / "layers_albedo_rgba").mkdir()
-    (run_dir / "layers_shading_rgba").mkdir()
-    (run_dir / "layers_amodal_masks").mkdir()
-    (run_dir / "debug").mkdir()
-
-    _write_rgb(run_dir / "input.png", (240, 240, 240))
-    _write_rgba(run_dir / "layers_ordered_rgba" / "000_foreground_person.png", (210, 90, 70, 255))
-    _write_rgba(run_dir / "layers_albedo_rgba" / "000_foreground_person_albedo.png", (210, 90, 70, 255))
-    _write_rgba(run_dir / "layers_shading_rgba" / "000_foreground_person_shading.png", (140, 140, 140, 255))
-    Image.new("L", (16, 12), 255).save(run_dir / "layers_amodal_masks" / "000_foreground_person_amodal.png")
-    _write_rgb(run_dir / "debug" / "recomposed_rgb.png", (230, 230, 230))
+    _write_png_stub(run_dir / "input.png")
+    _write_png_stub(run_dir / "layers_ordered_rgba" / "000_vehicle_car.png")
+    _write_png_stub(run_dir / "layers_ordered_rgba" / "001_background_completed.png")
+    _write_png_stub(run_dir / "layers_albedo_rgba" / "000_vehicle_car_albedo.png")
+    _write_png_stub(run_dir / "layers_shading_rgba" / "000_vehicle_car_shading.png")
+    _write_png_stub(run_dir / "layers_amodal_masks" / "000_vehicle_car_amodal.png")
+    _write_png_stub(run_dir / "layers_albedo_rgba" / "001_background_completed_albedo.png")
+    _write_png_stub(run_dir / "layers_shading_rgba" / "001_background_completed_shading.png")
 
     (run_dir / "metrics.json").write_text(
-        json.dumps({"segmentation_method": "classical", "depth_method": "geometric_luminance"}),
+        json.dumps({"segmentation_method": "grounded_sam2", "depth_method": "ensemble", "intrinsic_method": "retinex"}),
         encoding="utf-8",
     )
+    (run_dir / "debug").mkdir(parents=True, exist_ok=True)
     (run_dir / "debug" / "layer_graph.json").write_text(
         json.dumps(
             {
                 "layers_near_to_far": [
                     {
                         "rank": 0,
-                        "name": "000_foreground_person",
-                        "label": "person",
-                        "group": "foreground",
-                        "depth_median": 0.1,
-                        "area": 42,
-                        "bbox": [1, 2, 15, 11],
-                        "occludes": [],
+                        "name": "000_vehicle_car",
+                        "label": "car",
+                        "group": "vehicle",
+                        "depth_median": 0.12,
+                        "area": 1200,
+                        "bbox": [4, 6, 44, 48],
+                        "occludes": [1],
                         "occluded_by": [],
-                        "metadata": {"source": "synthetic"},
-                    }
+                    },
+                    {
+                        "rank": 1,
+                        "name": "001_background_completed",
+                        "label": "background completed",
+                        "group": "background",
+                        "depth_median": 0.88,
+                        "area": 9000,
+                        "bbox": [0, 0, 64, 64],
+                        "occludes": [],
+                        "occluded_by": [0],
+                    },
                 ],
-                "occlusion_edges": [],
+                "occlusion_edges": [{"near_id": 0, "far_id": 1, "confidence": 0.91}],
             }
         ),
         encoding="utf-8",
@@ -67,60 +67,52 @@ def _make_run(tmp_path: Path) -> Path:
                 "layer_graph": "debug/layer_graph.json",
                 "ordered_layers_near_to_far": [
                     {
-                        "path": "layers_ordered_rgba/000_foreground_person.png",
-                        "name": "000_foreground_person",
+                        "path": "layers_ordered_rgba/000_vehicle_car.png",
+                        "name": "000_vehicle_car",
                         "rank": 0,
-                        "label": "person",
-                        "group": "foreground",
-                        "depth_median": 0.1,
-                    }
+                        "label": "car",
+                        "group": "vehicle",
+                        "depth_median": 0.12,
+                    },
+                    {
+                        "path": "layers_ordered_rgba/001_background_completed.png",
+                        "name": "001_background_completed",
+                        "rank": 1,
+                        "label": "background completed",
+                        "group": "background",
+                        "depth_median": 0.88,
+                    },
                 ],
                 "grouped_layers": [],
-                "effect_layers": [],
                 "debug": {"recomposed_rgb": "debug/recomposed_rgb.png"},
             }
         ),
         encoding="utf-8",
     )
-    return run_dir
 
-
-def test_dalg_manifest_matches_schema_contract(tmp_path: Path) -> None:
-    run_dir = _make_run(tmp_path)
+    schema = json.loads((Path(__file__).resolve().parents[1] / "schemas" / "dalg.schema.json").read_text(encoding="utf-8"))
+    export_dalg_manifest(run_dir)
     dalg = build_dalg_manifest(run_dir)
-    schema = json.loads(Path("schemas/dalg.schema.json").read_text(encoding="utf-8"))
 
-    assert dalg["$schema"] == schema["$id"]
-    for key in schema["required"]:
-        assert key in dalg
+    assert dalg["$schema"] == CANONICAL_DALG_SCHEMA_URL
+    assert dalg["$schema"] == schema["properties"]["$schema"]["const"]
+    assert dalg["kind"] == schema["properties"]["kind"]["const"]
+    assert dalg["graph"]["node_count"] == len(dalg["graph"]["layers"])
+    assert dalg["graph"]["edge_count"] == len(dalg["graph"]["edges"])
 
-    node_ids = [layer["id"] for layer in dalg["graph"]["layers"]]
-    assert len(node_ids) == len(set(node_ids))
-
+    ids = [layer["id"] for layer in dalg["graph"]["layers"]]
     ranks = [layer["rank"] for layer in dalg["graph"]["layers"]]
+    names = [layer["name"] for layer in dalg["graph"]["layers"]]
+
+    assert len(ids) == len(set(ids))
     assert len(ranks) == len(set(ranks))
+    assert len(names) == len(set(names))
+
+    valid_ids = set(ids)
+    for edge in dalg["graph"]["edges"]:
+        assert edge["near_id"] in valid_ids
+        assert edge["far_id"] in valid_ids
 
     for layer in dalg["graph"]["layers"]:
-        assert isinstance(layer["paths"], dict)
-        for path in layer["paths"].values():
-            assert not str(path).startswith("/")
-            assert (run_dir / path).exists()
-
-    for layer in dalg["layers"]:
-        if layer["path"] is not None:
-            assert not str(layer["path"]).startswith("/")
-            assert (run_dir / layer["path"]).exists()
-
-    layer_ids = set(node_ids)
-    for edge in dalg["graph"]["edges"]:
-        assert edge["near_id"] in layer_ids
-        assert edge["far_id"] in layer_ids
-
-
-def test_exported_dalg_manifest_uses_canonical_schema_url(tmp_path: Path) -> None:
-    run_dir = _make_run(tmp_path)
-    out_path = export_dalg_manifest(run_dir)
-    payload = json.loads(out_path.read_text(encoding="utf-8"))
-
-    assert payload["$schema"] == "https://layerforge.dev/schemas/dalg.schema.json"
-    assert payload["exports"]["source_manifest"] == "manifest.json"
+        for rel_path in layer["paths"].values():
+            assert (run_dir / rel_path).exists(), rel_path

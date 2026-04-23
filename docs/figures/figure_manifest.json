@@ -8,6 +8,7 @@
     "synthetic_ordering_ablation": "docs/figures/synthetic_ordering_ablation.png",
     "qualitative_gallery": "docs/figures/qualitative_gallery.png",
     "effects_layer_demo": "docs/figures/effects_layer_demo.png",
+    "intrinsic_layer_demo": "docs/figures/intrinsic_layer_demo.png",
     "public_benchmark_comparison": "docs/figures/public_benchmark_comparison.png",
     "public_depth_comparison": "docs/figures/public_depth_comparison.png",
     "frontier_review": "docs/figures/frontier_review.png",

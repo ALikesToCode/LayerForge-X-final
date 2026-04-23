@@ -904,6 +904,132 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
     return save(canvas, output_dir / "effects_layer_demo.png")
 
 
+def _select_intrinsic_demo_layer() -> dict:
+    manifest = load_json("runs/truck_candidate_search_v2/best/manifest.json")
+    preferred_groups = {
+        "person",
+        "animal",
+        "vehicle",
+        "furniture",
+        "object",
+        "plant",
+    }
+    fallback = None
+    for row in manifest["ordered_layers_near_to_far"]:
+        stem = Path(str(row["path"])).stem
+        row_path = Path(str(row["path"]))
+        candidate_root = row_path.parent.parent
+        candidate = {
+            "name": row["name"],
+            "label": row["label"],
+            "group": row["group"],
+            "rgba": row_path,
+            "albedo": candidate_root / "layers_albedo_rgba" / f"{stem}_albedo.png",
+            "shading": candidate_root / "layers_shading_rgba" / f"{stem}_shading.png",
+            "depth_median": row.get("depth_median"),
+        }
+        if not repo_path(candidate["albedo"]).exists() or not repo_path(candidate["shading"]).exists():
+            continue
+        if fallback is None:
+            fallback = candidate
+        if str(row.get("group")) in preferred_groups:
+            return candidate
+    if fallback is None:
+        raise FileNotFoundError("No representative intrinsic layer with paired albedo/shading exports was found")
+    return fallback
+
+
+def generate_intrinsic_layer_demo(output_dir: Path) -> str:
+    manifest = load_json("runs/truck_candidate_search_v2/best/manifest.json")
+    layer = _select_intrinsic_demo_layer()
+    canvas = Image.new("RGB", (1520, 1060), BG)
+    y = make_title_block(
+        canvas,
+        "Intrinsic layer demo",
+        "This figure documents the optional intrinsic export path: approximate albedo and shading factors, exported globally and per layer from the native LayerForge winner.",
+    )
+
+    cards = [
+        card_with_image(
+            title="Input RGB",
+            subtitle="Representative native run used throughout the measured truck comparisons.",
+            image_path=manifest["input"],
+            footer_lines=[
+                metric_line("Run", "truck_candidate_search_v2/best"),
+                metric_line("Layers", str(len(manifest["ordered_layers_near_to_far"]))),
+            ],
+            accent=BLUE,
+            size=(470, 410),
+            image_box=(426, 220),
+        ),
+        card_with_image(
+            title="Global albedo",
+            subtitle="Retinex-style reflectance approximation before per-layer masking.",
+            image_path="runs/truck_candidate_search_v2/best/debug/intrinsic_albedo.png",
+            footer_lines=[
+                metric_line("Export", "debug/intrinsic_albedo.png"),
+                metric_line("Interpretation", "texture / colour bias"),
+            ],
+            accent=GREEN,
+            size=(470, 410),
+            image_box=(426, 220),
+        ),
+        card_with_image(
+            title="Global shading",
+            subtitle="Global illumination-style component aligned with the same run.",
+            image_path="runs/truck_candidate_search_v2/best/debug/intrinsic_shading.png",
+            footer_lines=[
+                metric_line("Export", "debug/intrinsic_shading.png"),
+                metric_line("Interpretation", "lighting / smooth tone"),
+            ],
+            accent=ORANGE,
+            size=(470, 410),
+            image_box=(426, 220),
+        ),
+        card_with_image(
+            title="Representative RGBA layer",
+            subtitle=f"{layer['label']} grouped as {layer['group']} in the ordered stack.",
+            image_path=layer["rgba"],
+            footer_lines=[
+                metric_line("Layer", str(layer["name"])),
+                metric_line("Depth median", format_metric(float(layer["depth_median"] or 0.0), 4)),
+            ],
+            accent=CLAY,
+            size=(470, 410),
+            image_box=(426, 220),
+            use_checkerboard=True,
+        ),
+        card_with_image(
+            title="Layer albedo RGBA",
+            subtitle="Per-layer reflectance approximation used for recolour-style edits.",
+            image_path=layer["albedo"],
+            footer_lines=[
+                metric_line("Export", Path(str(layer["albedo"])).name),
+                metric_line("Status", "stretch component"),
+            ],
+            accent=RED,
+            size=(470, 410),
+            image_box=(426, 220),
+            use_checkerboard=True,
+        ),
+        card_with_image(
+            title="Layer shading RGBA",
+            subtitle="Per-layer shading approximation paired with the same alpha support.",
+            image_path=layer["shading"],
+            footer_lines=[
+                metric_line("Export", Path(str(layer["shading"])).name),
+                metric_line("Caveat", "approximate, not physically exact"),
+            ],
+            accent=(124, 105, 180),
+            size=(470, 410),
+            image_box=(426, 220),
+            use_checkerboard=True,
+        ),
+    ]
+    place_grid(canvas, cards, origin=(36, y), cols=3, gap=18)
+    return save(canvas, output_dir / "intrinsic_layer_demo.png")
+
+
 def generate_frontier_review(output_dir: Path) -> str:
     summary = load_json("runs/frontier_review/frontier_summary.json")
     color_map = {
@@ -1138,6 +1264,7 @@ def main() -> int:
         "synthetic_ordering_ablation": generate_synthetic_ablation(output_dir),
         "qualitative_gallery": generate_qualitative_gallery(output_dir),
         "effects_layer_demo": generate_effects_layer_demo(output_dir),
+        "intrinsic_layer_demo": generate_intrinsic_layer_demo(output_dir),
         "public_benchmark_comparison": generate_public_benchmark_comparison(output_dir),
         "public_depth_comparison": generate_public_depth_comparison(output_dir),
         "frontier_review": generate_frontier_review(output_dir),

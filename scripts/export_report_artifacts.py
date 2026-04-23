@@ -92,6 +92,9 @@ FIGURE_SOURCES = {
         "data/transparent_benchmark",
         "runs/transparent_benchmark",
     ],
+    "intrinsic_layer_demo": [
+        "runs/truck_candidate_search_v2/best",
+    ],
 }
 
 
@@ -186,8 +189,6 @@ def copy_snapshots() -> None:
             raise FileNotFoundError(f"Missing source artifact: {src}")
         payload = json.loads(src.read_text(encoding="utf-8"))
         (dst / name).write_text(json.dumps(_sanitize_json(payload), indent=2, sort_keys=True), encoding="utf-8")
-
-
 def _sanitize_string(value: str) -> str:
     root_prefix = str(ROOT) + "/"
     if value == str(ROOT):
