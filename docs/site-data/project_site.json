@@ -210,7 +210,7 @@
   "hero_metrics": [
     {
       "label": "Pytest",
-      "value": "64 passed"
+      "value": "71 passed"
     },
     {
       "label": "Frontier native self-eval",
@@ -272,7 +272,7 @@
     "frontier_dry_run": true,
     "frontier_review_full": true,
     "py_compile": true,
-    "pytest": "64 passed",
+    "pytest": "71 passed",
     "train_ranker_cli": true
   }
 }

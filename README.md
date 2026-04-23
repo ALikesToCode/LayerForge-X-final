@@ -365,6 +365,17 @@ The lower-level script remains available for report and automation workflows:
 python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg --output-root runs/frontier_review --native-config configs/frontier.yaml
 ```
 
+For ordinary single-image work, the standard run surface can now materialize the selected frontier winner directly into the requested output directory:
+
+```bash
+layerforge run \
+  --input data/demo/truck.jpg \
+  --output runs/truck_best \
+  --frontier
+```
+
+The same strongest-base selection is exposed in the local browser UI for `run`, `extract`, and `transparent` through the `Use frontier candidate-bank selection as the strongest base run` toggle.
+
 This writes:
 
 ```text

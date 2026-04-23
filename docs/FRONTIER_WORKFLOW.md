@@ -36,6 +36,17 @@ The underlying script remains available for report regeneration and automation:
 python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg --output-root runs/frontier_review
 ```
 
+For single-image work where the strongest measured path should land directly in the requested output directory, use:
+
+```bash
+layerforge run \
+  --input data/demo/truck.jpg \
+  --output runs/truck_best \
+  --frontier
+```
+
+The same frontier-backed base selection is available in the local browser UI for `run`, `extract`, and `transparent`.
+
 ### Generated Artifacts
 The workflow produces a complete frontier artifact set, including:
 - `frontier_summary.json/md`: Aggregate performance metrics and candidate comparisons.
