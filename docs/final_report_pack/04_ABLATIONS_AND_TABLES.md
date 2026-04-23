@@ -1,10 +1,10 @@
 # Appendix B. Extended Tables and Ablations
 
-This appendix collects the extended quantitative tables, ablation templates, and failure-analysis material that support the main report.
+This appendix collects the extended quantitative tables, measured ablations, and failure-taxonomy material that support the main report.
 
-## Completed runs snapshot
+## B.1 Completed runs snapshot
 
-The rows below are no longer placeholders; they correspond to runs already present in the repo:
+The rows below are measured runs rather than placeholders:
 
 | Variant | Segmentation | Depth | Ordering | Split | Mean best IoU | PLOA | Recompose PSNR |
 |---|---|---|---|---|---:|---:|---:|
@@ -14,13 +14,13 @@ The rows below are no longer placeholders; they correspond to runs already prese
 
 Interpretation:
 
-- `A2 → A3` gives a real learned-ordering result worth reporting.
-- the current bottleneck is proposal quality, because the fast classical segmenter still produces about `65` predicted layers for `5` ground-truth layers.
-- therefore the strongest next qualitative row is the real-image `grounded_sam2 + depth_pro` system, not more tuning on the classical baseline.
+- `A2 → A3` provides the measured learned-ordering result;
+- the dominant bottleneck remains proposal quality, because the fast classical segmenter still produces roughly `65` predicted layers for `5` ground-truth layers;
+- the strongest qualitative path is therefore the real-image `grounded_sam2 + depth_pro` system rather than further tuning of the deterministic baseline.
 
-## Frontier candidate-bank review
+## B.2 Frontier candidate-bank review
 
-The repo now also contains the measured five-image frontier comparison at `runs/frontier_review/frontier_summary.json`.
+The repository contains a measured five-image frontier comparison in `runs/frontier_review/frontier_summary.json`.
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
@@ -32,14 +32,13 @@ The repo now also contains the measured five-image frontier comparison at `runs/
 
 Interpretation:
 
-- `LayerForge native` is now the strongest overall candidate-bank row by the repo's explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
-- the hardened selector no longer lets `LayerForge peeling` win the truck image simply because the recursive removal path is visually dramatic;
-- `Qwen + graph reorder` now wins the cat image, showing that imported generative stacks can still beat the native path on specific compact scenes;
-- `Qwen raw` remains the compact frontier generative baseline, but it is no longer the best overall editable representation once structure and editability are scored explicitly.
+- `LayerForge native` is the strongest overall candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- `Qwen + graph reorder` wins the cat scene, showing that imported generative stacks can still outperform the native path on specific compact images;
+- `Qwen raw` remains the compact generative baseline, but it is no longer the strongest editable representation once structure and editability are scored explicitly.
 
-## Editability suite snapshot
+## B.3 Editability suite
 
-The frontier review is now paired with an editability suite so recomposition fidelity is not the only score that matters.
+The frontier review is paired with an editability suite so that recomposition fidelity is not the only selection signal.
 
 | Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
 |---|---:|---:|---:|---:|---:|---:|
@@ -51,13 +50,13 @@ The frontier review is now paired with an editability suite so recomposition fid
 
 Interpretation:
 
-- the editability suite is the anti-triviality guardrail for the frontier selector;
-- `Qwen raw (4)` is the obvious example of why recomposition alone is insufficient, because its remove/move/recolor responses are almost zero while its background-hole ratio is effectively `1.0`;
-- the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge graph metadata are still easy to move, recolor, and remove cleanly.
+- the editability suite acts as the anti-triviality guardrail for the frontier selector;
+- `Qwen raw (4)` demonstrates why recomposition alone is insufficient, because remove/move/recolor responses are near zero while the background-hole ratio is effectively `1.0`;
+- the hybrid rows currently post the strongest edit-success scores because imported generative stacks combined with explicit LayerForge graph metadata remain easy to move, recolor, and remove cleanly.
 
-## Promptable extraction benchmark snapshot
+## B.4 Promptable extraction benchmark
 
-The prompt-conditioned extraction path is now measured instead of being only a CLI affordance.
+The prompt-conditioned extraction path is measured rather than treated only as a CLI feature.
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
@@ -69,13 +68,13 @@ The prompt-conditioned extraction path is now measured instead of being only a C
 
 Interpretation:
 
-- text-bearing prompts now hit the intended semantic target on the measured synthetic set;
-- point-only and box-only prompts still lock onto a neighboring region with high overlap but wrong semantics;
-- the benchmark is therefore useful because it distinguishes semantic hit rate from overlap and alpha quality.
+- text-bearing prompts identify the intended semantic target on the measured synthetic set;
+- point-only and box-only prompts still achieve high overlap while missing the semantic target;
+- the present bottleneck is semantic routing rather than matte stability.
 
-## Transparent benchmark snapshot
+## B.5 Transparent benchmark
 
-The transparent / alpha-composited recovery path now has a measured synthetic benchmark instead of only a qualitative smoke demo.
+The transparent or alpha-composited recovery path has a measured synthetic benchmark rather than only a qualitative smoke demonstration.
 
 | Metric | Mean |
 |---|---:|
@@ -87,32 +86,25 @@ The transparent / alpha-composited recovery path now has a measured synthetic be
 
 Interpretation:
 
-- transparent recomposition is a sanity check here; alpha error and clean-background quality are the primary transparent metrics;
-- this path should be presented as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
-- the current prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant;
-- despite that, it is now a measured component and belongs in the report as a frontier-aligned extension.
+- transparent recomposition is a sanity check; alpha error and clean-background quality are the primary transparent metrics;
+- the current path should be described as approximate transparent-layer recovery rather than state-of-the-art generative transparent decomposition;
+- the prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant.
 
-## Main ablation matrix
-
-The core sweep. Each row changes exactly one axis relative to the next so the contribution of each component is readable off the table:
+## B.6 Main ablation matrix
 
 | Variant | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsic | Purpose |
 |---|---|---|---|---|---|---|---|---|
 | A | SLIC/classical | luminance | global median | hard | no | no | no | weak baseline |
 | B | Mask2Former | none | area/heuristic | hard | no | no | no | semantic-only baseline |
-| C | Mask2Former | Depth Anything V2 | global median | hard | no | no | no | tests depth addition |
-| D | Mask2Former | Depth Anything V2 | boundary graph | hard | no | no | no | tests graph ordering |
-| E | Grounded-SAM2 | Depth Anything V2 | boundary graph | soft | no | no | no | tests promptable masks + alpha |
-| F | Grounded-SAM2 | Depth Pro / MoGe | boundary graph | soft | heuristic | OpenCV | no | tests amodal + completion |
+| C | Mask2Former | Depth Anything V2 | global median | hard | no | no | no | depth-only test |
+| D | Mask2Former | Depth Anything V2 | boundary graph | hard | no | no | no | graph-ordering test |
+| E | Grounded-SAM2 | Depth Anything V2 | boundary graph | soft | no | no | no | promptable masks plus soft alpha |
+| F | Grounded-SAM2 | Depth Pro / MoGe | boundary graph | soft | heuristic | OpenCV | no | amodal plus completion |
 | G | Grounded-SAM2 | ensemble | learned edge ranker | soft/matting | amodal | LaMa | no | strong non-intrinsic system |
 | H | full | ensemble | learned edge ranker | soft/matting | amodal | LaMa | Retinex / Marigold-IID | full LayerForge-X |
 | I | full + peel | ensemble | graph-guided peeling | soft/matting | amodal | iterative completion | Retinex / Marigold-IID | recursive peeling variant |
 
----
-
-## Table 1: Literature comparison
-
-A gap analysis across the most relevant families of prior work. The `LayerForge-X` row is intentionally the most densely populated — that's the point:
+## B.7 Literature comparison
 
 | Method family | Semantic layers | Depth order | Amodal hidden parts | Soft alpha | Inpainting | Intrinsics | Single image | Notes |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -120,17 +112,13 @@ A gap analysis across the most relevant families of prior work. The `LayerForge-
 | 3D photo inpainting | no/limited | yes | yes | no | yes | no | RGB-D/depth | parallax focus |
 | Panoptic segmentation | yes | no | no | no | no | no | yes | visible masks only |
 | Grounded-SAM | yes/open vocab | no | no | no | no | no | yes | promptable visible masks |
-| Matting | foreground only | no | no | yes | no | no | yes | excellent alpha boundaries |
+| Matting | foreground only | no | no | yes | no | no | yes | strong alpha boundaries |
 | Amodal segmentation | object masks | limited | yes | no | sometimes | no | yes | hidden shape, not full layer stack |
 | LayerDecomp-style | foreground/background | partial | yes | yes | yes | no | yes | strong generative editing baseline |
 | Qwen-Image-Layered-style | yes | implicit | yes | yes | yes | no/limited | yes | end-to-end generative RGBA layers |
 | LayerForge-X | yes | explicit graph | yes | yes | yes | optional | yes | modular and benchmarkable |
 
----
-
-## Table 2: Dataset plan
-
-Which dataset gets used for which track, with the available ground truth in each:
+## B.8 Dataset coverage
 
 | Dataset | Used for | Ground truth available | Metrics |
 |---|---|---|---|
@@ -141,50 +129,18 @@ Which dataset gets used for which track, with the available ground truth in each
 | DIODE | indoor/outdoor depth | RGB-D | AbsRel, RMSE, PLOA |
 | KINS / COCOA | amodal segmentation | amodal masks | modal IoU, amodal IoU, invisible IoU |
 | IIW | intrinsic decomposition | reflectance comparisons | WHDR |
-| Real curated set | qualitative editing | no full GT | visual comparison, user preference |
+| Real curated set | qualitative editing | no full ground truth | visual comparison, preference judgments |
 
----
+## B.9 Failure taxonomy
 
-## Table 3: Main quantitative results template
-
-| Method | group mIoU ↑ | PLOA ↑ | BW-PLOA ↑ | Recon PSNR ↑ | Recon SSIM ↑ | LPIPS ↓ | Amodal IoU ↑ | Runtime ↓ |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Classical baseline | | | | | | | | |
-| Panoptic only | | | | | | | | |
-| Panoptic + depth | | | | | | | | |
-| Panoptic + depth + graph | | | | | | | | |
-| Open-vocab + depth + graph | | | | | | | | |
-| Full LayerForge-X | | | | | | | | |
-
----
-
-## Table 4: Component ablation template
-
-A leave-one-out table. For each row, the expected-damage column says what I think should break, and the observed-result column is what the numbers actually say. If the observed column doesn't match the expected column, that's interesting and deserves a paragraph in the discussion.
-
-| Removed component | Expected damage | Metric most affected | Observed result |
+| Failure | Cause | Example | Fix / future work |
 |---|---|---|---|
-| remove semantic segmenter | no meaningful object layers | group mIoU | |
-| remove depth | wrong near/far order | PLOA/BW-PLOA | |
-| remove boundary graph | large stuff/object order errors | BW-PLOA/Occlusion F1 | |
-| remove soft alpha | jagged boundaries | alpha MAE/recomposition edge error | |
-| remove amodal masks | no hidden object support | amodal IoU/editing score | |
-| remove inpainting | holes after edits | masked LPIPS/hole ratio | |
-| remove intrinsic split | no recoloring/shading control | WHDR/edit demo | |
-| remove recursive peeling | weaker hidden-region recovery in iterative scenes | edit demo / masked LPIPS | |
-
----
-
-## Table 5: Failure analysis template
-
-One row per failure example. Talking about failures explicitly is one of the easiest ways to make the report read as mature rather than salesy:
-
-| Image | Failure type | Cause | Visible symptom | Fix/future work |
-|---|---|---|---|---|
-| image_01 | depth ambiguity | mirror/glass | wrong order | uncertainty + user correction |
-| image_02 | mask merge | same-colored objects | two objects in one layer | prompt refinement |
-| image_03 | alpha failure | hair/fur | jagged edge | matting backend |
-| image_04 | inpaint failure | large hidden background | blurry fill | stronger diffusion inpaint |
-| image_05 | amodal failure | extreme occlusion | wrong hidden shape | SAMEO/amodal backend |
-
----
+| Wrong semantic grouping | segmenter misses object or merges regions | chair merged with table | stronger prompts or panoptic model |
+| Wrong depth order | monocular depth ambiguity | mirror, window, poster | boundary ranker plus uncertainty |
+| Jagged edge | hard mask or weak matting | hair or fur | stronger matting backend |
+| Missing shadow or effect | object-only mask | person moved without shadow | associated-effect layer |
+| Bad inpainting | large unseen region | removed foreground person | stronger completion backend |
+| Bad amodal shape | heavy occlusion | hidden vehicle side | amodal model |
+| Intrinsic artifacts | single-image ambiguity | texture mistaken as shading | stronger IID model |
+| Too many layers | oversegmentation | fragmented background | graph merging |
+| Too few layers | undersegmentation | person and bicycle merged | prompt refinement |

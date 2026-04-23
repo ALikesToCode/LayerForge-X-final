@@ -8,4 +8,4 @@ This folder is the submission-safe evidence pack for the claims made in the READ
 
 The goal is to keep the archive auditable even when heavyweight directories such as `data/`, `runs/`, and `results/` are excluded from a ZIP submission.
 
-Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the source of truth in the submission archive.
+Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the canonical evidence pack in the submission archive.

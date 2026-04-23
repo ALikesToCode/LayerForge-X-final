@@ -2,145 +2,113 @@
 
 ## Project framing
 
-The project looks at **single-image layered scene decomposition**: given one RGB bitmap, infer a set of re-composable RGBA layers that are semantically meaningful, ordered by depth and occlusion, and — as a stretch goal — decomposed into albedo and shading. The fundamental difficulty is that a raster image collapses a lot of scene factors into one 2D array: object identity, transparency, shadows, reflections, illumination, camera projection, and occlusion. Any strong layered representation therefore has to borrow from several different sub-fields at once: scene understanding, monocular geometry, matting, completion, and appearance decomposition.
+LayerForge-X addresses **single-image layered scene decomposition**: given one RGB image, infer a set of recomposable RGBA layers that are semantically meaningful, ordered by depth and occlusion, and, where possible, augmented with intrinsic appearance factors such as albedo and shading. The difficulty is that a raster image collapses object identity, transparency, shadows, reflections, illumination, camera projection, and occlusion into a single 2D array. A useful layered representation therefore draws from several adjacent research areas at once: scene understanding, monocular geometry, matting, completion, and appearance decomposition.
 
-LayerForge-X positions itself as a **Depth-Aware Amodal Layer Graph (DALG)** rather than a plain segmentation exporter. Every layer is a graph node that carries a visible mask, a soft alpha, a semantic label, depth statistics, an estimated amodal extent, completed hidden or background content, and optional intrinsic appearance. Graph edges encode near/far and occludes/occluded-by relations. The intent is that the output is useful for editing, parallax, object removal, relighting-style operations, and general downstream analysis — not just "a folder of PNGs."
+LayerForge-X positions its output as a **Depth-Aware Amodal Layer Graph (DALG)** rather than a plain segmentation export. Each layer is represented as a graph node carrying a visible mask, a soft alpha, a semantic label, depth statistics, an estimated amodal extent, completed hidden or background content, and optional intrinsic appearance factors. Graph edges encode near/far and occlusion relations. The intent is to support editing, parallax, object removal, relighting-style operations, and downstream analysis rather than only visible cutout export.
 
----
+## 3.1 Layered depth and image-based rendering
 
-## 1. Layered depth and image-based rendering
+The most direct historical precursor is the **Layered Depth Image (LDI)** of Shade et al., which stores multiple samples along a viewing ray instead of only the first visible surface. That formulation is important because the present project also requires more than a flat visible mask: it requires depth ordering and some notion of hidden-region reasoning.
 
-The oldest directly relevant representation is the **Layered Depth Image (LDI)**. Shade et al. introduced LDIs as an image-based rendering structure where a single camera view can store **multiple samples along one line of sight** instead of just the first visible surface. That's the right historical starting point because the present project also needs more than a flat visible mask: it needs depth ordering and some notion of hidden-region reasoning.
+LDIs are effective for view synthesis because disocclusions can be handled more gracefully than with a single depth map. They were not designed as editable semantic layers. Classical LDIs do not identify which layer is “person,” “chair,” “sky,” or “road,” and they do not separate albedo from shading or associate foreground effects with object cores.
 
-LDIs work well for novel-view rendering because disocclusions can be handled more gracefully than with a flat depth map. They were not, however, designed to be editable semantic layers. A classical LDI doesn't really tell you which layer is "person," "chair," "sky," or "road," and it doesn't separate albedo from shading or split foreground effects from object cores.
+**Relevance to LayerForge-X:** DALG borrows the idea of storing layered samples along viewing rays, but makes the layers semantic, alpha-composited, and editable.
 
-**Use in this project:** DALG borrows the idea of storing layered samples along viewing rays, but makes the layers semantic, alpha-composited, and editable.
+## 3.2 3D photography and depth inpainting
 
----
+Shih et al.’s **3D Photography using Context-Aware Layered Depth Inpainting** converts RGB-D input into a multi-layer representation for parallax rendering. The work is directly relevant because it combines layered depth, inpainting, and interactive view synthesis in a single pipeline. That integration is close in spirit to LayerForge-X, although the target task is different.
 
-## 2. 3D photography and depth inpainting
+The main limitation for the present project is that 3D Photography assumes RGB-D input or externally supplied depth and primarily targets novel-view synthesis rather than semantic object editing. It does not export object-level semantic RGBA layers such as people, vehicles, furniture, or background regions.
 
-Shih et al.'s **3D Photography using Context-Aware Layered Depth Inpainting** converts an RGB-D image into a multi-layer representation aimed at parallax rendering. Their system uses an LDI with explicit pixel connectivity and performs colour-and-depth inpainting in occluded regions. The paper is directly relevant because it stitches together layered depth, inpainting, and interactive view synthesis in one pipeline — exactly the kind of integration this project is trying to do, just for a different target task.
+**Relevance to LayerForge-X:** LayerForge-X treats hidden-region completion as one stage inside a semantic layer graph. The output can support parallax, but object editing remains the primary goal.
 
-The catch is that 3D Photography assumes RGB-D input or externally supplied depth, and the target is novel-view synthesis rather than semantic object editing. It doesn't output object-level semantic RGBA layers like "people," "vehicles," "furniture," and "background stuff."
+## 3.3 Scene decomposition, object layers, and occluded content
 
-**Use in this project:** LayerForge-X treats context-aware hidden-region completion as *one stage* inside a semantic layer graph. The output can drive parallax, but its primary purpose is object editing.
+Several older works move closer to the full scene-decomposition target. Dhamo et al.’s **Object-Driven Multi-Layer Scene Decomposition From a Single Image** builds an LDI from one RGB image and uses object reasoning to infer occluded intermediate layers. Zheng et al.’s **Layer-by-Layer Completed Scene Decomposition** studies decomposition into individual objects, occlusion relationships, amodal masks, and content completion.
 
----
+These works are important because they make clear that correct layering requires more than visible segmentation. Occluded regions are part of the representation. If a person stands in front of a car, an editing-oriented representation should estimate the hidden continuation of the car well enough to support removal or parallax operations.
 
-## 3. Scene decomposition, object layers, and completed occluded content
+**Relevance to LayerForge-X:** LayerForge-X follows this line while using a modern toolchain: foundation segmentation models, current monocular geometry, promptable/open-vocabulary controls, and explicit evaluation of recomposition and editability.
 
-A few older works sit closer to the full scene-decomposition goal. Dhamo et al.'s **Object-Driven Multi-Layer Scene Decomposition From a Single Image** builds an LDI from a single RGB image and uses object information to infer occluded intermediate layers. Zheng et al.'s **Layer-by-Layer Completed Scene Decomposition** studies decomposition into individual objects, occlusion relationships, amodal masks, and content completion — a list that could honestly serve as the target for this project.
+## 3.4 Video layer decomposition and Omnimatte-style effects
 
-These works matter because they make the case that correct layering requires more than visible segmentation. Occluded regions are part of the representation. If a person is standing in front of a car, a practical layer representation should estimate the hidden continuation of the car, at least enough to support removal or parallax.
+Layered decomposition has also been studied extensively in video. **Omnimatte** decomposes a video into object-associated RGBA layers that can include related visual effects such as shadows, smoke, and reflections. This is conceptually important because a clean object cutout is often insufficient for editing; moving a person without the associated shadow immediately looks implausible.
 
-**Use in this project:** LayerForge-X follows this line but modernises the toolchain: foundation segmentation models, current monocular geometry, promptable / open-vocabulary controls, and explicit evaluation of recomposition and editability.
+Video methods benefit from motion and temporal consistency. Single-image decomposition does not have that advantage, which makes the task substantially more ambiguous.
 
----
+**Relevance to LayerForge-X:** LayerForge-X can export associated-effect layers such as object cores, shadows, reflections, or local residual layers. Even a lightweight effect-layer path makes the output closer to true layer decomposition than plain segmentation.
 
-## 4. Video layer decomposition and omnimattes
+## 3.5 Modern generative layer decomposition
 
-Layered decomposition has also been studied heavily in video. **Omnimatte** decomposes a video into object-associated RGBA layers that can include not only the object but also related visual effects — shadows, smoke, reflections. That's conceptually important, because a clean object cutout is frequently not enough for editing: moving a person without their shadow immediately looks fake.
+Recent work makes the project topic especially timely. **LayerDecomp** targets image layer decomposition with visual effects, producing a clean background and a transparent foreground while preserving effects such as shadows and reflections. **DiffDecompose** studies layer-wise decomposition of alpha-composited images, particularly transparent and semi-transparent cases. **Qwen-Image-Layered** proposes an end-to-end diffusion model that decomposes one RGB image into multiple semantically disentangled RGBA layers. **Referring Layer Decomposition** frames the task as prompt-conditioned RGBA layer extraction.
 
-Generative Omnimatte and a handful of follow-ups push this idea further with stronger generative priors. But video methods have a free lunch that single-image methods don't: motion and temporal consistency. Without optical flow or multiple frames, the task is genuinely more ambiguous.
+These works define the current frontier. LayerForge-X does not claim to exceed them on raw generative image quality. Its claim is different: a transparent, modular, geometry-aware layer graph that can be benchmarked component-by-component rather than assessed only by visual inspection.
 
-**Use in this project:** LayerForge-X can optionally export associated-effect layers (object core, shadow / reflection / effect region, clean background). Even a simple shadow-layer heuristic makes the output read as serious layer decomposition rather than plain segmentation.
+**Relevance to LayerForge-X:** These systems provide the most direct baselines and motivation for the DALG representation, Qwen enrichment, promptable extraction, and transparent-layer prototype.
 
----
+## 3.6 Panoptic and open-vocabulary segmentation
 
-## 5. Modern generative layer decomposition
+Layered decomposition needs both object and background-region proposals. Panoptic segmentation is a natural fit because it unifies instance-level “things” with amorphous “stuff” classes such as sky, road, wall, grass, or water. The original panoptic segmentation work also introduced the unified **Panoptic Quality (PQ)** metric.
 
-This is the corner of the field that makes the project topic especially timely. **LayerDecomp** targets image layer decomposition with visual effects, producing a clean background and a transparent foreground while preserving effects like shadows and reflections. **DiffDecompose** studies layer-wise decomposition of alpha-composited images, particularly transparent and semi-transparent cases. **Qwen-Image-Layered** proposes an end-to-end diffusion model that decomposes one RGB image into multiple semantically disentangled RGBA layers. **Referring Layer Decomposition** frames the task as prompt-conditioned RGBA layer extraction.
+**Mask2Former** is a strong closed-set baseline because it handles semantic, instance, and panoptic segmentation with one universal architecture. Its limitation is fixed vocabulary. Open-vocabulary pipelines address that gap. **GroundingDINO** detects objects specified by free-form text, and **SAM/SAM2** provide promptable segmentation masks. Combined, they support prompts such as “left chair,” “red car,” “window,” or “foreground person,” which are highly relevant for editable layer extraction.
 
-All four sit very close to the project statement, and the report should cite them specifically to show awareness of the frontier. The important boundary to draw is that LayerForge-X should not claim to beat these large generative systems on raw image quality — it almost certainly can't, and claiming otherwise would be unconvincing. The claim is a different one: a transparent, modular, geometry-aware layer graph that can be benchmarked component-by-component instead of only eyeballed.
+**Relevance to LayerForge-X:** Closed-set panoptic segmentation provides a benchmarkable baseline, while open-vocabulary grounded segmentation provides prompt-conditioned extraction for interactive use.
 
-**Use in this project:** These works define the current research frontier. LayerForge-X positions itself as a practical, inspectable alternative that fuses segmentation, geometry, amodal reasoning, alpha refinement, inpainting, and intrinsic decomposition.
+## 3.7 Monocular depth and geometry
 
----
+Depth ordering is central, and naive global-average sorting often fails. Large regions such as walls, floors, tables, and roads span wide depth ranges, so an average or median depth can mis-rank them relative to nearby objects.
 
-## 6. Panoptic and open-vocabulary segmentation
+Modern monocular geometry models provide the priors that make depth-based ordering viable. **Depth Anything V2** improves robustness and detail over earlier monocular depth models. **Depth Pro** produces sharp metric depth from a single image without camera intrinsics. **Marigold** repurposes diffusion priors for affine-invariant depth estimation. **MoGe** extends monocular prediction toward a fuller geometry package including point maps and normals.
 
-Layered decomposition needs both object and stuff regions. Panoptic segmentation is a natural fit because it unifies instance-level things (people, animals, vehicles) with amorphous stuff (sky, road, wall, grass, water). The panoptic segmentation paper also gave us the unified **Panoptic Quality (PQ)** metric.
+**Relevance to LayerForge-X:** LayerForge-X uses boundary-local depth evidence rather than global layer statistics when inferring pairwise ordering. That is more robust when objects overlap and when background regions span both near and far pixels.
 
-**Mask2Former** is the closed-set baseline of choice — it's a universal segmentation architecture that handles semantic, instance, and panoptic segmentation with a single head. Its obvious limitation is that it's bounded by the training label vocabulary.
+## 3.8 Amodal segmentation and occlusion reasoning
 
-Open-vocabulary models cover that gap. **GroundingDINO** detects objects specified by free-form text (either category names or referring expressions), and **SAM / SAM2** produces promptable segmentation masks. Stitching these together allows prompts like "left chair," "red car," "window," or "foreground person" — exactly the kind of control a layer editor actually wants.
+Visible (modal) masks describe only what can be seen. Amodal segmentation estimates the full object extent, including invisible occluded parts. **KINS** is a key amodal instance segmentation benchmark, and more recent work such as **SAMEO** adapts Segment Anything-style models to occluded objects.
 
-**Use in this project:** The report should compare closed-set panoptic segmentation and open-vocabulary grounded segmentation side by side. The second is more exciting, but the first has the advantage of being trivial to benchmark with standard PQ / mIoU.
+Amodal reasoning matters because editing demands it. If a foreground object is removed, the background must be completed. If a partially occluded object is moved, its hidden parts may need to be estimated. On real images this is inherently ambiguous, so such completions should be treated as plausible rather than exact.
 
----
+**Relevance to LayerForge-X:** LayerForge-X reports visible masks separately from amodal masks, which keeps the representation explicit about observed versus estimated content.
 
-## 7. Monocular depth and geometry
+## 3.9 Alpha matting and edge quality
 
-Depth ordering is central, and the obvious first heuristic — sort by average object depth — is often wrong. Large regions such as walls, floors, tables, and roads span a wide depth range, so their "average depth" doesn't correspond to where they actually sit relative to neighbours.
+Hard segmentation masks produce jagged cutouts. Practical layers require soft alpha around hair, fur, glass, motion blur, antialiased edges, smoke, and other semi-transparent structures. Matting methods estimate a fractional alpha matte directly.
 
-Modern monocular geometry models provide strong priors that make depth-based ordering viable at all. **Depth Anything V2** improves robustness and detail over older monocular depth models using synthetic labelled data plus large-scale pseudo-labelled real data. **Depth Pro** produces sharp metric depth from a single image without camera intrinsics. **Marigold** repurposes diffusion priors for affine-invariant depth estimation. **MoGe** goes further and predicts a fuller monocular geometry package — point maps, depth, normals, camera field of view.
+**Matting Anything** is especially relevant because it combines SAM features with a lightweight mask-to-matte module and supports visual or linguistic prompts, which aligns well with prompt-conditioned layer extraction.
 
-**Use in this project:** Rather than sorting layers by global median depth, LayerForge-X infers pairwise ordering from *boundary-local* depth evidence. That's more robust when objects overlap and when background regions cover both near and far pixels.
+**Relevance to LayerForge-X:** Even when a simple boundary-feathering fallback is used, the distinction between hard alpha and soft alpha remains important because it strongly affects recomposition quality and editing plausibility.
 
----
+## 3.10 Inpainting and hidden-region completion
 
-## 8. Amodal segmentation and occlusion reasoning
+Editing layered content requires plausible content behind removed or moved objects. **LaMa** is the most practical baseline in this category because it was designed for large masks and high-resolution generalization.
 
-Visible (modal) masks describe only what can be seen. Amodal segmentation estimates the full object extent, including the invisible occluded parts. **KINS** is a key amodal instance segmentation benchmark, and newer foundation-model-based work such as **SAMEO** adapts Segment Anything-style mask decoders to occluded objects.
+Inpainting should not be framed as exact recovery on real images. For photographs, the hidden content is unknown; only plausible completion is possible. For synthetic composites with known clean backgrounds, the problem becomes quantitatively measurable.
 
-Amodal reasoning matters because editing demands it. If a user removes a foreground object, the background has to be completed. If a user moves a partially occluded object, its hidden parts may need to be hallucinated. This is inherently ambiguous, so completion outputs should be treated as *plausible* rather than ground-truth-accurate on real images.
+**Relevance to LayerForge-X:** Synthetic data supports quantitative completion metrics, while real images support qualitative object-removal and parallax demonstrations.
 
-**Use in this project:** LayerForge-X reports modal visible masks separately from amodal masks. That avoids over-claiming and makes the representation honest.
+## 3.11 Intrinsic images: albedo and shading
 
----
+Intrinsic image decomposition separates an image into reflectance/albedo and illumination/shading. The problem is severely under-constrained from one image. **Intrinsic Images in the Wild (IIW)** introduced a large in-the-wild benchmark based on human reflectance judgments. More recent diffusion-based approaches provide stronger baselines, but the task remains difficult.
 
-## 9. Alpha matting and edge quality
+Within LayerForge-X, intrinsic decomposition is best treated as a stretch module rather than the core contribution. A Retinex-style fallback is sufficient for an editable approximation, provided the limitations are stated clearly.
 
-Hard segmentation masks make jagged cutouts. Real layers need soft alpha around hair, fur, glass, motion blur, antialiased vector edges, smoke, and any semi-transparent object. Matting methods estimate a fractional alpha matte directly.
+**Relevance to LayerForge-X:** Per-layer albedo and shading exports can support recoloring and simple appearance edits, even when the factorization is only approximate.
 
-**Matting Anything** is a relevant reference because it combines SAM features with a lightweight mask-to-matte module and supports visual or linguistic prompts — which plays well with this project's open-vocabulary layer extraction direction.
-
-**Use in this project:** Even if the implementation uses a simple boundary-feathering fallback, the report should explicitly compare hard alpha to soft alpha. The visual difference is usually obvious even at thumbnail size.
-
----
-
-## 10. Inpainting and hidden-region completion
-
-Editing layered content requires plausible content behind removed or moved objects. **LaMa** is the reliable baseline here: it was explicitly designed for large masks and high-resolution generalisation, using Fourier convolutions and large-mask training.
-
-Inpainting should not be framed as "ground truth recovery" on real images. For a real photograph the method cannot know what's behind the object; it can only produce a plausible completion. For synthetic composites where the hidden background is genuinely known, inpainting is quantifiable.
-
-**Use in this project:** Use synthetic data to score background completion with PSNR / SSIM / LPIPS inside removed-object regions. Use real images for qualitative object-removal and parallax demos.
-
----
-
-## 11. Intrinsic images: albedo and shading
-
-Intrinsic image decomposition splits an image into reflectance / albedo and illumination / shading. The problem is badly under-constrained from a single image — one image, two unknowns per pixel. **Intrinsic Images in the Wild (IIW)** introduced a large in-the-wild benchmark using human reflectance judgments and WHDR. Recent diffusion-based intrinsic methods (Marigold-IID and friends) give stronger modern baselines.
-
-For this project, intrinsic decomposition should be framed as a stretch module rather than the core contribution. A Retinex-style fallback is fine, but the report should be honest about the fact that physical correctness is limited.
-
-**Use in this project:** Export per-layer albedo and shading as useful editing approximations. Evaluate with IIW/WHDR when possible; otherwise fall back to synthetic scenes with known albedo and shading.
-
----
-
-## Gap summary
-
-A compact view of what each prior area covers, where it stops, and how LayerForge-X uses it:
+## 3.12 Gap summary
 
 | Prior area | What it solves | What it misses for this project | How LayerForge-X uses it |
 |---|---|---|---|
-| LDI / image-based rendering | Multi-depth samples for novel views | No semantic/editable object layers | Use layered depth idea as representation backbone |
-| 3D photo inpainting | Parallax and hidden-region completion | Usually not semantic object/stuff editing | Add semantic graph nodes and RGBA export |
-| Panoptic segmentation | Things + stuff parsing | No depth, alpha, hidden content | Provides layer proposals |
-| Open-vocabulary segmentation | User-specified object masks | No ordering/completion by itself | Enables promptable layer extraction |
+| LDI / image-based rendering | Multi-depth samples for novel views | No semantic/editable object layers | Uses layered depth as a representational backbone |
+| 3D photo inpainting | Parallax and hidden-region completion | Usually not semantic object/stuff editing | Adds semantic graph nodes and RGBA export |
+| Panoptic segmentation | Things and stuff parsing | No depth, alpha, or hidden content | Provides layer proposals |
+| Open-vocabulary segmentation | User-specified object masks | No ordering or completion by itself | Enables promptable layer extraction |
 | Monocular depth | Per-pixel relative/metric depth | No object graph or masks | Supplies geometry for ordering |
 | Amodal segmentation | Full object extent under occlusion | Does not complete appearance alone | Supplies hidden masks |
-| Matting | Soft alpha boundaries | Usually foreground/background only | Refines layer alpha |
-| Inpainting | Plausible missing content | No semantic/depth ordering | Completes background/hidden regions |
-| Intrinsic images | Albedo/shading factors | Highly ambiguous; not layer-aware | Optional per-layer appearance split |
-| Generative layer decomposition | End-to-end RGBA layers | Often black-box and hard to benchmark component-wise | Used as frontier comparison and motivation |
+| Matting | Soft alpha boundaries | Usually foreground/background only | Refines per-layer alpha |
+| Inpainting | Plausible missing content | No semantic/depth ordering | Completes background and hidden regions |
+| Intrinsic images | Albedo/shading factors | Highly ambiguous; not layer-aware | Provides optional appearance factors |
+| Generative layer decomposition | End-to-end RGBA layers | Often black-box and hard to benchmark component-wise | Serves as frontier comparison and proposal source |
 
----
+## Report-ready synthesis
 
-## Report-ready related-work paragraph
-
-This is the paragraph-length version suitable for dropping straight into the report:
-
-Single-image layered scene decomposition sits at the intersection of image-based rendering, scene parsing, monocular geometry, amodal perception, matting, inpainting, and intrinsic image decomposition. Classical Layered Depth Images show why a single visible surface per pixel is insufficient for view synthesis, since disoccluded content requires multiple depth and colour samples along camera rays. Modern 3D-photo methods extend this with learned colour-and-depth inpainting, but primarily target parallax rather than semantic object editing. Panoptic segmentation provides a natural source of object and stuff proposals, while open-vocabulary detectors and promptable segmenters allow user-specified layer extraction beyond fixed label sets. Recent monocular depth and geometry models improve the reliability of depth ordering, but depth alone does not produce editable layers. Amodal segmentation and inpainting address the invisible portions of occluded objects and backgrounds, while matting improves layer boundaries. Recent generative layer-decomposition systems demonstrate the importance of RGBA layers for editing, but their end-to-end nature makes component-wise analysis difficult. Our work therefore proposes an inspectable Depth-Aware Amodal Layer Graph that combines semantic masks, depth ordering, soft alpha, amodal extent, completion, and optional intrinsic decomposition into a re-composable representation.
+Single-image layered scene decomposition sits at the intersection of image-based rendering, scene parsing, monocular geometry, amodal perception, matting, inpainting, and intrinsic image decomposition. Classical Layered Depth Images show why a single visible surface per pixel is insufficient for view synthesis, since disoccluded content requires multiple depth and color samples along camera rays. Modern 3D-photo methods extend this with learned color-and-depth inpainting, but primarily target parallax rather than semantic object editing. Panoptic segmentation provides a natural source of object and stuff proposals, while open-vocabulary detectors and promptable segmenters allow user-specified layer extraction beyond fixed label sets. Recent monocular depth and geometry models improve the reliability of depth ordering, but depth alone does not produce editable layers. Amodal segmentation and inpainting address invisible portions of occluded objects and backgrounds, while matting improves layer boundaries. Recent generative layer-decomposition systems demonstrate the importance of RGBA layers for editing, but their end-to-end nature makes component-wise analysis difficult. LayerForge-X therefore proposes an inspectable Depth-Aware Amodal Layer Graph that combines semantic masks, depth ordering, soft alpha, amodal extent, completion, and optional intrinsic decomposition into a recomposable representation.

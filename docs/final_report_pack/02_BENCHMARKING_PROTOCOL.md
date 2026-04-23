@@ -2,7 +2,7 @@
 
 ## Goal
 
-The project shouldn't be evaluated with one vague "looks good" comparison. A layered representation has several measurable properties, each of which can fail independently:
+The project is evaluated across multiple measurable properties rather than through a single qualitative comparison. A layered representation can fail in several ways:
 
 1. Are the layer regions semantically correct?
 2. Is the near-to-far depth and occlusion order correct?
@@ -14,7 +14,7 @@ The project shouldn't be evaluated with one vague "looks good" comparison. A lay
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the source of truth for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
+For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
 
 ---
 
@@ -73,7 +73,7 @@ mIoU = mean_c IoU_c
 For the current repo state, note the distinction clearly:
 
 - the implemented COCO and ADE20K evaluators are **coarse-group IoU** benchmarks rather than official PQ pipelines;
-- PQ/SQ/RQ stay as the report-template target if a full panoptic evaluator is added later;
+- PQ/SQ/RQ remain reserved for a future full panoptic evaluator;
 - do not relabel the current JSON summaries as PQ.
 
 ---
@@ -489,9 +489,9 @@ Run a controlled set where one component changes at a time. The reason to do thi
 
 ---
 
-# Minimum result set for best marks
+# Visual evidence set
 
-Figures that should be in the final report, in roughly this order:
+The report documents the evaluation through the following figure classes:
 
 1. Input image.
 2. Semantic overlay.
@@ -507,7 +507,7 @@ Figures that should be in the final report, in roughly this order:
 12. Albedo/shading layer visualisation.
 13. Failure cases.
 
-Tables:
+Primary tables:
 
 1. Literature comparison table.
 2. Benchmark/dataset table.
@@ -519,7 +519,7 @@ Tables:
 
 # Failure-case taxonomy
 
-Failures are part of the contribution, not a thing to hide. Classifying them makes the report read as mature rather than salesy:
+Failure analysis is part of the contribution. Classifying errors makes the evaluation more credible and easier to interpret:
 
 | Failure | Cause | Example | Fix / future work |
 |---|---|---|---|
