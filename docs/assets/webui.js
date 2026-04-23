@@ -82,10 +82,10 @@ function wireForm(runtime) {
 
     try {
       const imageBase64 = await fileToBase64(file);
-      const payload = {
-        mode: form.elements.mode.value,
-        filename: file.name,
-        image_base64: imageBase64,
+        const payload = {
+            mode: form.elements.mode.value,
+            filename: file.name,
+            image_base64: imageBase64,
         config: form.elements.config.value,
         segmenter: emptyToNull(form.elements.segmenter.value),
         depth: emptyToNull(form.elements.depth.value),
@@ -94,10 +94,11 @@ function wireForm(runtime) {
         box: emptyToNull(form.elements.box.value),
         prompt_source: emptyToNull(form.elements.prompt_source.value),
         ordering: emptyToNull(form.elements.ordering.value),
-        device: emptyToNull(form.elements.device.value) || "auto",
-        max_layers: emptyToNull(form.elements.max_layers.value),
-        no_parallax: form.elements.no_parallax.checked,
-      };
+            device: emptyToNull(form.elements.device.value) || "auto",
+            max_layers: emptyToNull(form.elements.max_layers.value),
+            no_parallax: form.elements.no_parallax.checked,
+            use_frontier_base: form.elements.use_frontier_base.checked,
+        };
       const response = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

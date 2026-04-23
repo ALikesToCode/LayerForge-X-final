@@ -77,3 +77,101 @@ def test_webui_frontier_mode_returns_selected_best_run(tmp_path: Path, monkeypat
     assert result["urls"]["selected_best"]
     assert result["urls"]["manifest"]
     assert result["urls"]["metrics"]
+
+
+def test_webui_extract_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
+    image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
+    work_root = tmp_path / "webui"
+    winner_dir = tmp_path / "winner_extract"
+    winner_dir.mkdir(parents=True)
+    (winner_dir / "manifest.json").write_text("{}", encoding="utf-8")
+    (winner_dir / "metrics.json").write_text(json.dumps({"num_layers": 4}), encoding="utf-8")
+    (winner_dir / "dalg_manifest.json").write_text("{}", encoding="utf-8")
+
+    captured: dict[str, object] = {}
+
+    def fail_get_pipeline(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("native pipeline should not be used when use_frontier_base is enabled")
+
+    def fake_selection(**kwargs):  # type: ignore[no-untyped-def]
+        captured["frontier_kwargs"] = kwargs
+        return {
+            "selected_label": "Qwen + graph preserve (3)",
+            "run_dir": winner_dir,
+            "manifest_path": winner_dir / "manifest.json",
+            "metrics_path": winner_dir / "metrics.json",
+            "summary_path": tmp_path / "frontier_summary.json",
+        }
+
+    def fake_export(path_or_dir, **kwargs):  # type: ignore[no-untyped-def]
+        captured["path_or_dir"] = Path(path_or_dir)
+        (work_root / "jobs" / "extract" / "target_extract").mkdir(parents=True, exist_ok=True)
+        return {"selected_target": {"name": "wheel"}}
+
+    monkeypatch.setattr("layerforge.webui._get_pipeline", fail_get_pipeline)
+    monkeypatch.setattr("layerforge.webui.run_single_image_frontier_selection", fake_selection, raising=False)
+    monkeypatch.setattr("layerforge.webui.export_target_assets", fake_export)
+
+    payload = {
+        "mode": "extract",
+        "filename": image_path.name,
+        "image_base64": base64.b64encode(image_path.read_bytes()).decode("utf-8"),
+        "config": "configs/frontier.yaml",
+        "device": "cpu",
+        "prompt": "wheel",
+        "use_frontier_base": True,
+    }
+    result = run_webui_job(REPO_ROOT, payload, work_root=work_root)
+    assert result["status"] == "ok"
+    assert result["mode"] == "extract"
+    assert captured["path_or_dir"] == winner_dir
+
+
+def test_webui_transparent_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
+    image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
+    work_root = tmp_path / "webui"
+    winner_dir = tmp_path / "winner_transparent"
+    winner_dir.mkdir(parents=True)
+    (winner_dir / "manifest.json").write_text("{}", encoding="utf-8")
+    (winner_dir / "metrics.json").write_text(json.dumps({"num_layers": 4}), encoding="utf-8")
+    (winner_dir / "dalg_manifest.json").write_text("{}", encoding="utf-8")
+
+    captured: dict[str, object] = {}
+
+    def fail_get_pipeline(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("native pipeline should not be used when use_frontier_base is enabled")
+
+    def fake_selection(**kwargs):  # type: ignore[no-untyped-def]
+        captured["frontier_kwargs"] = kwargs
+        return {
+            "selected_label": "LayerForge native",
+            "run_dir": winner_dir,
+            "manifest_path": winner_dir / "manifest.json",
+            "metrics_path": winner_dir / "metrics.json",
+            "summary_path": tmp_path / "frontier_summary.json",
+        }
+
+    def fake_export(path_or_dir, **kwargs):  # type: ignore[no-untyped-def]
+        captured["path_or_dir"] = Path(path_or_dir)
+        transparent_dir = work_root / "jobs" / "transparent" / "transparent_extract"
+        transparent_dir.mkdir(parents=True, exist_ok=True)
+        (transparent_dir / "transparent_metrics.json").write_text(json.dumps({"selected_target": {"name": "glass"}, "recompose_psnr": 33.0}), encoding="utf-8")
+        return {"selected_target": {"name": "glass"}}
+
+    monkeypatch.setattr("layerforge.webui._get_pipeline", fail_get_pipeline)
+    monkeypatch.setattr("layerforge.webui.run_single_image_frontier_selection", fake_selection, raising=False)
+    monkeypatch.setattr("layerforge.webui.export_transparent_assets", fake_export)
+
+    payload = {
+        "mode": "transparent",
+        "filename": image_path.name,
+        "image_base64": base64.b64encode(image_path.read_bytes()).decode("utf-8"),
+        "config": "configs/frontier.yaml",
+        "device": "cpu",
+        "prompt": "glass",
+        "use_frontier_base": True,
+    }
+    result = run_webui_job(REPO_ROOT, payload, work_root=work_root)
+    assert result["status"] == "ok"
+    assert result["mode"] == "transparent"
+    assert captured["path_or_dir"] == winner_dir

@@ -16,6 +16,7 @@ from urllib.parse import unquote, urlparse
 from .config import load_config
 from .editability import export_target_assets
 from .frontier import run_frontier_comparison
+from .frontier import run_single_image_frontier_selection
 from .pipeline import LayerForgePipeline
 from .site_data import build_project_site_payload
 from .transparent import export_transparent_assets
@@ -109,7 +110,8 @@ def _write_uploaded_image(work_root: Path, filename: str, image_base64: str) -> 
     return output
 
 
-def _collect_previews(output_dir: Path, mode: str) -> list[dict[str, str]]:
+def _collect_previews(output_dir: Path, mode: str, *, asset_root: Path | None = None) -> list[dict[str, str]]:
+    asset_root = asset_root or output_dir
     preview_specs = [
         ("Input", output_dir / "debug" / "input_rgb.png"),
         ("Segmentation overlay", output_dir / "debug" / "segmentation_overlay.png"),
@@ -123,17 +125,17 @@ def _collect_previews(output_dir: Path, mode: str) -> list[dict[str, str]]:
     if mode == "extract":
         preview_specs.extend(
             [
-                ("Target RGBA", output_dir / "target_extract" / "target_rgba.png"),
-                ("Completed background", output_dir / "target_extract" / "background_completed.png"),
-                ("Move preview", output_dir / "target_extract" / "edit_preview_move.png"),
+                ("Target RGBA", asset_root / "target_extract" / "target_rgba.png"),
+                ("Completed background", asset_root / "target_extract" / "background_completed.png"),
+                ("Move preview", asset_root / "target_extract" / "edit_preview_move.png"),
             ]
         )
     if mode == "transparent":
         preview_specs.extend(
             [
-                ("Transparent foreground", output_dir / "transparent_extract" / "transparent_foreground_rgba.png"),
-                ("Estimated clean background", output_dir / "transparent_extract" / "estimated_clean_background.png"),
-                ("Transparent recomposition", output_dir / "transparent_extract" / "recomposition.png"),
+                ("Transparent foreground", asset_root / "transparent_extract" / "transparent_foreground_rgba.png"),
+                ("Estimated clean background", asset_root / "transparent_extract" / "estimated_clean_background.png"),
+                ("Transparent recomposition", asset_root / "transparent_extract" / "recomposition.png"),
             ]
         )
     if mode == "peel":
@@ -149,7 +151,14 @@ def _collect_previews(output_dir: Path, mode: str) -> list[dict[str, str]]:
     return previews
 
 
-def _collect_summary_metrics(output_dir: Path, mode: str, *, frontier_selection: dict[str, Any] | None = None) -> dict[str, Any]:
+def _collect_summary_metrics(
+    output_dir: Path,
+    mode: str,
+    *,
+    frontier_selection: dict[str, Any] | None = None,
+    asset_root: Path | None = None,
+) -> dict[str, Any]:
+    asset_root = asset_root or output_dir
     metrics_path = output_dir / "metrics.json"
     metrics = _read_json(metrics_path) if metrics_path.exists() else {}
     summary: dict[str, Any] = {
@@ -161,12 +170,12 @@ def _collect_summary_metrics(output_dir: Path, mode: str, *, frontier_selection:
         "depth_method": metrics.get("depth_method"),
     }
     if mode == "extract":
-        target_meta = output_dir / "target_extract" / "target_metadata.json"
+        target_meta = asset_root / "target_extract" / "target_metadata.json"
         if target_meta.exists():
             meta = _read_json(target_meta)
             summary["selected_target"] = meta.get("selected_target")
     if mode == "transparent":
-        transparent_metrics = output_dir / "transparent_extract" / "transparent_metrics.json"
+        transparent_metrics = asset_root / "transparent_extract" / "transparent_metrics.json"
         if transparent_metrics.exists():
             meta = _read_json(transparent_metrics)
             summary["transparent_alpha_nonzero_ratio"] = meta.get("alpha_nonzero_ratio")
@@ -214,6 +223,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
     prompts = _parse_prompts(prompt_text)
     no_parallax = bool(payload.get("no_parallax", True))
     max_layers = payload.get("max_layers")
+    use_frontier_base = bool(payload.get("use_frontier_base", False))
 
     frontier_selection: dict[str, Any] | None = None
 
@@ -233,21 +243,52 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 ranker_model_path=ranker_model,
             )
         elif mode == "extract":
-            pipeline = _get_pipeline(config_path, device)
-            out = pipeline.run(
-                input_path,
-                job_dir,
-                segmenter=segmenter,
-                depth_method=depth_method,
-                prompts=prompts,
-                prompt_source=prompt_source,
-                flip_depth=bool(payload.get("flip_depth", False)),
-                save_parallax=not no_parallax,
-                ordering_method=ordering,
-                ranker_model_path=ranker_model,
-            )
+            if use_frontier_base:
+                frontier_root = job_dir / "frontier"
+                selection = run_single_image_frontier_selection(
+                    input_path=input_path,
+                    output_root=frontier_root,
+                    native_config=config_path,
+                    native_segmenter=segmenter or "grounded_sam2",
+                    native_depth=depth_method or "ensemble",
+                    peeling_config=str(payload.get("peeling_config") or "configs/recursive_peeling.yaml"),
+                    peeling_segmenter=str(payload.get("peeling_segmenter") or segmenter or "grounded_sam2"),
+                    peeling_depth=str(payload.get("peeling_depth") or depth_method or "ensemble"),
+                    qwen_model=str(payload.get("qwen_model") or "Qwen/Qwen-Image-Layered"),
+                    qwen_layers=str(payload.get("qwen_layers") or "3,4,6,8"),
+                    qwen_resolution=int(payload.get("qwen_resolution") or 640),
+                    qwen_steps=int(payload.get("qwen_steps") or 10),
+                    qwen_device=str(payload.get("qwen_device") or "cuda"),
+                    qwen_dtype=str(payload.get("qwen_dtype") or "bfloat16"),
+                    qwen_offload=str(payload.get("qwen_offload") or "sequential"),
+                    qwen_hybrid_modes=str(payload.get("qwen_hybrid_modes") or "preserve,reorder"),
+                    qwen_merge_external_layers=bool(payload.get("qwen_merge_external_layers", False)),
+                )
+                frontier_selection = dict(selection["selection"]) if "selection" in selection else {"label": selection.get("selected_label")}
+                output_dir = Path(selection["run_dir"])
+                manifest_path = Path(selection["manifest_path"])
+                metrics_path = Path(selection["metrics_path"])
+                dalg_path = output_dir / "dalg_manifest.json"
+            else:
+                pipeline = _get_pipeline(config_path, device)
+                out = pipeline.run(
+                    input_path,
+                    job_dir,
+                    segmenter=segmenter,
+                    depth_method=depth_method,
+                    prompts=prompts,
+                    prompt_source=prompt_source,
+                    flip_depth=bool(payload.get("flip_depth", False)),
+                    save_parallax=not no_parallax,
+                    ordering_method=ordering,
+                    ranker_model_path=ranker_model,
+                )
+                output_dir = Path(out.output_dir)
+                manifest_path = output_dir / "manifest.json"
+                metrics_path = output_dir / "metrics.json"
+                dalg_path = output_dir / "dalg_manifest.json"
             export_target_assets(
-                out.output_dir,
+                output_dir,
                 output_dir=job_dir / "target_extract",
                 prompt=prompt_text,
                 point=point,
@@ -255,21 +296,52 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 target_name=target_name,
             )
         elif mode == "transparent":
-            pipeline = _get_pipeline(config_path, device)
-            out = pipeline.run(
-                input_path,
-                job_dir,
-                segmenter=segmenter,
-                depth_method=depth_method,
-                prompts=prompts,
-                prompt_source=prompt_source,
-                flip_depth=bool(payload.get("flip_depth", False)),
-                save_parallax=False,
-                ordering_method=ordering,
-                ranker_model_path=ranker_model,
-            )
+            if use_frontier_base:
+                frontier_root = job_dir / "frontier"
+                selection = run_single_image_frontier_selection(
+                    input_path=input_path,
+                    output_root=frontier_root,
+                    native_config=config_path,
+                    native_segmenter=segmenter or "grounded_sam2",
+                    native_depth=depth_method or "ensemble",
+                    peeling_config=str(payload.get("peeling_config") or "configs/recursive_peeling.yaml"),
+                    peeling_segmenter=str(payload.get("peeling_segmenter") or segmenter or "grounded_sam2"),
+                    peeling_depth=str(payload.get("peeling_depth") or depth_method or "ensemble"),
+                    qwen_model=str(payload.get("qwen_model") or "Qwen/Qwen-Image-Layered"),
+                    qwen_layers=str(payload.get("qwen_layers") or "3,4,6,8"),
+                    qwen_resolution=int(payload.get("qwen_resolution") or 640),
+                    qwen_steps=int(payload.get("qwen_steps") or 10),
+                    qwen_device=str(payload.get("qwen_device") or "cuda"),
+                    qwen_dtype=str(payload.get("qwen_dtype") or "bfloat16"),
+                    qwen_offload=str(payload.get("qwen_offload") or "sequential"),
+                    qwen_hybrid_modes=str(payload.get("qwen_hybrid_modes") or "preserve,reorder"),
+                    qwen_merge_external_layers=bool(payload.get("qwen_merge_external_layers", False)),
+                )
+                frontier_selection = dict(selection["selection"]) if "selection" in selection else {"label": selection.get("selected_label")}
+                output_dir = Path(selection["run_dir"])
+                manifest_path = Path(selection["manifest_path"])
+                metrics_path = Path(selection["metrics_path"])
+                dalg_path = output_dir / "dalg_manifest.json"
+            else:
+                pipeline = _get_pipeline(config_path, device)
+                out = pipeline.run(
+                    input_path,
+                    job_dir,
+                    segmenter=segmenter,
+                    depth_method=depth_method,
+                    prompts=prompts,
+                    prompt_source=prompt_source,
+                    flip_depth=bool(payload.get("flip_depth", False)),
+                    save_parallax=False,
+                    ordering_method=ordering,
+                    ranker_model_path=ranker_model,
+                )
+                output_dir = Path(out.output_dir)
+                manifest_path = output_dir / "manifest.json"
+                metrics_path = output_dir / "metrics.json"
+                dalg_path = output_dir / "dalg_manifest.json"
             export_transparent_assets(
-                out.output_dir,
+                output_dir,
                 output_dir=job_dir / "transparent_extract",
                 prompt=prompt_text,
                 point=point,
@@ -346,6 +418,25 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
             }
         else:
             raise ValueError(f"Unsupported mode: {mode}")
+
+    if mode in {"extract", "transparent"} and use_frontier_base:
+        asset_root = job_dir
+        urls: dict[str, str | None] = {
+            "output_dir": _workspace_url(output_dir),
+            "manifest": _workspace_url(manifest_path) if manifest_path.exists() else None,
+            "metrics": _workspace_url(metrics_path) if metrics_path.exists() else None,
+            "dalg": _workspace_url(dalg_path) if dalg_path.exists() else None,
+            "frontier": _workspace_url(job_dir / "frontier" / "frontier_summary.json"),
+        }
+        return {
+            "status": "ok",
+            "mode": mode,
+            "input_filename": filename,
+            "output_dir": _display_path(output_dir),
+            "urls": urls,
+            "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection, asset_root=asset_root),
+            "previews": _collect_previews(output_dir, mode, asset_root=asset_root),
+        }
 
     output_dir = Path(out.output_dir)
     metrics_path = output_dir / "metrics.json"
