@@ -11,7 +11,7 @@ DEFAULT_SELF_EVAL_WEIGHTS = {
     "semantic_separation": 0.20,
     "alpha_quality": 0.10,
     "graph_confidence": 0.15,
-    "runtime": 0.10,
+    "runtime": 0.0,
 }
 
 

@@ -4,35 +4,35 @@
       "images": 5,
       "label": "LayerForge native",
       "mean_psnr": 37.66881969404926,
-      "mean_self_eval_score": 0.6282792,
+      "mean_self_eval_score": 0.698088,
       "mean_ssim": 0.9708095078479693
     },
     {
       "images": 5,
       "label": "LayerForge peeling",
       "mean_psnr": 27.098823932859812,
-      "mean_self_eval_score": 0.4782986,
+      "mean_self_eval_score": 0.5314428,
       "mean_ssim": 0.909615156412167
     },
     {
       "images": 5,
       "label": "Qwen + graph preserve (4)",
       "mean_psnr": 28.553930610543226,
-      "mean_self_eval_score": 0.5258506,
+      "mean_self_eval_score": 0.5842786,
       "mean_ssim": 0.8638442376259772
     },
     {
       "images": 5,
       "label": "Qwen + graph reorder (4)",
       "mean_psnr": 28.539704525143645,
-      "mean_self_eval_score": 0.5250836,
+      "mean_self_eval_score": 0.5834262,
       "mean_ssim": 0.8637379063051934
     },
     {
       "images": 5,
       "label": "Qwen raw (4)",
       "mean_psnr": 29.075732442522252,
-      "mean_self_eval_score": 0.254139,
+      "mean_self_eval_score": 0.28237639999999997,
       "mean_ssim": 0.8850195543821586
     }
   ],
@@ -97,7 +97,7 @@
         "semantic_separation": 0.583418
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, edit_preservation=0.983.",
-      "self_eval_score": 0.695397,
+      "self_eval_score": 0.772664,
       "semantic_purity": 0.583418,
       "status": "ok",
       "visual_order_mode": null
@@ -162,7 +162,7 @@
         "semantic_separation": 0.9996
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, alpha_quality=1.000.",
-      "self_eval_score": 0.832427,
+      "self_eval_score": 0.924919,
       "semantic_purity": 0.9996,
       "status": "ok",
       "visual_order_mode": null
@@ -229,7 +229,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.910, graph_confidence=0.704.",
-      "self_eval_score": 0.539242,
+      "self_eval_score": 0.599157,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -294,7 +294,7 @@
         "semantic_separation": 0.35
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, graph_confidence=0.850.",
-      "self_eval_score": 0.52266,
+      "self_eval_score": 0.580734,
       "semantic_purity": 0.35,
       "status": "ok",
       "visual_order_mode": null
@@ -359,7 +359,7 @@
         "semantic_separation": 0.935319
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, semantic_separation=0.935.",
-      "self_eval_score": 0.635739,
+      "self_eval_score": 0.706376,
       "semantic_purity": 0.935319,
       "status": "ok",
       "visual_order_mode": null
@@ -590,7 +590,7 @@
         "semantic_separation": 0.583418
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, edit_preservation=0.983.",
-      "self_eval_score": 0.695397,
+      "self_eval_score": 0.772664,
       "semantic_purity": 0.583418,
       "status": "ok",
       "visual_order_mode": null
@@ -655,7 +655,7 @@
         "semantic_separation": 0.35
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, graph_confidence=0.600.",
-      "self_eval_score": 0.443149,
+      "self_eval_score": 0.492388,
       "semantic_purity": 0.35,
       "status": "ok",
       "visual_order_mode": null
@@ -721,7 +721,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: semantic_separation=0.400, alpha_quality=0.351.",
-      "self_eval_score": 0.1963,
+      "self_eval_score": 0.218111,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": null
@@ -788,7 +788,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.996, graph_confidence=0.704.",
-      "self_eval_score": 0.470111,
+      "self_eval_score": 0.522346,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "preserve_external_order"
@@ -855,7 +855,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.996, graph_confidence=0.704.",
-      "self_eval_score": 0.470045,
+      "self_eval_score": 0.522272,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -920,7 +920,7 @@
         "semantic_separation": 0.9996
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, alpha_quality=1.000.",
-      "self_eval_score": 0.832427,
+      "self_eval_score": 0.924919,
       "semantic_purity": 0.9996,
       "status": "ok",
       "visual_order_mode": null
@@ -985,7 +985,7 @@
         "semantic_separation": 0.506315
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, edit_preservation=0.975.",
-      "self_eval_score": 0.622471,
+      "self_eval_score": 0.691634,
       "semantic_purity": 0.506315,
       "status": "ok",
       "visual_order_mode": null
@@ -1051,7 +1051,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=0.462, alpha_quality=0.405.",
-      "self_eval_score": 0.25048,
+      "self_eval_score": 0.278311,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": null
@@ -1118,7 +1118,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.987, graph_confidence=0.725.",
-      "self_eval_score": 0.574596,
+      "self_eval_score": 0.63844,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "preserve_external_order"
@@ -1185,7 +1185,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.987, graph_confidence=0.725.",
-      "self_eval_score": 0.574596,
+      "self_eval_score": 0.63844,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -1250,7 +1250,7 @@
         "semantic_separation": 0.35
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, graph_confidence=0.850.",
-      "self_eval_score": 0.52266,
+      "self_eval_score": 0.580734,
       "semantic_purity": 0.35,
       "status": "ok",
       "visual_order_mode": null
@@ -1315,7 +1315,7 @@
         "semantic_separation": 0.35
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: graph_confidence=0.750, edit_preservation=0.531.",
-      "self_eval_score": 0.315273,
+      "self_eval_score": 0.350303,
       "semantic_purity": 0.35,
       "status": "ok",
       "visual_order_mode": null
@@ -1381,7 +1381,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: semantic_separation=0.400, alpha_quality=0.394.",
-      "self_eval_score": 0.234954,
+      "self_eval_score": 0.26106,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": null
@@ -1448,7 +1448,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: graph_confidence=0.725, edit_preservation=0.597.",
-      "self_eval_score": 0.451043,
+      "self_eval_score": 0.501159,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "preserve_external_order"
@@ -1515,7 +1515,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: graph_confidence=0.725, edit_preservation=0.579.",
-      "self_eval_score": 0.446304,
+      "self_eval_score": 0.495894,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -1580,7 +1580,7 @@
         "semantic_separation": 0.35
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: recomposition_fidelity=1.000, graph_confidence=0.683.",
-      "self_eval_score": 0.455173,
+      "self_eval_score": 0.505747,
       "semantic_purity": 0.35,
       "status": "ok",
       "visual_order_mode": null
@@ -1645,7 +1645,7 @@
         "semantic_separation": 0.434797
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, graph_confidence=0.750.",
-      "self_eval_score": 0.444455,
+      "self_eval_score": 0.493839,
       "semantic_purity": 0.434797,
       "status": "ok",
       "visual_order_mode": null
@@ -1711,7 +1711,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=0.549, semantic_separation=0.400.",
-      "self_eval_score": 0.24928,
+      "self_eval_score": 0.276977,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": null
@@ -1778,7 +1778,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.906, graph_confidence=0.704.",
-      "self_eval_score": 0.538272,
+      "self_eval_score": 0.59808,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "preserve_external_order"
@@ -1845,7 +1845,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: edit_preservation=0.910, graph_confidence=0.704.",
-      "self_eval_score": 0.539242,
+      "self_eval_score": 0.599157,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -1910,7 +1910,7 @@
         "semantic_separation": 0.935319
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, semantic_separation=0.935.",
-      "self_eval_score": 0.635739,
+      "self_eval_score": 0.706376,
       "semantic_purity": 0.935319,
       "status": "ok",
       "visual_order_mode": null
@@ -1975,7 +1975,7 @@
         "semantic_separation": 0.550982
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=1.000, graph_confidence=0.750.",
-      "self_eval_score": 0.566145,
+      "self_eval_score": 0.62905,
       "semantic_purity": 0.550982,
       "status": "ok",
       "visual_order_mode": null
@@ -2041,7 +2041,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=0.966, recomposition_fidelity=0.628.",
-      "self_eval_score": 0.339681,
+      "self_eval_score": 0.377423,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": null
@@ -2108,7 +2108,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=0.987, edit_preservation=0.832.",
-      "self_eval_score": 0.595231,
+      "self_eval_score": 0.661368,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "preserve_external_order"
@@ -2175,7 +2175,7 @@
         "semantic_separation": 0.4
       },
       "self_eval_reason": "Selected by heuristic self-evaluation with strongest components: alpha_quality=0.987, edit_preservation=0.832.",
-      "self_eval_score": 0.595231,
+      "self_eval_score": 0.661368,
       "semantic_purity": 0.4,
       "status": "ok",
       "visual_order_mode": "graph_order"
@@ -2186,7 +2186,7 @@
     "edit_preservation": 0.25,
     "graph_confidence": 0.15,
     "recomposition_fidelity": 0.2,
-    "runtime": 0.1,
+    "runtime": 0.0,
     "semantic_separation": 0.2
   }
 }
