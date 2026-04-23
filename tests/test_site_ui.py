@@ -17,6 +17,7 @@ def test_webui_static_surface_is_pages_safe() -> None:
     assert 'class="workflow-strip"' in html_text
     assert 'class="form-stack"' in html_text
     assert 'class="form-cluster"' in html_text
+    assert "Frontier best-of selection" in html_text
 
     css_text = (ROOT / "docs" / "assets" / "site.css").read_text(encoding="utf-8")
     assert "overflow-x: clip;" in css_text

@@ -92,9 +92,10 @@
                         <span class="workflow-step__index">01</span>
                         <h3>Choose the run mode</h3>
                         <p>
-                            Start with the native decomposition, then move to
-                            extraction, transparent recovery, or recursive
-                            peeling when the task is narrower.
+                            Start with frontier selection when you want the
+                            strongest measured candidate bank, then move to the
+                            narrower extraction, transparent recovery, or
+                            recursive peeling modes when the task is specific.
                         </p>
                     </article>
                     <article class="workflow-step">
@@ -134,6 +135,9 @@
                                 <label>
                                     <span>Mode</span>
                                     <select name="mode">
+                                        <option value="frontier">
+                                            Frontier best-of selection
+                                        </option>
                                         <option value="run">
                                             Layered decomposition
                                         </option>

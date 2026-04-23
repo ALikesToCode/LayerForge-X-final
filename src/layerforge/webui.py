@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import argparse
 import json
 import mimetypes
 import threading
@@ -14,6 +15,7 @@ from urllib.parse import unquote, urlparse
 
 from .config import load_config
 from .editability import export_target_assets
+from .frontier import run_frontier_comparison
 from .pipeline import LayerForgePipeline
 from .site_data import build_project_site_payload
 from .transparent import export_transparent_assets
@@ -147,7 +149,7 @@ def _collect_previews(output_dir: Path, mode: str) -> list[dict[str, str]]:
     return previews
 
 
-def _collect_summary_metrics(output_dir: Path, mode: str) -> dict[str, Any]:
+def _collect_summary_metrics(output_dir: Path, mode: str, *, frontier_selection: dict[str, Any] | None = None) -> dict[str, Any]:
     metrics_path = output_dir / "metrics.json"
     metrics = _read_json(metrics_path) if metrics_path.exists() else {}
     summary: dict[str, Any] = {
@@ -170,7 +172,20 @@ def _collect_summary_metrics(output_dir: Path, mode: str) -> dict[str, Any]:
             summary["transparent_alpha_nonzero_ratio"] = meta.get("alpha_nonzero_ratio")
             summary["transparent_recompose_psnr"] = meta.get("recompose_psnr")
             summary["selected_target"] = meta.get("selected_target")
+    if mode == "frontier" and frontier_selection:
+        summary["selected_label"] = frontier_selection.get("label")
+        summary["selected_self_eval_score"] = frontier_selection.get("self_eval_score")
     return {key: value for key, value in summary.items() if value is not None}
+
+
+def _resolve_run_path(path_value: str | None) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    candidate = (REPO_ROOT / path).resolve()
+    return candidate
 
 
 def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path | None = None) -> dict[str, Any]:
@@ -200,10 +215,11 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
     no_parallax = bool(payload.get("no_parallax", True))
     max_layers = payload.get("max_layers")
 
-    pipeline = _get_pipeline(config_path, device)
+    frontier_selection: dict[str, Any] | None = None
 
     with JOB_LOCK:
         if mode == "run":
+            pipeline = _get_pipeline(config_path, device)
             out = pipeline.run(
                 input_path,
                 job_dir,
@@ -217,6 +233,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 ranker_model_path=ranker_model,
             )
         elif mode == "extract":
+            pipeline = _get_pipeline(config_path, device)
             out = pipeline.run(
                 input_path,
                 job_dir,
@@ -238,6 +255,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 target_name=target_name,
             )
         elif mode == "transparent":
+            pipeline = _get_pipeline(config_path, device)
             out = pipeline.run(
                 input_path,
                 job_dir,
@@ -259,6 +277,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 target_name=target_name,
             )
         elif mode == "peel":
+            pipeline = _get_pipeline(config_path, device)
             out = pipeline.peel(
                 input_path,
                 job_dir,
@@ -269,6 +288,62 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 flip_depth=bool(payload.get("flip_depth", False)),
                 max_layers=int(max_layers) if max_layers else None,
             )
+        elif mode == "frontier":
+            frontier_root = job_dir / "frontier"
+            frontier_args = argparse.Namespace(
+                input_dir=None,
+                inputs=[str(input_path)],
+                output_root=str(frontier_root),
+                native_config=config_path,
+                native_segmenter=segmenter or "grounded_sam2",
+                native_depth=depth_method or "ensemble",
+                skip_native=False,
+                peeling_config=str(payload.get("peeling_config") or "configs/recursive_peeling.yaml"),
+                peeling_segmenter=str(payload.get("peeling_segmenter") or segmenter or "grounded_sam2"),
+                peeling_depth=str(payload.get("peeling_depth") or depth_method or "ensemble"),
+                skip_peeling=False,
+                qwen_model=str(payload.get("qwen_model") or "Qwen/Qwen-Image-Layered"),
+                qwen_layers=str(payload.get("qwen_layers") or "3,4,6,8"),
+                qwen_resolution=int(payload.get("qwen_resolution") or 640),
+                qwen_steps=int(payload.get("qwen_steps") or 10),
+                qwen_device=str(payload.get("qwen_device") or "cuda"),
+                qwen_dtype=str(payload.get("qwen_dtype") or "bfloat16"),
+                qwen_offload=str(payload.get("qwen_offload") or "sequential"),
+                qwen_hybrid_modes=str(payload.get("qwen_hybrid_modes") or "preserve,reorder"),
+                qwen_merge_external_layers=bool(payload.get("qwen_merge_external_layers", False)),
+                limit=1,
+                skip_existing=False,
+                dry_run=False,
+            )
+            run_frontier_comparison(frontier_args)
+            summary_path = frontier_root / "frontier_summary.json"
+            summary = _read_json(summary_path)
+            best_by_image = summary.get("best_by_image") or []
+            if not best_by_image:
+                raise RuntimeError("Frontier comparison produced no successful candidate selection")
+            frontier_selection = dict(best_by_image[0])
+            output_dir = _resolve_run_path(frontier_selection.get("run_dir"))
+            if output_dir is None or not output_dir.exists():
+                raise RuntimeError("Selected frontier run directory is missing")
+            manifest_path = output_dir / "manifest.json"
+            metrics_path = output_dir / "metrics.json"
+            dalg_path = output_dir / "dalg_manifest.json"
+            return {
+                "status": "ok",
+                "mode": mode,
+                "input_filename": filename,
+                "output_dir": _display_path(output_dir),
+                "urls": {
+                    "output_dir": _workspace_url(output_dir),
+                    "summary": _workspace_url(summary_path),
+                    "selected_best": _workspace_url(frontier_root / input_path.stem / "best_decomposition.json"),
+                    "manifest": _workspace_url(manifest_path) if manifest_path.exists() else None,
+                    "metrics": _workspace_url(metrics_path) if metrics_path.exists() else None,
+                    "dalg": _workspace_url(dalg_path) if dalg_path.exists() else None,
+                },
+                "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection),
+                "previews": _collect_previews(output_dir, "run"),
+            }
         else:
             raise ValueError(f"Unsupported mode: {mode}")
 
@@ -287,7 +362,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
             "metrics": _workspace_url(metrics_path) if metrics_path.exists() else None,
             "dalg": _workspace_url(dalg_path) if dalg_path.exists() else None,
         },
-        "summary_metrics": _collect_summary_metrics(output_dir, mode),
+        "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection),
         "previews": _collect_previews(output_dir, mode),
     }
 
