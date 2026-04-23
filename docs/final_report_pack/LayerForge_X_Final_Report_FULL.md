@@ -1330,6 +1330,31 @@ Interpretation:
 - `Qwen raw (4)` demonstrates why recomposition alone is insufficient, because remove/move/recolor responses are near zero while the background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks combined with explicit LayerForge graph metadata remain easy to move, recolor, and remove cleanly.
 
+## B.3a Qwen layer-count sweep
+
+The repository also includes a measured five-image `3/4/6/8` sweep for the Qwen family. This experiment keeps the same five images while varying the requested Qwen layer count.
+
+| Row | PSNR | SSIM |
+|---|---:|---:|
+| Q raw3 | 29.7574 | 0.8874 |
+| Q raw4 | 29.0757 | 0.8850 |
+| Q raw6 | 29.1079 | 0.8800 |
+| Q raw8 | 27.1419 | 0.8663 |
+| Q+G-P3 | 29.2311 | 0.8663 |
+| Q+G-P4 | 28.5539 | 0.8638 |
+| Q+G-P6 | 28.6464 | 0.8588 |
+| Q+G-P8 | 26.7452 | 0.8444 |
+| Q+G-R3 | 29.2263 | 0.8663 |
+| Q+G-R4 | 28.5397 | 0.8637 |
+| Q+G-R6 | 21.4064 | 0.8133 |
+| Q+G-R8 | 18.4597 | 0.7827 |
+
+Interpretation:
+
+- `Qwen raw (3)` is the strongest compact pure-fidelity setting on the measured five-image bank, with `Qwen raw (6)` close behind;
+- preserve-style hybrid enrichment remains relatively stable through `3/4/6` layers, although it still trails raw Qwen on recomposition fidelity;
+- graph reorder is acceptable at `3/4` layers but degrades sharply at `6/8`, so the current evidence supports preserve-style hybrid enrichment as the safer exported default.
+
 ## B.4 Promptable extraction benchmark
 
 The prompt-conditioned extraction path is measured rather than treated only as a CLI feature.

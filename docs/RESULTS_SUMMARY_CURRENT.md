@@ -29,6 +29,10 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 - **Enriched Qwen (LayerForge-X Augmented):** `qwen_truck_enriched_640_20`
   - **PSNR:** `27.4633`
   - **SSIM:** `0.7949`
+- **Five-Image Layer-Count Sweep:** `qwen_five_image_review`
+  - **Best raw mean PSNR / SSIM:** `Qwen raw (3)` at `29.7574 / 0.8874`
+  - **Best preserve-hybrid mean PSNR / SSIM:** `Qwen + graph preserve (3)` at `29.2311 / 0.8663`
+  - **Observed failure mode:** graph-driven reorder remains acceptable at `3/4` layers but degrades sharply at `6/8`
 
 ### Frontier Review and Generalization
 - **Aggregate Performance:** `frontier_review`
@@ -55,6 +59,7 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 - **Recomposition Fidelity:** The high recomposition PSNR in the transparent benchmark serves as a verification of the alpha-blending logic, while alpha error and background inpainting quality remain the primary performance indicators for transparent-layer recovery.
 - **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the open-vocabulary grounded segmentation pipeline.
 - **Effect Extraction:** The current associated-effect extractor represents a heuristic approach; while it successfully identifies shadow and reflection regions, it remains an area for further refinement.
+- **Qwen Layer Count:** The measured `3/4/6/8` sweep indicates that compact raw stacks (`3` or `6` layers) preserve fidelity better than deeper exported stacks on the shipped five-image bank, while preserve-style hybrid enrichment remains substantially more stable than graph reorder at higher layer counts.
 
 ## Scope of Documentation
 

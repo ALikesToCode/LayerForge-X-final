@@ -111,6 +111,12 @@
     },
     "qwen_five_image_review": {
       "images_evaluated": 5,
+      "evaluated_qwen_layers": [
+        3,
+        4,
+        6,
+        8
+      ],
       "layerforge_native_mean_psnr": 27.343785327586026,
       "layerforge_native_mean_ssim": 0.9464110067478753,
       "qwen_raw_mean_psnr": 29.075732442522252,
@@ -119,6 +125,44 @@
       "qwen_graph_preserve_mean_ssim": 0.8638442376259772,
       "qwen_graph_reorder_mean_psnr": 28.539704525143645,
       "qwen_graph_reorder_mean_ssim": 0.8637379063051934,
+      "qwen_raw_mean_psnr_by_layers": {
+        "3": 29.75737102406009,
+        "4": 29.075732442522252,
+        "6": 29.10792185003361,
+        "8": 27.141866394104625
+      },
+      "qwen_raw_mean_ssim_by_layers": {
+        "3": 0.887367615715082,
+        "4": 0.8850195543821586,
+        "6": 0.8799821138866385,
+        "8": 0.8663399421640733
+      },
+      "qwen_graph_preserve_mean_psnr_by_layers": {
+        "3": 29.231064023047146,
+        "4": 28.553930610543226,
+        "6": 28.64636358103693,
+        "8": 26.7451859230686
+      },
+      "qwen_graph_preserve_mean_ssim_by_layers": {
+        "3": 0.8662605823591953,
+        "4": 0.8638442376259772,
+        "6": 0.8587896329062217,
+        "8": 0.8443777099263998
+      },
+      "qwen_graph_reorder_mean_psnr_by_layers": {
+        "3": 29.226318866326704,
+        "4": 28.539704525143645,
+        "6": 21.40636628432062,
+        "8": 18.45965847130124
+      },
+      "qwen_graph_reorder_mean_ssim_by_layers": {
+        "3": 0.8662760714670352,
+        "4": 0.8637379063051934,
+        "6": 0.8133249020206303,
+        "8": 0.7826635340527784
+      },
+      "best_raw_qwen_layer_count_by_psnr": 3,
+      "best_raw_qwen_layer_count_by_ssim": 3,
       "summary": "report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json"
     },
     "frontier_review": {

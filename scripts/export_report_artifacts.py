@@ -144,12 +144,7 @@ layerforge enrich-qwen --input data/demo/truck.jpg --layers-dir runs/qwen_truck_
 ## Five-image Qwen review
 
 ```bash
-python scripts/score_qwen_raw_layers.py --input data/demo/truck.jpg --layers-dir runs/qwen_five_image_review/truck/qwen_4
-python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/astronaut.png --layers-dir runs/qwen_five_image_review/astronaut/qwen_4
-python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/coffee.png --layers-dir runs/qwen_five_image_review/coffee/qwen_4
-python scripts/score_qwen_raw_layers.py --input data/qualitative_pack/chelsea_cat.png --layers-dir runs/qwen_five_image_review/chelsea_cat/qwen_4
-python scripts/score_qwen_raw_layers.py --input examples/synth/scene_000/image.png --layers-dir runs/qwen_five_image_review/image/qwen_4
-python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 4 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
+python scripts/run_curated_comparison.py --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png data/qualitative_pack/coffee.png data/qualitative_pack/chelsea_cat.png examples/synth/scene_000/image.png --output-root runs/qwen_five_image_review --native-config configs/best_score.yaml --native-segmenter grounded_sam2 --native-depth ensemble --qwen-layers 3,4,6,8 --qwen-steps 10 --qwen-resolution 640 --qwen-device cuda --qwen-dtype bfloat16 --qwen-offload sequential --skip-existing
 ```
 
 ## Frontier comparison and self-evaluation
@@ -266,15 +261,15 @@ def write_figure_sources() -> None:
 def write_readme() -> None:
     text = """# Report Artifacts
 
-This folder is the submission-safe evidence pack for the claims made in the README and `PROJECT_MANIFEST.json`.
+This folder collects the compact reported artifacts referenced by the README and `PROJECT_MANIFEST.json`.
 
 - `metrics_snapshots/` contains compact JSON summaries copied from the measured local `runs/` and `results/` directories.
 - `figure_sources/figure_manifest.json` records which raw runs and datasets were used to build the report figures and whether those dependencies are omitted from the submission ZIP.
 - `command_log.md` lists the command families used to generate the copied artifacts and the verified package/runtime versions used for the current archive refresh.
 
-The goal is to keep the archive auditable even when heavyweight directories such as `data/`, `runs/`, and `results/` are excluded from a ZIP submission.
+The goal is to keep the repository reviewable even when heavyweight directories such as `data/`, `runs/`, and `results/` are excluded from the public tree and final archive.
 
-Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the canonical evidence pack in the submission archive.
+Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the canonical reported artifacts for the repository.
 """
     (TARGET / "README.md").write_text(text, encoding="utf-8")
 

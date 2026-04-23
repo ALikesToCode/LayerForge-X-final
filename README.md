@@ -889,6 +889,29 @@ python scripts/run_curated_comparison.py \
 
 This writes a per-image comparison tree covering native LayerForge, raw Qwen, `Qwen + graph preserve`, and `Qwen + graph reorder`, plus aggregate `comparison_summary.json` and `comparison_summary.md`.
 
+Measured five-image `3/4/6/8` Qwen sweep, summarized in `runs/qwen_five_image_review/comparison_summary.{json,md}` and copied into `report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json`:
+
+| Row | Mean PSNR | Mean SSIM |
+|---|---:|---:|
+| Qwen raw (3) | 29.7574 | 0.8874 |
+| Qwen raw (4) | 29.0757 | 0.8850 |
+| Qwen raw (6) | 29.1079 | 0.8800 |
+| Qwen raw (8) | 27.1419 | 0.8663 |
+| Qwen + graph preserve (3) | 29.2311 | 0.8663 |
+| Qwen + graph preserve (4) | 28.5539 | 0.8638 |
+| Qwen + graph preserve (6) | 28.6464 | 0.8588 |
+| Qwen + graph preserve (8) | 26.7452 | 0.8444 |
+| Qwen + graph reorder (3) | 29.2263 | 0.8663 |
+| Qwen + graph reorder (4) | 28.5397 | 0.8637 |
+| Qwen + graph reorder (6) | 21.4064 | 0.8133 |
+| Qwen + graph reorder (8) | 18.4597 | 0.7827 |
+
+Measured interpretation:
+
+- `Qwen raw (3)` is the strongest compact pure-fidelity setting on the shipped five-image bank, with `Qwen raw (6)` close behind;
+- `Qwen + graph preserve` stays relatively stable through `3/4/6` layers and remains the safer structural-enrichment mode;
+- `Qwen + graph reorder` is acceptable at `3/4` layers but becomes materially unstable at `6/8`, which is why the repository keeps preserve-style enrichment as the default documented hybrid.
+
 ## Public benchmark roadmap
 
 The current public-benchmark status and the planned dataset extensions are tracked in [docs/PUBLIC_BENCHMARKS.md](docs/PUBLIC_BENCHMARKS.md).
