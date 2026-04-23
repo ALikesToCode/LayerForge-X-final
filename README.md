@@ -342,10 +342,10 @@ PNG stacks, PSD-style folders, and report artifacts are projections of that grap
 
 ## Frontier comparison and self-evaluation
 
-The repository includes a frontier orchestration script that treats native LayerForge, recursive peeling, raw Qwen, and Qwen-hybrid variants as a shared candidate bank, scores the successful candidates per image, and records the highest-scoring editable representation.
+The primary product-facing entrypoint is `layerforge frontier`. It treats native LayerForge, recursive peeling, raw Qwen, and Qwen-hybrid variants as a shared candidate bank, scores the successful candidates per image, and keeps the highest-scoring editable representation.
 
 ```bash
-python scripts/run_frontier_comparison.py \
+layerforge frontier \
   --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png \
   --output-root runs/frontier_review \
   --native-config configs/frontier.yaml \
@@ -357,6 +357,12 @@ python scripts/run_frontier_comparison.py \
   --qwen-dtype bfloat16 \
   --qwen-offload sequential \
   --skip-existing
+```
+
+The lower-level script remains available for report and automation workflows:
+
+```bash
+python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg --output-root runs/frontier_review --native-config configs/frontier.yaml
 ```
 
 This writes:

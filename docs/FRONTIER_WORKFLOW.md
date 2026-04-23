@@ -17,10 +17,10 @@ The primary objective is to select the optimal **structured representation** rat
 ## Execution and Evaluation
 
 ### Orchestration Command
-To execute the frontier comparison across a set of input images, use the following command:
+The primary public entrypoint is the `layerforge frontier` command. Use it to execute the shared candidate bank across one or more images:
 
 ```bash
-python scripts/run_frontier_comparison.py \
+layerforge frontier \
   --inputs data/demo/truck.jpg data/qualitative_pack/astronaut.png \
   --output-root runs/frontier_review \
   --native-config configs/frontier.yaml \
@@ -28,6 +28,12 @@ python scripts/run_frontier_comparison.py \
   --qwen-layers 4 \
   --qwen-steps 20 \
   --qwen-device cuda
+```
+
+The underlying script remains available for report regeneration and automation:
+
+```bash
+python scripts/run_frontier_comparison.py --inputs data/demo/truck.jpg --output-root runs/frontier_review
 ```
 
 ### Generated Artifacts
