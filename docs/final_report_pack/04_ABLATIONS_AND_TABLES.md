@@ -144,3 +144,17 @@ Interpretation:
 | Intrinsic artifacts | single-image ambiguity | texture mistaken as shading | stronger IID model |
 | Too many layers | oversegmentation | fragmented background | graph merging |
 | Too few layers | undersegmentation | person and bicycle merged | prompt refinement |
+
+## B.10 Intrinsic export snapshot
+
+The optional intrinsic path is implemented as an approximate appearance-factor export rather than as a standalone intrinsic-image benchmark. The measured truck winner currently provides both global and per-layer albedo/shading artifacts.
+
+| Run | Intrinsic method | Global albedo | Global shading | Per-layer albedo exports | Per-layer shading exports | Representative layer |
+|---|---|---|---|---:|---:|---|
+| `truck_candidate_search_v2/best` | `retinex` | yes | yes | 20 | 20 | `007_vehicle_car` |
+
+Interpretation:
+
+- the exported albedo and shading layers support recolouring-style demonstrations and inspection of appearance factors on top of the primary layer graph;
+- the factorization remains approximate and is therefore treated as a stretch component rather than as a headline benchmark claim;
+- the corresponding visual evidence is documented in `docs/figures/intrinsic_layer_demo.png`.

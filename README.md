@@ -15,6 +15,8 @@ LayerForge-X formalizes that goal as a **Depth-Aware Amodal Layer Graph (DALG)**
 
 Qwen-Image-Layered is an important frontier baseline for the same problem class. The repository therefore includes an `enrich-qwen` command that imports RGBA layers produced by Qwen (or another external decomposer) and augments them with LayerForge-X depth ordering, occlusion-graph metadata, amodal masks, and intrinsic layers.
 
+The optional intrinsic split is surfaced in the measured artifact pack as a stretch-level export path rather than a standalone headline claim. The shipped report and figure index therefore include a dedicated intrinsic-layer demonstration alongside the main decomposition comparisons.
+
 ## Repo layout
 
 ```text

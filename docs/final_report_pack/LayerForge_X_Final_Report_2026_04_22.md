@@ -55,6 +55,10 @@ This report makes six concrete claims:
 
 ![Associated-effect demo](../figures/effects_layer_demo.png){ width=100% }
 
+#### Intrinsic export demo
+
+![Intrinsic layer demo](../figures/intrinsic_layer_demo.png){ width=100% }
+
 ### Main measured summary
 
 Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerForge graph enrichment.
@@ -124,6 +128,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
+- The intrinsic export path is present as a Retinex-style stretch module. The new intrinsic demo figure should be read as evidence of exported appearance factors for recolouring-style edits, not as a state-of-the-art intrinsic benchmark.
 
 ## 7. Discussion
 

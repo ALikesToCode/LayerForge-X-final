@@ -18,6 +18,9 @@ The heavyweight raw `runs/`, `results/`, and `data/` directories are used to pro
 - `truck_candidate_search_v2_best`
   - PSNR: `32.1053`
   - SSIM: `0.9848`
+  - intrinsic method: `retinex`
+  - per-layer albedo exports: `20`
+  - per-layer shading exports: `20`
 - `qwen_truck_layers_raw_640_20`
   - PSNR: `29.8806`
   - SSIM: `0.8826`

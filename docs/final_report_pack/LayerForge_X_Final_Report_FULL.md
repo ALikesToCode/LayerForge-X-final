@@ -1109,6 +1109,10 @@ If the report needs one paragraph summarising the whole evaluation, this is the 
 
 ![Associated-effect demo](../figures/effects_layer_demo.png){ width=100% }
 
+#### Intrinsic export demo
+
+![Intrinsic layer demo](../figures/intrinsic_layer_demo.png){ width=100% }
+
 ### Main measured summary
 
 Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerForge graph enrichment.
@@ -1178,6 +1182,7 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
+- The intrinsic export path is present as a Retinex-style stretch module. The new intrinsic demo figure should be read as evidence of exported appearance factors for recolouring-style edits, not as a state-of-the-art intrinsic benchmark.
 
 ## 7. Discussion
 
@@ -1387,6 +1392,20 @@ Interpretation:
 | Intrinsic artifacts | single-image ambiguity | texture mistaken as shading | stronger IID model |
 | Too many layers | oversegmentation | fragmented background | graph merging |
 | Too few layers | undersegmentation | person and bicycle merged | prompt refinement |
+
+## B.10 Intrinsic export snapshot
+
+The optional intrinsic path is implemented as an approximate appearance-factor export rather than as a standalone intrinsic-image benchmark. The measured truck winner currently provides both global and per-layer albedo/shading artifacts.
+
+| Run | Intrinsic method | Global albedo | Global shading | Per-layer albedo exports | Per-layer shading exports | Representative layer |
+|---|---|---|---|---:|---:|---|
+| `truck_candidate_search_v2/best` | `retinex` | yes | yes | 20 | 20 | `007_vehicle_car` |
+
+Interpretation:
+
+- the exported albedo and shading layers support recolouring-style demonstrations and inspection of appearance factors on top of the primary layer graph;
+- the factorization remains approximate and is therefore treated as a stretch component rather than as a headline benchmark claim;
+- the corresponding visual evidence is documented in `docs/figures/intrinsic_layer_demo.png`.
 
 
 ## Appendix C: command log
