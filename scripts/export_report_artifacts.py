@@ -158,14 +158,14 @@ python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/
 
 ```bash
 python scripts/make_synthetic_dataset.py --output data/layerbenchpp_prompt_benchmark --count 10 --output-format layerbench_pp --with-effects
-python scripts/run_extract_benchmark.py --dataset-dir data/layerbenchpp_prompt_benchmark --output-dir runs/extract_benchmark_prompted_grounded --segmenter grounded_sam2 --depth ensemble --device cuda --max-scenes 10
+python scripts/run_extract_benchmark.py --dataset-dir data/layerbenchpp_prompt_benchmark --output-dir runs/extract_benchmark_prompted_grounded --config configs/cutting_edge.yaml --segmenter grounded_sam2 --depth ensemble --device auto --max-scenes 10
 ```
 
 ## Transparent decomposition benchmark
 
 ```bash
 python scripts/make_transparent_dataset.py --output data/transparent_benchmark --count 12
-python scripts/run_transparent_benchmark.py --dataset-dir data/transparent_benchmark --output-dir runs/transparent_benchmark
+python scripts/run_transparent_benchmark.py --dataset-dir data/transparent_benchmark --output-dir runs/transparent_benchmark --config configs/cutting_edge.yaml --segmenter classical --depth geometric_luminance --device auto --max-scenes 12
 ```
 
 ## Associated-effect demo
@@ -284,6 +284,26 @@ def refresh_project_manifest(snapshot_payloads: dict[str, object]) -> None:
     frontier["qwen_graph_reorder_mean_ssim"] = float(frontier_rows["Qwen + graph reorder (4)"]["mean_ssim"])
     frontier["qwen_graph_reorder_mean_self_eval_score"] = float(frontier_rows["Qwen + graph reorder (4)"]["mean_self_eval_score"])
     frontier["best_image_wins"] = _best_image_wins(frontier_summary["best_by_image"])
+
+    extract_summary = snapshot_payloads["extract_benchmark_summary.json"]
+    extract_rows = {str(row["query_type"]): row for row in extract_summary["summary"]}
+    extract = measured["extract_benchmark_prompted_grounded"]
+    extract["queries_per_prompt_type"] = int(extract_rows["text"]["queries"])
+    extract["text_target_hit_rate"] = float(extract_rows["text"]["target_hit_rate"])
+    extract["text_mean_target_iou"] = float(extract_rows["text"]["mean_target_iou"])
+    extract["text_mean_alpha_mae"] = float(extract_rows["text"]["mean_alpha_mae"])
+    extract["point_target_hit_rate"] = float(extract_rows["point"]["target_hit_rate"])
+    extract["point_mean_target_iou"] = float(extract_rows["point"]["mean_target_iou"])
+    extract["point_mean_alpha_mae"] = float(extract_rows["point"]["mean_alpha_mae"])
+
+    transparent_summary = snapshot_payloads["transparent_benchmark_summary.json"]
+    transparent = measured["transparent_benchmark"]
+    transparent["scenes_evaluated"] = int(len(transparent_summary["rows"]))
+    transparent["mean_transparent_alpha_mae"] = float(transparent_summary["mean_transparent_alpha_mae"])
+    transparent["mean_background_psnr"] = float(transparent_summary["mean_background_psnr"])
+    transparent["mean_background_ssim"] = float(transparent_summary["mean_background_ssim"])
+    transparent["mean_recompose_psnr"] = float(transparent_summary["mean_recompose_psnr"])
+    transparent["mean_recompose_ssim"] = float(transparent_summary["mean_recompose_ssim"])
 
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 def _sanitize_string(value: str) -> str:

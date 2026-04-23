@@ -122,20 +122,20 @@ Stability metrics:
 
 | Prompt type | Queries | Hit rate | Mean IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
-| point | 10 | 0.0000 | 0.8654 | 0.0222 |
-| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+| text | 10 | 1.0000 | 0.3640 | 0.1752 |
+| text + point | 10 | 1.0000 | 0.4011 | 0.1646 |
+| text + box | 10 | 1.0000 | 0.4011 | 0.1646 |
+| point | 10 | 0.0000 | 0.7719 | 0.0521 |
+| box | 10 | 0.0000 | 0.7719 | 0.0521 |
 
 #### Transparent benchmark
 
 | Metric | Mean |
 |---|---:|
-| Transparent alpha MAE | 0.1131 |
-| Background PSNR | 25.9863 |
-| Background SSIM | 0.9541 |
-| Recompose PSNR | 56.0066 |
+| Transparent alpha MAE | 0.1126 |
+| Background PSNR | 26.1430 |
+| Background SSIM | 0.9572 |
+| Recompose PSNR | 56.2836 |
 | Recompose SSIM | 0.9996 |
 
 ### Interpretation

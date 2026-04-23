@@ -1,5 +1,13 @@
 {
   "effect_config": {
+    "alpha_backend": "heuristic",
+    "alpha_backend_crop_expand_px": 64,
+    "alpha_backend_max_side": 1024,
+    "alpha_backend_model": "ZhengPeng7/BiRefNet-matting",
+    "alpha_backend_prefer_half": true,
+    "alpha_backend_respect_support_mask": true,
+    "alpha_backend_support_expand_px": 18,
+    "alpha_backend_weight": 0.8,
     "alpha_scale": 0.08,
     "delta_threshold": 0.015,
     "dilate_px": 36,

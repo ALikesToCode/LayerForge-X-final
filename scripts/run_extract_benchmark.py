@@ -111,30 +111,40 @@ def main() -> int:
         point = center_from_alpha(gt_alpha)
         scene_extract_root = output_dir / "extracts" / scene_dir.name
         prompt = gt_name.replace("_", " ")
+        scene_run_root = output_dir / "runs" / scene_dir.name
         queries = {
-            "text": {"prompt": prompt},
-            "point": {"point": point},
-            "box": {"box": bbox},
-            "text_point": {"prompt": prompt, "point": point},
-            "text_box": {"prompt": prompt, "box": bbox},
+            "text": {"base_run_key": "prompted", "prompt": prompt},
+            "point": {"base_run_key": "unguided", "point": point},
+            "box": {"base_run_key": "unguided", "box": bbox},
+            "text_point": {"base_run_key": "prompted", "prompt": prompt, "point": point},
+            "text_box": {"base_run_key": "prompted", "prompt": prompt, "box": bbox},
         }
-        for query_name, kwargs in queries.items():
-            query_run_dir = output_dir / "runs" / scene_dir.name / query_name
+
+        base_runs: dict[str, Path] = {}
+        for run_key, prompts in {
+            "prompted": [prompt],
+            "unguided": None,
+        }.items():
+            query_run_dir = scene_run_root / run_key
             outputs = pipe.run(
                 scene_dir / "image.png",
                 query_run_dir,
                 segmenter=args.segmenter,
                 depth_method=args.depth,
-                prompts=[prompt] if kwargs.get("prompt") else None,
-                prompt_source="manual" if kwargs.get("prompt") else None,
+                prompts=prompts,
+                prompt_source="manual" if prompts else None,
                 save_parallax=False,
             )
+            base_runs[run_key] = outputs.output_dir
+
+        for query_name, kwargs in queries.items():
+            export_kwargs = {key: value for key, value in kwargs.items() if key != "base_run_key"}
             rows.append(
                 evaluate_query(
-                    outputs.output_dir,
+                    base_runs[kwargs["base_run_key"]],
                     scene_dir,
                     query_name,
-                    kwargs,
+                    export_kwargs,
                     gt_name,
                     gt_alpha,
                     scene_extract_root,

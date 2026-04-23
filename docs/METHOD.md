@@ -21,12 +21,12 @@ The DALG serves as the canonical representation for a decomposed scene. Each nod
 2. **Monocular Depth Estimation:** Depth is estimated using strong public models such as Depth Anything V2, Depth Pro, or Marigold, with support for ensemble-based refinement.
 3. **Overlap Resolution:** Overlapping mask proposals are resolved by assigning pixels based on relative depth or pre-defined semantic priority.
 4. **Spatial Partitioning of Background Regions:** Large "stuff" regions (e.g., sky, terrain, architectural surfaces) are partitioned into depth-quantile planes to prevent them from dominating the global ordering process.
-5. **Alpha Matting and Refinement:** Binary masks are converted into soft alpha mattes, with depth discontinuities used to refine and harden boundaries.
+5. **Alpha Matting and Refinement:** Binary masks are converted into soft alpha mattes, with depth discontinuities used to refine and harden boundaries. The repository also supports optional external matting refinement through BiRefNet, but the shipped benchmark configs retain the heuristic path when it is the more stable measured default.
 6. **Order Inference and Occlusion Graph Construction:** Adjacent regions are analyzed for depth discrepancies at their shared boundaries to establish front-to-back edges. A learned pairwise ranker, trained on synthetic data, provides an optional high-fidelity ordering mechanism.
 7. **Amodal Completion:** Object masks are expanded using morphological operations and hull-limited dilation to estimate occluded regions.
 8. **Background Completion (Inpainting):** Foreground entities are removed and the resulting voids are filled using advanced inpainting techniques (e.g., LaMa) to create an edit-ready background layer.
 9. **Intrinsic Decomposition:** Global albedo and shading components are computed and subsequently masked to generate per-layer intrinsic properties.
-10. **Structured Export:** The final output includes an ordered layer stack, grouped layers, a DALG manifest (JSON), quantitative metrics, and diagnostic visualization panels.
+10. **Structured Export:** The final output includes an ordered layer stack, grouped layers, a DALG manifest (JSON), quantitative metrics, and diagnostic visualization panels. Interactive target extraction can additionally apply Gemini-assisted reranking over the strongest candidate layers exported by the base decomposition.
 
 ## Learning-Based Pairwise Order Estimation
 

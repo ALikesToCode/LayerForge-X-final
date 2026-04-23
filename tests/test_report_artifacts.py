@@ -68,6 +68,25 @@ def test_project_manifest_matches_frontier_and_qwen_snapshots() -> None:
     assert frontier_measured["qwen_graph_reorder_mean_self_eval_score"] == frontier_rows["Qwen + graph reorder (4)"]["mean_self_eval_score"]
     assert frontier_measured["qwen_raw_mean_self_eval_score"] == frontier_rows["Qwen raw (4)"]["mean_self_eval_score"]
 
+    extract_summary = _load_json(ROOT / "report_artifacts" / "metrics_snapshots" / "extract_benchmark_summary.json")
+    extract_rows = {row["query_type"]: row for row in extract_summary["summary"]}
+    extract_measured = measured["extract_benchmark_prompted_grounded"]
+    assert extract_measured["text_target_hit_rate"] == extract_rows["text"]["target_hit_rate"]
+    assert extract_measured["text_mean_target_iou"] == extract_rows["text"]["mean_target_iou"]
+    assert extract_measured["text_mean_alpha_mae"] == extract_rows["text"]["mean_alpha_mae"]
+    assert extract_measured["point_target_hit_rate"] == extract_rows["point"]["target_hit_rate"]
+    assert extract_measured["point_mean_target_iou"] == extract_rows["point"]["mean_target_iou"]
+    assert extract_measured["point_mean_alpha_mae"] == extract_rows["point"]["mean_alpha_mae"]
+
+    transparent_summary = _load_json(ROOT / "report_artifacts" / "metrics_snapshots" / "transparent_benchmark_summary.json")
+    transparent_measured = measured["transparent_benchmark"]
+    assert transparent_measured["scenes_evaluated"] == len(transparent_summary["rows"])
+    assert transparent_measured["mean_transparent_alpha_mae"] == transparent_summary["mean_transparent_alpha_mae"]
+    assert transparent_measured["mean_background_psnr"] == transparent_summary["mean_background_psnr"]
+    assert transparent_measured["mean_background_ssim"] == transparent_summary["mean_background_ssim"]
+    assert transparent_measured["mean_recompose_psnr"] == transparent_summary["mean_recompose_psnr"]
+    assert transparent_measured["mean_recompose_ssim"] == transparent_summary["mean_recompose_ssim"]
+
 
 def test_report_source_shell_links_resolve() -> None:
     source = ROOT / "docs" / "final_report_pack" / "LayerForge_X_Final_Report_SOURCE.md"

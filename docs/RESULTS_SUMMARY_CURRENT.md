@@ -42,13 +42,14 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 ### Prompt-Conditioned Extraction
 - **Configuration:** `extract_benchmark_prompted_grounded`
   - **Semantic Text Hit Rate:** `1.0000` (100% successful extraction of prompted entities)
-  - **Point-Only Interaction:** Demonstrated limited semantic verification without accompanying text labels.
+  - **Best Combined Query IoU:** `0.4011` for both `text + point` and `text + box`
+  - **Point-Only Interaction:** Demonstrated limited semantic verification without accompanying text labels despite substantial geometric overlap.
 
 ### Transparent Layer Recovery
 - **Benchmark:** `transparent_benchmark`
-  - **Mean Absolute Error (Alpha):** `0.1131`
-  - **Background PSNR:** `25.9863`
-  - **Recomposition PSNR (Sanity Check):** `56.0066`
+  - **Mean Absolute Error (Alpha):** `0.1126`
+  - **Background PSNR:** `26.1430`
+  - **Recomposition PSNR (Sanity Check):** `56.2836`
 
 ### Associated-Effect Extraction
 - **Configuration:** `effects_groundtruth_demo_cutting_edge`
@@ -57,7 +58,7 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 ## Interpretative Analysis
 
 - **Recomposition Fidelity:** The high recomposition PSNR in the transparent benchmark serves as a verification of the alpha-blending logic, while alpha error and background inpainting quality remain the primary performance indicators for transparent-layer recovery.
-- **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the open-vocabulary grounded segmentation pipeline.
+- **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the grounded proposal bank, while Gemini-assisted reranking provides the strongest measured combined-query behavior when text and geometric cues are used together.
 - **Effect Extraction:** The current associated-effect extractor represents a heuristic approach; while it successfully identifies shadow and reflection regions, it remains an area for further refinement.
 - **Qwen Layer Count:** The measured `3/4/6/8` sweep indicates that compact raw stacks (`3` or `6` layers) preserve fidelity better than deeper exported stacks on the shipped five-image bank. Preserve-style hybrid enrichment remains the cleanest metadata-first comparison, while deeper reorder rows are now held at usable fidelity by an explicit fallback guardrail instead of being allowed to collapse.
 

@@ -23,17 +23,17 @@
     "prompt_extract": {
       "note": "Point-only and box-only prompts localize geometry well but do not satisfy the semantic hit criterion without text guidance.",
       "point_hit_rate": 0.0,
-      "point_mean_iou": 0.865398796094679,
+      "point_mean_iou": 0.7719186934128844,
       "queries_per_type": 10,
       "text_hit_rate": 1.0,
-      "text_mean_iou": 0.3775769160685042
+      "text_mean_iou": 0.3640106741742833
     },
     "transparent": {
-      "alpha_mae": 0.11313118723531564,
-      "background_psnr": 25.98630081943378,
-      "background_ssim": 0.9541251032570154,
+      "alpha_mae": 0.11263729228327672,
+      "background_psnr": 26.14298864762864,
+      "background_ssim": 0.9571943758524061,
       "note": "Transparent recomposition is treated as a sanity check. Alpha quality and clean-background quality remain the primary transparent-layer metrics.",
-      "recompose_psnr": 56.00656582842
+      "recompose_psnr": 56.28361096262517
     }
   },
   "comparisons": [
@@ -210,7 +210,7 @@
   "hero_metrics": [
     {
       "label": "Pytest",
-      "value": "71 passed"
+      "value": "76 passed"
     },
     {
       "label": "Frontier native self-eval",
@@ -222,7 +222,7 @@
     },
     {
       "label": "Transparent alpha MAE",
-      "value": "0.1131"
+      "value": "0.1126"
     },
     {
       "label": "Effect IoU",
@@ -272,7 +272,7 @@
     "frontier_dry_run": true,
     "frontier_review_full": true,
     "py_compile": true,
-    "pytest": "71 passed",
+    "pytest": "76 passed",
     "train_ranker_cli": true
   }
 }

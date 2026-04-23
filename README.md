@@ -432,17 +432,19 @@ Measured prompt benchmark, summarized in `report_artifacts/metrics_snapshots/ext
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
-| point | 10 | 0.0000 | 0.8654 | 0.0222 |
-| box | 10 | 0.0000 | 0.8654 | 0.0222 |
+| text | 10 | 1.0000 | 0.3640 | 0.1752 |
+| text + point | 10 | 1.0000 | 0.4011 | 0.1646 |
+| text + box | 10 | 1.0000 | 0.4011 | 0.1646 |
+| point | 10 | 0.0000 | 0.7719 | 0.0521 |
+| box | 10 | 0.0000 | 0.7719 | 0.0521 |
 
 Interpretation:
 
-- text-bearing prompts now hit the intended semantic target on the measured synthetic set;
-- point-only and box-only prompts still snap to a highly overlapping neighboring object region, so the IoU is high but the semantic hit rate is correctly `0.0`;
-- this is a routing limitation in the current prompt stack, not an alpha-quality collapse.
+- text-bearing prompts still hit the intended semantic target on the full measured synthetic set;
+- combined text + point and text + box queries now improve overlap over text-only prompting while preserving the same `1.0` semantic hit rate;
+- point-only and box-only prompts still snap to a highly overlapping neighboring object region, so the IoU is high but the semantic hit rate remains correctly `0.0`.
+
+The selection stack now includes Gemini-assisted reranking over the strongest candidate layers exported by the base run. The current benchmark shows that the reranker is most useful when a semantic text description is present and the geometric cues are used as additional disambiguation rather than as the only query signal.
 
 ## Transparent / alpha-composited decomposition
 
@@ -470,13 +472,15 @@ Measured transparent benchmark, summarized in `report_artifacts/metrics_snapshot
 
 | Metric | Mean |
 |---|---:|
-| Transparent alpha MAE | 0.1131 |
-| Background PSNR | 25.9863 |
-| Background SSIM | 0.9541 |
-| Recompose PSNR | 56.0066 |
+| Transparent alpha MAE | 0.1126 |
+| Background PSNR | 26.1430 |
+| Background SSIM | 0.9572 |
+| Recompose PSNR | 56.2836 |
 | Recompose SSIM | 0.9996 |
 
 Transparent recomposition is reported as a sanity check; the primary metrics are alpha error and clean-background quality. This path is still an approximation, not a full generative transparent-layer model, but it now has a measured benchmark instead of only qualitative examples.
+
+The repository also integrates an optional BiRefNet-based matting backend for transparent and effect refinement. The shipped benchmark configuration keeps the heuristic alpha recovery path as the default because it is currently the more stable measured option on the synthetic transparent benchmark.
 
 ## Qwen / external layer enrichment
 

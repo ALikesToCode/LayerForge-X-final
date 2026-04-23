@@ -107,13 +107,13 @@
       "predicted_effect_pixels": 4853
     },
     "extract_benchmark_prompted_grounded": {
-      "point_mean_alpha_mae": 0.02221210766583681,
-      "point_mean_target_iou": 0.865398796094679,
+      "point_mean_alpha_mae": 0.05208039917051792,
+      "point_mean_target_iou": 0.7719186934128844,
       "point_target_hit_rate": 0.0,
       "queries_per_prompt_type": 10,
       "summary": "report_artifacts/metrics_snapshots/extract_benchmark_summary.json",
-      "text_mean_alpha_mae": 0.15028312653303147,
-      "text_mean_target_iou": 0.3775769160685042,
+      "text_mean_alpha_mae": 0.17516020834445953,
+      "text_mean_target_iou": 0.3640106741742833,
       "text_target_hit_rate": 1.0
     },
     "frontier_review": {
@@ -245,11 +245,11 @@
       "pairwise_layer_order_accuracy": 0.16666666666666666
     },
     "transparent_benchmark": {
-      "mean_background_psnr": 25.98630081943378,
-      "mean_background_ssim": 0.9541251032570154,
-      "mean_recompose_psnr": 56.00656582842,
-      "mean_recompose_ssim": 0.9996007826607337,
-      "mean_transparent_alpha_mae": 0.11313118723531564,
+      "mean_background_psnr": 26.14298864762864,
+      "mean_background_ssim": 0.9571943758524061,
+      "mean_recompose_psnr": 56.28361096262517,
+      "mean_recompose_ssim": 0.9995795297618256,
+      "mean_transparent_alpha_mae": 0.11263729228327672,
       "scenes_evaluated": 12,
       "summary": "report_artifacts/metrics_snapshots/transparent_benchmark_summary.json"
     },
@@ -326,7 +326,7 @@
     "frontier_dry_run": true,
     "frontier_review_full": true,
     "py_compile": true,
-    "pytest": "71 passed",
+    "pytest": "76 passed",
     "train_ranker_cli": true
   },
   "version": "1.0.0"

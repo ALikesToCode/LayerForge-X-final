@@ -51,14 +51,14 @@ python scripts/run_editability_suite.py --frontier-summary runs/frontier_review/
 
 ```bash
 python scripts/make_synthetic_dataset.py --output data/layerbenchpp_prompt_benchmark --count 10 --output-format layerbench_pp --with-effects
-python scripts/run_extract_benchmark.py --dataset-dir data/layerbenchpp_prompt_benchmark --output-dir runs/extract_benchmark_prompted_grounded --segmenter grounded_sam2 --depth ensemble --device cuda --max-scenes 10
+python scripts/run_extract_benchmark.py --dataset-dir data/layerbenchpp_prompt_benchmark --output-dir runs/extract_benchmark_prompted_grounded --config configs/cutting_edge.yaml --segmenter grounded_sam2 --depth ensemble --device auto --max-scenes 10
 ```
 
 ## Transparent decomposition benchmark
 
 ```bash
 python scripts/make_transparent_dataset.py --output data/transparent_benchmark --count 12
-python scripts/run_transparent_benchmark.py --dataset-dir data/transparent_benchmark --output-dir runs/transparent_benchmark
+python scripts/run_transparent_benchmark.py --dataset-dir data/transparent_benchmark --output-dir runs/transparent_benchmark --config configs/cutting_edge.yaml --segmenter classical --depth geometric_luminance --device auto --max-scenes 12
 ```
 
 ## Associated-effect demo

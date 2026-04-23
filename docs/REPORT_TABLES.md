@@ -118,30 +118,31 @@ Notes:
 
 | Prompt type | Queries | Target hit rate ↑ | Mean target IoU ↑ | Mean alpha MAE ↓ | Notes |
 |---|---:|---:|---:|---:|---|
-| text | 10 | 1.0000 | 0.3776 | 0.1503 | semantic target hit on every measured synthetic query |
-| text + point | 10 | 1.0000 | 0.3776 | 0.1503 | current best practical interactive mode |
-| text + box | 10 | 1.0000 | 0.3776 | 0.1503 | same measured behavior as text + point on this synthetic set |
-| point | 10 | 0.0000 | 0.8654 | 0.0222 | high overlap with a neighboring region, but wrong semantic target |
-| box | 10 | 0.0000 | 0.8654 | 0.0222 | same failure mode as point-only prompting |
+| text | 10 | 1.0000 | 0.3640 | 0.1752 | semantic target hit on every measured synthetic query |
+| text + point | 10 | 1.0000 | 0.4011 | 0.1646 | strongest combined-query mode in the current measured stack |
+| text + box | 10 | 1.0000 | 0.4011 | 0.1646 | same measured behavior as text + point on this synthetic set |
+| point | 10 | 0.0000 | 0.7719 | 0.0521 | high overlap with a neighboring region, but wrong semantic target |
+| box | 10 | 0.0000 | 0.7719 | 0.0521 | same failure mode as point-only prompting |
 
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`;
 - this benchmark intentionally separates semantic target hit from overlap and alpha quality;
-- the primary limitation in this benchmark is prompt routing for point-only and box-only queries, not matte stability.
+- Gemini-assisted reranking is now part of the target-selection path, and its main benefit appears when text is present and point/box cues are used as disambiguating geometry rather than as standalone prompts.
 
 ## Table 10 — Transparent benchmark
 
 | Metric | Mean | Notes |
 |---|---:|---|
-| Transparent alpha MAE ↓ | 0.1131 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
-| Background PSNR ↑ | 25.9863 | clean-background estimate from inpainting plus transparent foreground recovery |
-| Background SSIM ↑ | 0.9541 | background structure remains strong despite approximate separation |
-| Recompose PSNR ↑ | 56.0066 | sanity check only; alpha error and clean-background quality matter more here |
+| Transparent alpha MAE ↓ | 0.1126 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
+| Background PSNR ↑ | 26.1430 | clean-background estimate from inpainting plus transparent foreground recovery |
+| Background SSIM ↑ | 0.9572 | background structure remains strong despite approximate separation |
+| Recompose PSNR ↑ | 56.2836 | sanity check only; alpha error and clean-background quality matter more here |
 | Recompose SSIM ↑ | 0.9996 | reconstruction remains near-perfect once foreground and background are recombined |
 
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`;
 - this row is best interpreted as approximate transparent-layer recovery rather than as a generative transparent-decomposition result;
+- the repository now includes an optional BiRefNet-based matting refinement path, but the shipped benchmark configuration keeps the heuristic alpha path because it is currently the stronger measured default on this synthetic set;
 - the strongest scene family is `flare_ring`, while `semi_transparent_panel` remains the hardest synthetic variant in the current prototype.
