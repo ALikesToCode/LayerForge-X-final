@@ -206,6 +206,8 @@ def cmd_peel(args: argparse.Namespace) -> int:
 
 def cmd_extract(args: argparse.Namespace) -> int:
     prompt_values = parse_prompts(args.prompt)
+    point = parse_point(args.point)
+    box = parse_box(args.box)
     if args.frontier:
         frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
         selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
@@ -234,8 +236,8 @@ def cmd_extract(args: argparse.Namespace) -> int:
         base_run_dir,
         output_dir=Path(args.output) / "target_extract",
         prompt=args.prompt,
-        point=parse_point(args.point),
-        box=parse_box(args.box),
+        point=point,
+        box=box,
         target_name=args.target_name,
     )
     if args.frontier:
@@ -256,6 +258,8 @@ def cmd_export_design(args: argparse.Namespace) -> int:
 
 def cmd_transparent(args: argparse.Namespace) -> int:
     prompt_values = parse_prompts(args.prompt)
+    point = parse_point(args.point)
+    box = parse_box(args.box)
     if args.frontier:
         frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
         selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
@@ -283,8 +287,8 @@ def cmd_transparent(args: argparse.Namespace) -> int:
         base_run_dir,
         output_dir=Path(args.output) / "transparent_extract",
         prompt=args.prompt,
-        point=parse_point(args.point),
-        box=parse_box(args.box),
+        point=point,
+        box=box,
         target_name=args.target_name,
         device=args.device,
     )
