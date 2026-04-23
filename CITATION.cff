@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+title: "LayerForge-X"
+message: "If you use this repository, please cite the repository and the final report."
+type: software
+authors:
+  - family-names: "ALikesToCode"
+repository-code: "https://github.com/ALikesToCode/LayerForge-X-final"
+url: "https://alikestocode.github.io/LayerForge-X-final/"
+license: "MIT"
+version: "1.0.0"
+date-released: "2026-04-23"
+abstract: >
+  LayerForge-X converts a single RGB image into a depth-aware amodal layer graph
+  with semantically grouped RGBA layers, explicit ordering metadata, editability
+  evaluation, and exportable design-manifest artifacts.

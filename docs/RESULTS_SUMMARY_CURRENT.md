@@ -46,6 +46,6 @@ The heavyweight raw `runs/`, `results/`, and `data/` directories are used to pro
 - Point-only and box-only prompt queries can have high overlap but still fail the semantic hit criterion because no text label is available for target verification.
 - The associated-effect extractor is a heuristic prototype and should be framed that way in the report.
 
-## Legacy note
+## Scope note
 
-The previous development-era summary now lives at `docs/internal/legacy/RESULTS_SUMMARY_2026_04_19_legacy.md`. It is retained only as historical working material and should not be treated as the final submission evidence pack.
+This summary is the public prose companion to the canonical evidence pack. Historical working summaries are intentionally excluded from the public submission surface.

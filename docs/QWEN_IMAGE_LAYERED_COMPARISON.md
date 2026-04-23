@@ -96,7 +96,7 @@ That writes both the per-image run trees and an aggregate `comparison_summary.js
 
 ## Measured five-image review
 
-The local working tree contains a same-image five-image comparison in `runs/qwen_five_image_review/`, and the submission archive ships its summary in `report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json`. The review covers:
+The same-image five-image comparison was measured locally, and the submission archive ships its summary in `report_artifacts/metrics_snapshots/qwen_five_image_review_summary.json`. The review covers:
 
 - `data/demo/truck.jpg`
 - `data/qualitative_pack/astronaut.png`
@@ -151,7 +151,7 @@ That phrasing makes the complementarity obvious and avoids confusing the baselin
 
 ## Measured truck comparison
 
-The local working tree contains both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg`. The submission archive ships their measured summaries through the copied metric snapshots and the manifest.
+Both the original Qwen comparison and the upgraded native LayerForge truck runs on `data/demo/truck.jpg` were measured locally. The submission archive ships their summaries through the copied metric snapshots and the manifest.
 
 | Run | Layers | PSNR | SSIM | Notes |
 |---|---:|---:|---:|---|

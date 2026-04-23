@@ -21,4 +21,6 @@ qwen-enrich:
 	layerforge enrich-qwen --input examples/synth/scene_000/image.png --layers-dir examples/synth/scene_000/gt_layers --output runs/qwen_like_enriched --config configs/fast.yaml --depth geometric_luminance
 
 clean:
-	rm -rf runs results data .pytest_cache **/__pycache__
+	rm -rf runs results data .pytest_cache
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete

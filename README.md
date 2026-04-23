@@ -4,14 +4,15 @@
 
 ## Submission quick links
 
-- Public project site: `https://alikestocode.github.io/LayerForge-X-final/`
-- Local browser interface: `layerforge webui --open-browser`
+- Submission index: `docs/SUBMISSION_INDEX.md`
 - Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
 - Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
 - Canonical manifest: `PROJECT_MANIFEST.json`
 - Submission evidence pack: `report_artifacts/README.md`
 - Current results summary: `docs/RESULTS_SUMMARY_CURRENT.md`
 - Figure index: `docs/FIGURES.md`
+- Public project site: `https://alikestocode.github.io/LayerForge-X-final/`
+- Local browser interface: `layerforge webui --open-browser`
 - GitHub Pages source: `docs/index.html`
 
 ## Visual evidence at a glance
@@ -61,7 +62,7 @@ Qwen-Image-Layered is an important frontier baseline for the same problem class.
 
 The optional intrinsic split is surfaced in the measured artifact pack as a stretch-level export path rather than a standalone headline claim. The shipped report and figure index therefore include a dedicated intrinsic-layer demonstration alongside the main decomposition comparisons.
 
-Submission note: the heavyweight local `runs/`, `results/`, and `data/` directories used to generate the measurements are commonly excluded from the ZIP deliverable. In the submission archive, treat `PROJECT_MANIFEST.json`, `report_artifacts/`, and `docs/figures/` as the canonical evidence pack.
+Submission note: the heavyweight local `runs/`, `results/`, and `data/` directories were used to generate the measurements, but they are not required for browsing the public evidence pack. In the submission archive and public repository, treat `PROJECT_MANIFEST.json`, `report_artifacts/`, and `docs/figures/` as the canonical evidence pack.
 
 ## Repo layout
 
@@ -126,7 +127,7 @@ cd LayerForge-X-final-main
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -e .
+pip install -e .[dev]
 ```
 
 Fast mode dependencies live in `requirements.txt`. For model-backed runs (the heavier stuff with Depth Pro, GroundingDINO, SAM2, and friends), install the extras:
@@ -139,6 +140,39 @@ On Python `3.14`, `simple-lama-inpainting` currently fails to build because of a
 
 ```bash
 pip install torch torchvision transformers accelerate diffusers safetensors
+```
+
+## External services and model access
+
+- Gemini-assisted prompt expansion requires `GEMINI_API_KEY`.
+- Qwen runs download the public `Qwen/Qwen-Image-Layered` model and therefore need network access plus enough disk space for the checkpoints.
+- The model-backed stack is materially heavier than the deterministic fallback. A CUDA GPU is strongly recommended for GroundingDINO, SAM2, Depth Pro, and Qwen.
+- Python `3.11` or `3.12` is the safest environment for the full stack. Python `3.14` works for the core repo, but `simple-lama-inpainting` can still fail to build there.
+
+## Fresh-clone verification
+
+From a clean checkout, the shortest complete setup path is:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e .[dev]
+pytest -q
+```
+
+For a lightweight end-to-end smoke path:
+
+```bash
+python scripts/make_synthetic_dataset.py --output examples/synth --count 1
+
+layerforge run \
+  --input examples/synth/scene_000/image.png \
+  --output runs/smoke \
+  --config configs/fast.yaml \
+  --segmenter classical \
+  --depth geometric_luminance \
+  --no-parallax
 ```
 
 ## Browser surfaces
@@ -207,7 +241,7 @@ layerforge run \
 
 The current highest-performing native configuration is `configs/best_score.yaml`: ensemble depth, stronger boundary settings, and adaptive merge. The dominant control variable remains the prompt list. For a known scene, curated prompts with `--prompt-source manual` provide the strongest measured performance; for an automated default, `--prompt-source augment` preserves the manual seed classes and adds Gemini-generated extensions.
 
-Measured truck runs in the local working tree, summarized in the shipped evidence pack:
+Measured locally and summarized in the shipped evidence pack:
 
 | Run | Layers | PSNR | SSIM |
 |---|---:|---:|---:|
@@ -469,7 +503,7 @@ The output directory will contain ordered layers, albedo/shading layers, amodal 
 
 ## Submission-safe report artifacts
 
-The local checkout includes heavyweight `runs/`, `results/`, and `data/` directories, but those are omitted from the submission ZIP. To keep the report auditable even when those folders are absent, export a compact artifact pack:
+The heavyweight `runs/`, `results/`, and `data/` directories are local-generation inputs and are omitted from the submission ZIP. To keep the report auditable even when those folders are absent, export a compact artifact pack:
 
 ```bash
 python scripts/export_report_artifacts.py
@@ -580,8 +614,6 @@ scene_metadata.json
 ```
 
 The original `basic` mode is still the default so the existing lightweight benchmark path remains reproducible.
-
-A dated implementation-status note for the April 2026 measurement pass is tracked in [docs/internal/IMPLEMENTATION_STATUS_2026_04_22.md](docs/internal/IMPLEMENTATION_STATUS_2026_04_22.md).
 
 ### Measured fast-path baseline
 

@@ -54,7 +54,6 @@ The current self-evaluation stage is intentionally explicit. In the archived fiv
 - edit-preservation and anti-trivial copy penalties;
 - semantic separation;
 - alpha quality;
-- graph confidence;
 - graph confidence.
 
 The score is not a claim of universal quality. It is a routing metric for selecting the most useful editable decomposition among the candidates the repo can already measure, and it now includes explicit penalties for stacks that reconstruct well only because the background layer copies too much of the source image.
@@ -104,7 +103,7 @@ For iterative foreground removal and residual completion, use:
 
 ## Measured current run
 
-The local full measured five-image run lives at `runs/frontier_review/frontier_summary.json`. The submission archive ships the corresponding copied summary at `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
+The five-image frontier comparison was measured locally. The submission archive and public repository ship the corresponding summary at `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
 
 Aggregate results:
 
