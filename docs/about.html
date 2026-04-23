@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About LayerForge-X</title>
+    <meta
+      name="description"
+      content="About LayerForge-X, a depth-aware amodal layer graph system for layered image representations from a single RGB image."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body data-page="about">
+    <header class="site-shell">
+      <nav class="site-nav">
+        <a class="brandmark" href="./">LayerForge-X</a>
+        <div class="site-nav__links">
+          <a href="index.html#overview">Overview</a>
+          <a href="index.html#comparison">Comparison</a>
+          <a href="index.html#benchmarks">Benchmarks</a>
+          <a href="webui.html">Local Web UI</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-shell prose-layout">
+      <section class="section-block prose-block">
+        <p class="eyebrow">Project abstract</p>
+        <h1>About LayerForge-X</h1>
+        <p id="project-abstract">
+          Loading project summary...
+        </p>
+        <p>
+          The system is designed around a canonical Depth-Aware Amodal Layer Graph (DALG) rather than a loose folder of cutouts. Each node stores an editable RGBA layer together with semantic labels, visible support, amodal support, depth statistics, and optional intrinsic exports. Each edge records pairwise occlusion evidence and ordering cues.
+        </p>
+      </section>
+
+      <section class="section-block prose-block">
+        <p class="eyebrow">Problem framing</p>
+        <h2>Why the representation matters</h2>
+        <p>
+          A single RGB image is difficult to edit because object boundaries, occlusions, and shading effects are flattened into one observed canvas. LayerForge-X treats decomposition as a representation problem: the goal is not only to recreate the observed RGB image, but to expose a reusable scene structure that supports reordering, extraction, removal, transparent recovery, and design-manifest export.
+        </p>
+        <p>
+          The project therefore evaluates layered outputs with recomposition metrics, editability signals, semantic grouping benchmarks, depth-order evidence, prompt-conditioned extraction behavior, and controlled transparent/effect-layer experiments.
+        </p>
+      </section>
+
+      <section class="section-block prose-block">
+        <p class="eyebrow">Core capabilities</p>
+        <h2>System scope</h2>
+        <div class="bullet-grid" id="contributions"></div>
+      </section>
+
+      <section class="section-block prose-block">
+        <p class="eyebrow">Evidence surfaces</p>
+        <h2>What is shipped</h2>
+        <ul class="formal-list" id="docs-links-list"></ul>
+        <p>
+          The GitHub Pages site presents the submission-safe evidence pack. The heavyweight local generation directories used to produce the figures and snapshots remain part of the working repository, but the public site and submission archive are anchored on copied summaries, figures, and the final report.
+        </p>
+      </section>
+    </main>
+
+    <script src="assets/site.js" defer></script>
+  </body>
+</html>

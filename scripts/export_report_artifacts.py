@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "report_artifacts"
 ARCHIVE_TAG = "LayerForge-X-final-submission-2026-04-23"
 
+sys.path.insert(0, str(ROOT / "src"))
+
+from layerforge.site_data import write_project_site_payload  # noqa: E402
+
 
 SNAPSHOTS = {
     "coco_panoptic_group_benchmark_summary.json": ROOT / "results/coco_panoptic_mask2former_512/coco_panoptic_group_benchmark_summary.json",
@@ -294,6 +298,7 @@ def main() -> int:
     write_figure_sources()
     write_command_log()
     write_readme()
+    write_project_site_payload(ROOT, ROOT / "docs" / "site-data" / "project_site.json")
     print(TARGET)
     return 0
 

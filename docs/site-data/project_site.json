@@ -1,0 +1,270 @@
+{
+  "audiences": [
+    {
+      "body": "Use the DALG manifest, report figures, and metrics snapshots to inspect the structural contribution rather than only the final RGB reconstruction.",
+      "title": "Researchers"
+    },
+    {
+      "body": "Use the local web UI to upload an image, run a decomposition mode, inspect grouped layers, and export a canonical design manifest without working directly from the CLI.",
+      "title": "Editors and art directors"
+    },
+    {
+      "body": "Use the Python CLI and the canonical DALG export as the integration surface for external tools, Qwen enrichment, prompt extraction, and benchmark automation.",
+      "title": "Developers"
+    }
+  ],
+  "benchmarks": {
+    "effects": {
+      "effect_iou": 0.35294545454545456,
+      "ground_truth_pixels": 13750,
+      "note": "The associated-effect extractor is a heuristic prototype rather than a trained visual-effects decomposer.",
+      "predicted_pixels": 4853
+    },
+    "prompt_extract": {
+      "note": "Point-only and box-only prompts localize geometry well but do not satisfy the semantic hit criterion without text guidance.",
+      "point_hit_rate": 0.0,
+      "point_mean_iou": 0.865398796094679,
+      "queries_per_type": 10,
+      "text_hit_rate": 1.0,
+      "text_mean_iou": 0.3775769160685042
+    },
+    "transparent": {
+      "alpha_mae": 0.11313118723531564,
+      "background_psnr": 25.98630081943378,
+      "background_ssim": 0.9541251032570154,
+      "note": "Transparent recomposition is treated as a sanity check. Alpha quality and clean-background quality remain the primary transparent-layer metrics.",
+      "recompose_psnr": 56.00656582842
+    }
+  },
+  "comparisons": [
+    {
+      "description": "Full native graph pipeline with semantic grouping, amodal completion, intrinsics, and ordered RGBA export.",
+      "images": 5,
+      "label": "LayerForge native",
+      "mean_psnr": 37.66881969404926,
+      "mean_self_eval_score": 0.698088,
+      "mean_ssim": 0.9708095078479693
+    },
+    {
+      "description": "Raw Qwen layers with DALG metadata while preserving the best external visual stack.",
+      "images": 5,
+      "label": "Qwen + graph preserve (4)",
+      "mean_psnr": 28.553930610543226,
+      "mean_self_eval_score": 0.5842786,
+      "mean_ssim": 0.8638442376259772
+    },
+    {
+      "description": "Raw Qwen layers re-exported through the LayerForge depth graph for graph-ordered layering.",
+      "images": 5,
+      "label": "Qwen + graph reorder (4)",
+      "mean_psnr": 28.539704525143645,
+      "mean_self_eval_score": 0.5834262,
+      "mean_ssim": 0.8637379063051934
+    },
+    {
+      "description": "Graph-guided recursive peeling with residual inpainting and explicit front-to-back layer logging.",
+      "images": 5,
+      "label": "LayerForge peeling",
+      "mean_psnr": 27.098823932859812,
+      "mean_self_eval_score": 0.5314428,
+      "mean_ssim": 0.909615156412167
+    },
+    {
+      "description": "Direct Qwen-Image-Layered RGBA decomposition used as the frontier generative baseline.",
+      "images": 5,
+      "label": "Qwen raw (4)",
+      "mean_psnr": 29.075732442522252,
+      "mean_self_eval_score": 0.28237639999999997,
+      "mean_ssim": 0.8850195543821586
+    }
+  ],
+  "contributions": [
+    "Depth-Aware Amodal Layer Graph (DALG) export as the canonical scene representation.",
+    "Native layered decomposition with semantic grouping, occlusion ordering, and optional per-layer intrinsics.",
+    "Qwen-Image-Layered import and graph enrichment in preserve-order and reorder modes.",
+    "Recursive semantic peeling, prompt-conditioned extraction, transparent-layer recovery, and effect-layer prototyping.",
+    "Submission-safe evidence pack with measured JSON snapshots, figures, and a reproducible report build path."
+  ],
+  "docs_links": [
+    {
+      "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx",
+      "label": "Final report (DOCX)"
+    },
+    {
+      "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "label": "Final report (Markdown)"
+    },
+    {
+      "href": "FIGURES.md",
+      "label": "Figure index"
+    },
+    {
+      "href": "RESULTS_SUMMARY_CURRENT.md",
+      "label": "Current results summary"
+    },
+    {
+      "href": "FINAL_PROJECT_SPEC.md",
+      "label": "Project specification"
+    },
+    {
+      "href": "api/README.md",
+      "label": "API contract"
+    },
+    {
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/PROJECT_MANIFEST.json",
+      "label": "Canonical manifest on GitHub"
+    },
+    {
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/README.md",
+      "label": "Submission evidence pack on GitHub"
+    }
+  ],
+  "figures": [
+    {
+      "caption": "Direct truck comparison between the strongest native search result, raw Qwen layers, and the graph-enriched Qwen export.",
+      "key": "truck_recomposition_comparison",
+      "path": "figures/truck_recomposition_comparison.png",
+      "title": "Truck recomposition study"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "key": "truck_layer_stack_comparison",
+      "path": "figures/truck_layer_stack_comparison.png",
+      "title": "Truck Layer Stack Comparison"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "key": "truck_metrics_comparison",
+      "path": "figures/truck_metrics_comparison.png",
+      "title": "Truck Metrics Comparison"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "key": "truck_prompt_ablation",
+      "path": "figures/truck_prompt_ablation.png",
+      "title": "Truck Prompt Ablation"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "key": "synthetic_ordering_ablation",
+      "path": "figures/synthetic_ordering_ablation.png",
+      "title": "Synthetic Ordering Ablation"
+    },
+    {
+      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "key": "qualitative_gallery",
+      "path": "figures/qualitative_gallery.png",
+      "title": "Qualitative Gallery"
+    },
+    {
+      "caption": "Prototype effect-layer extraction on a controlled synthetic scene with a measured IoU readout.",
+      "key": "effects_layer_demo",
+      "path": "figures/effects_layer_demo.png",
+      "title": "Associated-effect prototype"
+    },
+    {
+      "caption": "Per-layer albedo and shading export shown as a stretch-level intrinsic decomposition capability.",
+      "key": "intrinsic_layer_demo",
+      "path": "figures/intrinsic_layer_demo.png",
+      "title": "Intrinsic layer export"
+    },
+    {
+      "caption": "Visible semantic grouping on COCO Panoptic and ADE20K using coarse LayerForge groups.",
+      "key": "public_benchmark_comparison",
+      "path": "figures/public_benchmark_comparison.png",
+      "title": "Public semantic grouping benchmarks"
+    },
+    {
+      "caption": "DIODE validation comparisons for geometric depth, Depth Pro, and scaled Depth Pro alignment.",
+      "key": "public_depth_comparison",
+      "path": "figures/public_depth_comparison.png",
+      "title": "Public depth benchmarks"
+    },
+    {
+      "caption": "Five-image comparison across native LayerForge, recursive peeling, raw Qwen, and Qwen-plus-graph hybrids.",
+      "key": "frontier_review",
+      "path": "figures/frontier_review.png",
+      "title": "Frontier comparison"
+    },
+    {
+      "caption": "Measured prompt extraction behavior for text, point, box, and text-plus-geometry queries.",
+      "key": "prompt_extract_benchmark",
+      "path": "figures/prompt_extract_benchmark.png",
+      "title": "Prompt-conditioned extraction benchmark"
+    },
+    {
+      "caption": "Alpha-quality and clean-background measurements on synthetic transparent and semi-transparent scenes.",
+      "key": "transparent_benchmark",
+      "path": "figures/transparent_benchmark.png",
+      "title": "Transparent-layer benchmark"
+    }
+  ],
+  "hero_metrics": [
+    {
+      "label": "Pytest",
+      "value": "52 passed"
+    },
+    {
+      "label": "Frontier native self-eval",
+      "value": "0.6981"
+    },
+    {
+      "label": "Prompt text hit rate",
+      "value": "1.00"
+    },
+    {
+      "label": "Transparent alpha MAE",
+      "value": "0.1131"
+    },
+    {
+      "label": "Effect IoU",
+      "value": "0.3529"
+    }
+  ],
+  "local_lab": {
+    "entrypoint": "layerforge webui --open-browser",
+    "modes": [
+      {
+        "description": "Run the native LayerForge pipeline and inspect ordered layers, contact sheets, and recomposition.",
+        "key": "run",
+        "label": "Layered decomposition"
+      },
+      {
+        "description": "Run the decomposition and export one selected editable target layer plus background-completed previews.",
+        "key": "extract",
+        "label": "Prompt extraction"
+      },
+      {
+        "description": "Approximate a transparent or semi-transparent foreground and estimate a clean background.",
+        "key": "transparent",
+        "label": "Transparent target recovery"
+      },
+      {
+        "description": "Iteratively peel the front-most editable layer while logging the residual canvas.",
+        "key": "peel",
+        "label": "Recursive peeling"
+      }
+    ]
+  },
+  "project": {
+    "abstract": "LayerForge-X represents a single RGB image as a depth-aware amodal layer graph (DALG) whose nodes are editable RGBA layers and whose edges encode pairwise occlusion evidence. The repository couples a native graph pipeline with Qwen-Image-Layered enrichment, recursive peeling, prompt-conditioned extraction, transparent-layer recovery, and editability-aware evaluation.",
+    "name": "LayerForge-X-final",
+    "pages_url": "https://alikestocode.github.io/LayerForge-X-final/",
+    "repo_url": "https://github.com/ALikesToCode/LayerForge-X-final",
+    "tagline": "Depth-aware amodal layered image decomposition from a single RGB image"
+  },
+  "public_benchmarks": {
+    "ade20k_miou": 0.6015226885527559,
+    "coco_panoptic_miou": 0.5660452766848341,
+    "diode_depthpro_scale_abs_rel": 0.36287627184824817
+  },
+  "validated": {
+    "cli_help": true,
+    "export_design_cli": true,
+    "frontier_dry_run": true,
+    "frontier_review_full": true,
+    "py_compile": true,
+    "pytest": "52 passed",
+    "train_ranker_cli": true
+  }
+}
