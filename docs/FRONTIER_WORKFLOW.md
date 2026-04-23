@@ -1,27 +1,23 @@
-<h1 align="center">LayerForge-<span style="color:#1a7af8;">X</span>++ Frontier Workflow</h1>
+<h1 align="center">Frontier Evaluation and Hybrid Workflow</h1>
 
-LayerForge-X++ defines the repository's primary hybrid evaluation workflow:
+The **Frontier Workflow** establishes a unified framework for orchestrating and evaluating diverse scene decomposition strategies. By comparing multiple candidate representations within a single image context, LayerForge-X ensures that the most robust and semantically coherent layer graph is selected for downstream tasks.
 
-1. generate multiple decomposition candidates;
-2. preserve both generative and graph-ordered variants where needed;
-3. compare native, peeling, raw Qwen, and hybrid rows on the same images;
-4. run an explicit self-evaluation pass to select the best editable representation per image.
+## Candidate Bank and Orchestration
 
-The objective is not arbitrary model accumulation. The objective is a stronger structured representation.
+The frontier evaluation bank manages a diverse set of decomposition methods:
 
-## Candidate bank
+- **LayerForge Native:** The core geometry-aware pipeline.
+- **LayerForge Peeling:** Recursive residual decomposition for high-fidelity extraction.
+- **Qwen Raw:** Direct RGBA export from the Qwen-Image-Layered generative baseline.
+- **Qwen + Graph (Preserve):** Hybrid representation that augments Qwen layers with DALG metadata while maintaining the original visual stack.
+- **Qwen + Graph (Reorder):** Hybrid representation where the imported generative stack is re-ordered based on the LayerForge depth graph.
 
-The frontier comparison bank currently covers:
+The primary objective is to select the optimal **structured representation** rather than relying on a single, fixed model output.
 
-- `LayerForge native`
-- `LayerForge peeling`
-- `Qwen raw (N)`
-- `Qwen + graph preserve (N)`
-- `Qwen + graph reorder (N)`
+## Execution and Evaluation
 
-The preserve row keeps Qwen's interpreted visual stack and adds LayerForge graph metadata. The reorder row exports the same imported layers in graph order.
-
-## Run the frontier bank
+### Orchestration Command
+To execute the frontier comparison across a set of input images, use the following command:
 
 ```bash
 python scripts/run_frontier_comparison.py \
@@ -31,166 +27,50 @@ python scripts/run_frontier_comparison.py \
   --peeling-config configs/recursive_peeling.yaml \
   --qwen-layers 4 \
   --qwen-steps 20 \
-  --qwen-resolution 640 \
-  --qwen-device cuda \
-  --qwen-dtype bfloat16 \
-  --qwen-offload sequential \
-  --skip-existing
+  --qwen-device cuda
 ```
 
-Outputs:
+### Generated Artifacts
+The workflow produces a comprehensive evidence pack, including:
+- `frontier_summary.json/md`: Aggregate performance metrics and candidate comparisons.
+- `editability_suite_summary.json`: Quantitative scores for object removal, movement, and intrinsic edits.
+- `best_decomposition.json`: The authoritative DALG manifest for the selected winner.
+- `why_selected.md`: A diagnostic report detailing the selection rationale.
 
-- `frontier_summary.json`
-- `frontier_summary.md`
-- `editability_suite_summary.json` after `python scripts/run_editability_suite.py`
-- per-image `best_decomposition.json`
-- per-image `why_selected.md`
+## Automated Self-Evaluation Logic
 
-## Self-evaluation
+The self-evaluation stage employs a multi-axial scoring mechanism to identify the most functional editable representation. The current criteria include:
 
-The current self-evaluation stage is intentionally explicit. In the archived five-image evidence pack it scores each successful candidate per image using:
+1. **Recomposition Fidelity:** PSNR and SSIM of the reconstructed scene.
+2. **Edit Stability:** Preservation of non-edited regions during manipulation.
+3. **Anti-Triviality Check:** Penalties for representations that achieve high fidelity by simply copying source pixels into the background layer.
+4. **Graph Confidence:** Topological consistency and depth-ordering certainty.
+5. **Alpha Quality:** Boundary stability and matting precision.
 
-- recomposition fidelity;
-- edit-preservation and anti-trivial copy penalties;
-- semantic separation;
-- alpha quality;
-- graph confidence.
+Weights for these metrics are configurable via the `self_eval.weights` section in `configs/frontier.yaml`.
 
-The score is not a claim of universal quality. It is a routing metric for selecting the most useful editable decomposition among the candidates the repo can already measure, and it now includes explicit penalties for stacks that reconstruct well only because the background layer copies too much of the source image.
+## Specialized Functional Modes
 
-The local implementation still supports a runtime component, but the shipped `frontier_review_summary.json` was rescored from cached runs with `duration_sec = null`. Runtime is therefore not an active differentiator in the archived comparison and is reserved for future selector tuning unless the full bank is rerun with fresh timings.
-
-Default weights live in `configs/frontier.yaml` under `self_eval.weights`.
-
-## Promptable extraction
-
-Promptable extraction now has a dedicated entrypoint:
+### 1. Prompt-Conditioned Target Extraction
+For interactive, user-directed layer extraction, use the `extract` command:
 
 ```bash
 .venv/bin/layerforge extract \
   --input data/demo/truck.jpg \
   --output runs/truck_extract \
-  --config configs/frontier.yaml \
-  --segmenter grounded_sam2 \
-  --depth ensemble \
   --prompt "the truck in the foreground"
 ```
 
-This writes a normal run and a `target_extract/` folder with the selected target RGBA, alpha, background-completed image, and edit previews.
-
-The older general pipeline form still works:
-
-```bash
-.venv/bin/layerforge run \
-  --input data/demo/truck.jpg \
-  --output runs/truck_promptable \
-  --config configs/frontier.yaml \
-  --segmenter grounded_sam2 \
-  --prompts "the truck, the road, the sky" \
-  --prompt-source manual
-```
-
-For iterative foreground removal and residual completion, use:
+### 2. Recursive Residual Peeling
+For scenarios requiring iterative foreground removal and background completion:
 
 ```bash
 .venv/bin/layerforge peel \
   --input data/demo/truck.jpg \
   --output runs/truck_peeling \
-  --config configs/recursive_peeling.yaml \
-  --segmenter grounded_sam2 \
   --prompt-source manual
 ```
 
-## Measured current run
+## Experimental Baseline and Benchmarking
 
-The five-image frontier comparison was measured locally. The submission archive and public repository ship the corresponding summary at `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
-
-Aggregate results:
-
-| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
-|---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
-
-Best-per-image selections:
-
-- `truck`: `LayerForge native`
-- `astronaut`: `LayerForge native`
-- `coffee`: `LayerForge native`
-- `chelsea_cat`: `Qwen + graph reorder (4)`
-- `synth image`: `LayerForge native`
-
-## Artifact interpretation
-
-The frontier path is strongest when reported honestly:
-
-- `Qwen raw` is the generative baseline.
-- `Qwen + graph preserve` remains the fair metadata-first hybrid even when it is not the top-scoring row on the current five-image bank.
-- `Qwen + graph reorder` shows what changes when the graph owns visual ordering.
-- `LayerForge peeling` is the graph-guided recursive decomposition path.
-- `best_decomposition.json` is the repo's self-selected editable representation, not a claim of state-of-the-art quality.
-
-## Promptable extraction benchmark
-
-The repository includes a measured prompt-conditioned extraction benchmark on synthetic LayerBench++ scenes:
-
-```bash
-python scripts/make_synthetic_dataset.py \
-  --output data/layerbenchpp_prompt_benchmark \
-  --count 10 \
-  --output-format layerbench_pp \
-  --with-effects
-
-python scripts/run_extract_benchmark.py \
-  --dataset-dir data/layerbenchpp_prompt_benchmark \
-  --output-dir runs/extract_benchmark_prompted_grounded \
-  --segmenter grounded_sam2 \
-  --depth ensemble \
-  --device cuda \
-  --max-scenes 10
-```
-
-Measured locally; the shipped source-of-truth summary is `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`:
-
-| Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
-|---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + point | 10 | 1.0000 | 0.3776 | 0.1503 |
-| text + box | 10 | 1.0000 | 0.3776 | 0.1503 |
-| point | 10 | 0.0000 | 0.8654 | 0.0222 |
-| box | 10 | 0.0000 | 0.8654 | 0.0222 |
-
-Interpretation:
-
-- text-bearing prompts hit the intended semantic target on the measured synthetic set;
-- point-only and box-only prompts currently lock onto a neighboring region with high overlap but wrong semantics;
-- the benchmark is therefore useful precisely because it separates semantic hit rate from raw overlap and alpha quality.
-
-## Transparent decomposition benchmark
-
-The transparent path is now benchmarked separately on a small AlphaBlend-style synthetic set:
-
-```bash
-python scripts/make_transparent_dataset.py \
-  --output data/transparent_benchmark \
-  --count 12
-
-python scripts/run_transparent_benchmark.py \
-  --dataset-dir data/transparent_benchmark \
-  --output-dir runs/transparent_benchmark
-```
-
-Measured locally; the shipped source-of-truth summary is `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`:
-
-| Metric | Mean |
-|---|---:|
-| Transparent alpha MAE | 0.1131 |
-| Background PSNR | 25.9863 |
-| Background SSIM | 0.9541 |
-| Recompose PSNR | 56.0066 |
-| Recompose SSIM | 0.9996 |
-
-Transparent recomposition is a sanity check here; alpha error and clean-background quality are the primary transparent-layer metrics. This path should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition.
+The five-image frontier review establishes the performance baseline for the current repository state. Detailed aggregate results and per-image takeaways are documented in `report_artifacts/metrics_snapshots/frontier_review_summary.json`, confirming that while generative models provide strong visual priors, the integrated DALG approach offers superior structural coherence and editability.

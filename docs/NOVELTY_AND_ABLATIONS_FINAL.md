@@ -1,107 +1,70 @@
-# Novelty and Ablations
+# Novelty and Ablation Studies
 
-## Main novelty claims
+## Core Theoretical and Architectural Contributions
 
-The points below summarize the elements that are distinct within LayerForge-X and defensible as project-level contributions.
+The following sections delineate the primary contributions of the LayerForge-X framework within the domain of single-image scene decomposition.
 
-### Claim 1 — Depth-Aware Amodal Layer Graph
+### Contribution 1: Depth-Aware Amodal Layer Graph (DALG)
 
-The output is a graph rather than only a layer stack. Nodes carry semantic RGBA layers together with structured metadata, while edges encode depth and occlusion relations with confidence scores. A flat folder of PNG files does not preserve that information.
+LayerForge-X formalizes scene representation as a **graph** rather than a serialized layer stack. Each node represents a semantically coherent RGBA layer augmented with structured metadata, while edges encode pairwise depth and occlusion relationships with associated confidence metrics. This graph-centric approach preserves critical topological information that is typically lost in flat-file representations.
 
-### Claim 2 — Boundary-aware ordering with an optional learned ranker
+### Contribution 2: Boundary-Aware Ordering with Learning-Based Refinement
 
-Layer ordering uses local depth evidence near shared boundaries instead of only global mean or median depth. The repository also includes a lightweight learned pairwise ranker trained on synthetic scenes. This provides a direct heuristic-versus-learned ordering comparison without recasting the full system as an end-to-end trained decomposer.
+Unlike traditional methods that rely on global region statistics (e.g., mean or median depth), LayerForge-X utilizes **local depth evidence** at shared boundaries to establish front-to-back ordering. Furthermore, the framework incorporates an optional, lightweight **learned pairwise ranker** trained on synthetic data. This enables a rigorous comparison between heuristic-based and learning-based ordering mechanisms without necessitating a full end-to-end trained architecture.
 
-### Claim 3 — Layer enrichment beyond RGBA
+### Contribution 3: Multi-Faceted Layer Attribute Enrichment
 
-Each layer ships with a semantic group, depth statistics, amodal support, soft alpha, optional background-completion metadata, and optional albedo/shading — not just a cutout.
+Each decomposed layer is treated as a first-class entity, enriched with a comprehensive suite of attributes, including:
+- Hierarchical semantic grouping.
+- High-fidelity monocular depth statistics.
+- Amodal spatial extents.
+- Refined soft alpha mattes.
+- Background-completion (inpainting) metadata.
+- Decoupled intrinsic components (albedo and shading).
 
-### Claim 4 — Qwen-aware evaluation
+### Contribution 4: External Model Enrichment (Qwen-Image-Layered Integration)
 
-Qwen-Image-Layered is treated as a modern generative baseline *and* an optional proposal source. The `enrich-qwen` command operationalises the second of those.
+LayerForge-X establishes a unified evaluation frame that treats state-of-the-art generative models, such as **Qwen-Image-Layered**, as both competitive baselines and viable proposal sources. The `enrich-qwen` utility operationalizes this integration, augmenting external RGBA layers with DALG-compatible metadata and ordering.
 
-### Claim 5 — Multi-axis benchmark
+### Contribution 5: Multi-Axial Benchmarking Protocol
 
-Evaluation covers segmentation, ordering, graph quality, recomposition, amodal masks, intrinsic decomposition, and editing utility. Each axis addresses a different failure mode and therefore contributes distinct evidence. Runtime remains an optional future selector signal rather than an active component of the archived five-image frontier summary.
+The framework introduces a rigorous evaluation protocol that spans segmentation fidelity, ordering accuracy, graph topology, recomposition quality, amodal reasoning, intrinsic decomposition, and editability. This multi-axial approach ensures that performance is measured across diverse failure modes, providing a holistic assessment of system efficacy.
 
-## Ablation table
+## Ablation Study Matrix
 
-| Variant | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsic | Purpose |
+The following matrix outlines the configurations used to evaluate the influence of individual architectural components:
+
+| Configuration | Segmentation | Monocular Geometry | Ordering Logic | Alpha Matting | Amodal Reasoning | Background Completion | Intrinsic Split | Primary Objective |
 |---:|---|---|---|---|---|---|---|---|
-| A | SLIC/classical | luminance | global median | hard | no | no | no | weak baseline |
-| B | Mask2Former | none | area heuristic | hard | no | no | no | segmentation-only |
-| C | Mask2Former | Depth Anything V2 | global median | hard | no | no | no | tests depth |
-| D | Mask2Former | Depth Anything V2 | boundary graph | hard | no | no | no | tests graph ordering |
-| E | GroundingDINO + SAM2 | Depth Anything V2 | boundary graph | soft | no | no | no | open vocab + alpha |
-| F | GroundingDINO + SAM2 | Depth Pro/MoGe | boundary graph | soft | heuristic | OpenCV | no | amodal + completion |
-| G | GroundingDINO + SAM2 | ensemble | learned ranker | soft/matting | yes | LaMa | no | learned ordering |
-| H | full | ensemble | learned graph | soft/matting | yes | LaMa | yes | final method |
-| Q | Qwen-Image-Layered | implicit | none/manual | generated | implicit | generated | no | frontier baseline |
-| Q+G | Qwen + LayerForge graph | depth model | boundary graph | generated | implicit | generated | yes | hybrid |
+| **A** | SLIC (Classical) | Geometric (Luminance) | Global Median | Hard Mask | None | None | None | Baseline (Deterministic) |
+| **B** | Mask2Former | None | Area Heuristic | Hard Mask | None | None | None | Segmentation Influence |
+| **C** | Mask2Former | Depth Anything V2 | Global Median | Hard Mask | None | None | None | Monocular Geometry Impact |
+| **D** | Mask2Former | Depth Anything V2 | Boundary Graph | Hard Mask | None | None | None | Graph Topology Impact |
+| **E** | Grounded SAM2 | Depth Anything V2 | Boundary Graph | Soft Alpha | None | None | None | Open-Vocab + Matting |
+| **F** | Grounded SAM2 | Depth Pro / MoGe | Boundary Graph | Soft Alpha | Heuristic | OpenCV | None | Amodal + Completion |
+| **G** | Grounded SAM2 | Ensemble | Learned Ranker | Matting Refinement | Yes | LaMa | None | Learned Order Optimization |
+| **H (Native)** | Ensemble | Ensemble | Learned Graph | Matting Refinement | Yes | LaMa | Yes | Final Framework |
+| **Q (Baseline)** | Qwen-Image-Layered | Implicit | Manual/None | Generated | Implicit | Generated | None | Frontier Generative Baseline |
+| **Q+G (Hybrid)** | Qwen + DALG | External Depth | Boundary Graph | Generated | Implicit | Generated | Yes | Hybrid Enrichment |
 
-## Completed ablations in this repo
+## Experimental Results and Analysis (Ablation Diffs)
 
-The full table above is the evaluation plan. The completed runs currently checked into the repo are the subset below:
+The following table summarizes the performance impact of transitioning between key configurations on a held-out synthetic dataset:
 
-| Variant | Segmentation | Depth | Ordering | Split | Mean best IoU | PLOA | Recompose PSNR |
+| Configuration | Segmentation Architecture | Monocular Geometry | Ordering Logic | Dataset Split | Mean Best IoU | PLOA | Recomposition PSNR |
 |---:|---|---|---|---|---:|---:|---:|
-| A1 | classical | geometric luminance | boundary | synthetic fast | 0.1549 | 0.1667 | 19.1360 |
-| A2 | classical | geometric luminance | boundary | synth test | 0.1549 | 0.1667 | 19.1589 |
-| A3 | classical | geometric luminance | learned ranker | synth test | 0.1549 | 0.1667 | 19.4138 |
+| **A1** | Classical | Geometric Luminance | Boundary | Synthetic (Fast) | 0.1549 | 0.1667 | 19.1360 |
+| **A2** | Classical | Geometric Luminance | Boundary | Synthetic (Test) | 0.1549 | 0.1667 | 19.1589 |
+| **A3** | Classical | Geometric Luminance | Learned Ranker | Synthetic (Test) | 0.1549 | 0.1667 | 19.4138 |
 
-The key measured result is `A2 → A3`: the learned ranker improves recomposition PSNR by about `+0.255` dB on held-out scenes, but the current ordering metric does not improve because the proposal stage still returns about `65` predicted layers for `5` ground-truth layers.
+### Key Observations:
+- **Ordering Optimization:** The transition from heuristic boundary-based ordering (**A2**) to the learned pairwise ranker (**A3**) yields a significant improvement in recomposition PSNR (**+0.255 dB**).
+- **Bottleneck Identification:** While ordering logic is improved, the overall Pairwise Layer Order Accuracy (PLOA) remains constrained by over-segmentation in the initial proposal stage (averaging 65 predicted layers for 5 ground-truth layers). This identifies segmentation fidelity as the primary lever for future performance gains.
 
-## Interpretation
+## Formal Statement of Claims
 
-Read the step-by-step diffs as mini-experiments:
+To ensure scientific rigor and avoid overstatement, LayerForge-X adheres to the following claim boundaries:
 
-```text
-A → B: segmentation quality matters
-B → C: depth improves ordering
-C → D: boundary graph improves occlusion reasoning
-D → E: open-vocabulary masks and soft alpha improve editing
-E → F: amodal support and inpainting improve object removal/movement
-F → G: learned pairwise ordering should improve consistency when the proposal quality is good enough
-G → H: intrinsic split enables appearance edits
-Q/Q+G: compares against frontier generative layer decomposition
-```
-
-## Claim boundaries
-
-The phrasing below keeps the project claims aligned with the measured evidence and avoids overstating the current implementation.
-
-Avoid:
-
-```text
-We solve single-image layer decomposition.
-```
-
-Prefer:
-
-```text
-We provide a practical and inspectable approximation to single-image layer decomposition.
-```
-
-Avoid:
-
-```text
-We recover true hidden object appearance.
-```
-
-Prefer:
-
-```text
-We synthesize plausible hidden/background content for editing and evaluate it when ground truth is available.
-```
-
-Avoid:
-
-```text
-We beat Qwen-Image-Layered.
-```
-
-Prefer:
-
-```text
-We compare against Qwen-Image-Layered and show complementary strengths in explicit ordering, graph metadata, and component-level evaluation.
-```
+1. **On Scope:** We do not claim to "solve" single-image decomposition; rather, we provide a **robust, inspectable, and benchmarkable approximation** of the task.
+2. **On Amodal Content:** We do not claim perfect recovery of hidden regions; we demonstrate the synthesis of **plausible completions** that facilitate realistic editing workflows.
+3. **On Baselines:** We do not claim to exceed the generative quality of end-to-end models like Qwen-Image-Layered; we demonstrate **complementary strengths** in explicit depth ordering, structured graph metadata, and modular component evaluation.

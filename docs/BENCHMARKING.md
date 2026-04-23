@@ -1,62 +1,57 @@
-# Benchmarking Plan
+# Evaluation Framework and Benchmarking Protocol
 
-This document summarizes the evaluation tracks and the data sources used for each one.
+This document outlines the evaluation tracks, reference datasets, and performance metrics employed to validate the LayerForge-X framework.
 
-| Goal | Dataset | Metric |
+## Benchmarking Taxonomy
+
+The following table summarizes the primary evaluation axes and their corresponding data sources:
+
+| Evaluation Objective | Reference Dataset | Metric |
 |---|---|---|
-| Visible semantic grouping | COCO Panoptic, ADE20K | coarse-group mIoU, thing/stuff mIoU |
-| Open-vocab detection | LVIS, ODinW, custom prompts | AP, recall@K |
-| Depth | NYU Depth V2, DIODE, KITTI | AbsRel, RMSE, delta thresholds |
-| Layer ordering | synthetic composites, NYU Depth V2 | pairwise order accuracy, occlusion-edge F1 |
-| Alpha quality | synthetic alpha, generated layered scenes | SAD, MSE, boundary F1 |
-| Inpainting | masked Places/background completion, synthetic hidden regions | LPIPS, FID/KID, human preference |
-| Intrinsics | IIW | WHDR |
-| End-to-end | generated synthetic scenes | recomposition PSNR/SSIM, layer count, order accuracy, edit success |
+| **Visible Semantic Grouping** | COCO Panoptic, ADE20K | Mean Intersection-over-Union (mIoU) |
+| **Open-Vocabulary Detection** | LVIS, ODinW, custom prompts | Average Precision (AP), Recall@K |
+| **Monocular Geometry** | NYU Depth V2, DIODE, KITTI | Absolute Relative Error (AbsRel), RMSE |
+| **Layer Ordering Logic** | Synthetic Composites, NYU V2 | Pairwise Order Accuracy, Occlusion-Edge F1 |
+| **Alpha Matting Fidelity** | Synthetic Alpha, Layered Scenes | Sum of Absolute Differences (SAD), MSE |
+| **Background Completion** | Masked Places, Synthetic Hidden | LPIPS, FID, KID |
+| **Intrinsic Decomposition** | Intrinsic Images in the Wild (IIW) | Weighted Human Disagreement Rate (WHDR) |
+| **End-to-End Recomposition** | Synthetic LayerBench Scenes | PSNR, SSIM, Order Accuracy |
 
-## Synthetic benchmark
+## Synthetic Benchmarking Protocol
 
-Real photographs do not include ground-truth layer order, so the synthetic generator in `scripts/make_synthetic_dataset.py` provides the controlled data required for quantitative evaluation. The richer `layerbench_pp` export format adds:
+As real-world photographic datasets lack ground-truth layer ordering and amodal extent, LayerForge-X utilizes a custom synthetic generator (`scripts/make_synthetic_dataset.py`) to produce controlled evaluation data. The advanced `layerbench_pp` format provides high-fidelity targets for:
 
-- visible masks;
-- amodal masks;
-- alpha mattes;
-- `layers_effects_rgba/` when effects are enabled;
-- `intrinsics/albedo.png` and `intrinsics/shading.png`;
-- `occlusion_graph.json` and `scene_metadata.json`.
+- **Modal and Amodal Masks:** Precise visible and estimated object extents.
+- **Alpha Mattes:** Ground-truth soft alpha for matting validation.
+- **Associated Effects:** Dedicated RGBA layers for shadows and reflections.
+- **Intrinsic Components:** Ground-truth albedo and shading maps.
+- **Graph Metadata:** Authoritative occlusion and depth-ordering manifests.
 
-That gives the project a ground-truth target for order, hidden support, effects, and intrinsic structure that no real photo can provide.
+This synthetic environment allows for isolated testing of depth-ordering accuracy and hidden-region completion that cannot be reliably measured in the wild.
 
-## Qualitative figures
+## Qualitative Assessment and Visualization
 
-For the curated real-image qualitative set, each example should show:
+Qualitative results for curated real-world images are presented using a standardized multi-panel layout, which includes:
 
-- the input;
-- segmentation overlay;
-- depth map;
-- layer contact sheet;
-- completed background;
-- the recomposition;
-- a parallax GIF frame or another edit demo;
-- the albedo/shading split.
+1. **Input RGB:** The source image.
+2. **Segmentation Overlay:** Visualization of semantic and instance proposals.
+3. **Inferred Depth:** Monocular geometry estimate.
+4. **Layer Contact Sheet:** Individual decomposition nodes.
+5. **Completed Background:** Output of the inpainting module.
+6. **Recomposed Scene:** Final composite from the ordered DALG.
+7. **Intrinsic Split:** Decoupled albedo and shading layers.
 
-For the updated repo state, add one explicit recursive-peeling storyboard:
+For the **Recursive Peeling** workflow, a dedicated storyboard is used to demonstrate the iterative extraction process, highlighting the residual image and effect extraction at each stage.
 
-- original image;
-- first selected layer;
-- residual after inpaint;
-- second selected layer;
-- final completed background;
-- any exported associated-effect layer.
+## Ablation Study Matrix
 
-This multi-panel layout is necessary to keep the individual components legible within a single qualitative figure.
+The following ablation study evaluates the performance impact of individual architectural components:
 
-## Ablation table
-
-| Variant | Segmenter | Depth | Inpaint | Intrinsics | Expected lesson |
+| Configuration | Segmentation Architecture | Depth Model | Inpainting Module | Intrinsic Method | Primary Objective |
 |---|---|---|---|---|---|
-| A | SLIC | luminance | Telea | Retinex | baseline |
-| B | Mask2Former | luminance | Telea | Retinex | semantics help |
-| C | Mask2Former | Depth Anything V2 | Telea | Retinex | depth improves order |
-| D | Grounded SAM2 | Depth Pro | LaMa | Retinex | masks + metric depth |
-| E | Grounded SAM2 | ensemble | LaMa | Marigold-IID external | strongest one-shot native recipe |
-| F | Grounded SAM2 + peel | Depth Pro | iterative Telea/LaMa | Retinex | recursive peeling and effect layers |
+| **A (Baseline)** | SLIC | Geometric (Luminance) | Telea | Retinex | Establish performance baseline |
+| **B** | Mask2Former | Geometric (Luminance) | Telea | Retinex | Evaluate semantic influence |
+| **C** | Mask2Former | Depth Anything V2 | Telea | Retinex | Measure monocular geometry impact |
+| **D** | Grounded SAM2 | Depth Pro | LaMa | Retinex | Validate high-fidelity masks + metric depth |
+| **E (Native)** | Grounded SAM2 | Ensemble | LaMa | External Hook | Optimize for the strongest native configuration |
+| **F (Peeling)** | Grounded SAM2 + Peel | Depth Pro | Iterative LaMa | Retinex | Evaluate recursive decomposition |

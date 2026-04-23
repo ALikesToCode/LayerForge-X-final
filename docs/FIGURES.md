@@ -1,44 +1,49 @@
-# Figure Pack
+# Diagnostic Visualization and Figure Index
 
-This is the figure index for the measured local runs summarized in the submission evidence pack.
+This document serves as the authoritative index for the diagnostic visualizations and comparative figures generated from the experimental runs. These assets constitute the primary qualitative evidence for the LayerForge-X submission.
 
-Regenerate everything with:
+## Reproduction and Asset Generation
+
+To regenerate the complete figure pack, execute the following command:
 
 ```bash
 .venv/bin/python scripts/generate_report_figures.py
 ```
 
-Full regeneration requires the local heavyweight `runs/`, `results/`, and `data/` directories. In the submission ZIP, the pre-generated PNG files in `docs/figures/` are the delivered artifacts, and `report_artifacts/figure_sources/figure_manifest.json` records the raw dependencies used to make them.
+*Note: Full regeneration requires access to the high-volume `runs/`, `results/`, and `data/` directories. For the final submission, pre-generated PNG assets are provided in `docs/figures/`, with their underlying dependencies documented in `report_artifacts/figure_sources/figure_manifest.json`.*
 
-Generated assets:
+## Figure Catalog
 
-- [Truck recomposition comparison](figures/truck_recomposition_comparison.png): reference RGB, raw Qwen, Qwen plus LayerForge, old native LayerForge, automated upgraded LayerForge, and the autotune-selected LayerForge winner on `data/demo/truck.jpg`.
-- [Truck layer stack comparison](figures/truck_layer_stack_comparison.png): raw Qwen RGBA layers, enriched Qwen ordered stack, old LayerForge grouped layers, and the tightened autotune-selected LayerForge stack.
-- [Truck metrics comparison](figures/truck_metrics_comparison.png): side-by-side charts for layer count, recomposition PSNR, and recomposition SSIM across the main truck baselines and improved LayerForge variants, including the search-selected native winner.
-- [Truck prompt ablation](figures/truck_prompt_ablation.png): Gemini-only prompting versus curated prompts versus augment mode on the upgraded native recipe.
-- [Synthetic ordering ablation](figures/synthetic_ordering_ablation.png): held-out `boundary` versus `learned ranker` comparison showing that PSNR improves while IoU and PLOA stay flat.
-- [Qualitative gallery](figures/qualitative_gallery.png): astronaut, coffee, and cat scenes with input RGB, segmentation overlay, and ordered layer contact sheet.
-- [Effects layer demo](figures/effects_layer_demo.png): controlled synthetic `layerbench_pp` scene showing input RGB, clean reference without the object, ground-truth shadow layer, and the extracted associated-effect layer.
-- [Intrinsic layer demo](figures/intrinsic_layer_demo.png): native-run figure showing the input image, the global albedo/shading exports, and one representative per-layer albedo/shading pair from the measured truck winner.
-- [Public benchmark comparison](figures/public_benchmark_comparison.png): COCO versus ADE20K coarse-group benchmark charts for group mIoU, thing mIoU, stuff mIoU, and mean image mIoU.
-- [Public depth comparison](figures/public_depth_comparison.png): DIODE validation charts comparing the geometric fallback against DepthPro on depth error and indoor/outdoor split metrics.
-- [Frontier review](figures/frontier_review.png): the hardened five-image self-evaluation candidate bank, comparing native, peeling, raw Qwen, and fair hybrid rows.
-- [Prompt extraction benchmark](figures/prompt_extract_benchmark.png): synthetic prompt-conditioned extraction comparison across text, point, box, and hybrid query types.
-- [Transparent benchmark](figures/transparent_benchmark.png): AlphaBlend-style synthetic transparent-scene benchmark covering alpha MAE, background PSNR, and recomposition PSNR.
-- [Figure manifest](figures/figure_manifest.json): machine-readable index of the figure files.
+- **[Truck Recomposition Analysis](figures/truck_recomposition_comparison.png):** A comparative study featuring the reference RGB, raw Qwen-Image-Layered output, LayerForge-augmented Qwen, and various LayerForge-X native configurations (including the autotune-optimized winner).
+- **[Truck Layer Stack Decomposition](figures/truck_layer_stack_comparison.png):** Visualizes the internal layer structure across baselines, contrasting raw generative layers with semantically grouped and depth-ordered DALG stacks.
+- **[Truck Performance Metrics](figures/truck_metrics_comparison.png):** Quantitative comparison of layer count, recomposition PSNR, and SSIM across all truck-centric evaluation tracks.
+- **[Ablation: Prompt Conditioning](figures/truck_prompt_ablation.png):** Evaluates the influence of prompt engineering—contrasting LLM-generated, manually curated, and augmented prompts—on decomposition fidelity.
+- **[Ablation: Depth-Ordering Logic](figures/synthetic_ordering_ablation.png):** Comparison of `boundary-based` versus `learning-based` (learned ranker) ordering on held-out synthetic scenes, highlighting improvements in recomposition PSNR.
+- **[Qualitative Performance Gallery](figures/qualitative_gallery.png):** Representative results for the `astronaut`, `coffee`, and `cat` scenarios, including input RGB, panoptic segmentation overlays, and ordered layer contact sheets.
+- **[Associated-Effect Extraction Demo](figures/effects_layer_demo.png):** Demonstrates the extraction of shadows and reflections using a controlled `layerbench_pp` synthetic scene.
+- **[Intrinsic Decomposition Analysis](figures/intrinsic_layer_demo.png):** Visualizes the decoupling of global and per-layer albedo and shading components for the optimized truck scenario.
+- **[Segmentation Benchmark (COCO vs. ADE20K)](figures/public_benchmark_comparison.png):** Comparative performance charts across standard panoptic datasets, measuring mIoU across thing/stuff categories.
+- **[Monocular Geometry Benchmark (DIODE)](figures/public_depth_comparison.png):** Evaluates depth estimation error and indoor/outdoor generalization for the geometric baseline against the Depth Pro model.
+- **[Frontier Candidate Review](figures/frontier_review.png):** A comprehensive summary of the five-image self-evaluation bank, contrasting native, peeling, and hybrid decomposition strategies.
+- **[Prompt-Conditioned Extraction Benchmark](figures/prompt_extract_benchmark.png):** Quantitative analysis of semantic hit rates and extraction fidelity across text, point, box, and hybrid query types.
+- **[Transparent Layer Recovery Benchmark](figures/transparent_benchmark.png):** Evaluation of alpha-composited decomposition, focusing on alpha MAE and background inpainting quality.
 
-Recommended use in the report:
+## Strategic Integration in Research Report
 
-- intro / headline comparison: `truck_recomposition_comparison.png`
-- methods / representation slide: `truck_layer_stack_comparison.png`
-- main quantitative results: `truck_metrics_comparison.png`
-- native-method tuning evidence: `truck_prompt_ablation.png`
-- novelty / ablation evidence: `synthetic_ordering_ablation.png`
-- qualitative results section: `qualitative_gallery.png`
-- associated-effect demo section: `effects_layer_demo.png`
-- intrinsic export / appearance-factor section: `intrinsic_layer_demo.png`
-- public benchmark section: `public_benchmark_comparison.png`
-- public depth section: `public_depth_comparison.png`
-- hardened frontier selector section: `frontier_review.png`
-- promptable extraction section: `prompt_extract_benchmark.png`
-- transparent decomposition section: `transparent_benchmark.png`
+The following mapping identifies the recommended placement of these figures within the final research report:
+
+| Research Section | Recommended Figure |
+|---|---|
+| **Executive Summary / Introduction** | `truck_recomposition_comparison.png` |
+| **System Architecture / Methodology** | `truck_layer_stack_comparison.png` |
+| **Quantitative Results and Analysis** | `truck_metrics_comparison.png` |
+| **Native Pipeline Optimization** | `truck_prompt_ablation.png` |
+| **Ablation Studies and Novelty** | `synthetic_ordering_ablation.png` |
+| **Qualitative Assessment** | `qualitative_gallery.png` |
+| **Specialized Track: Associated Effects** | `effects_layer_demo.png` |
+| **Specialized Track: Intrinsic Factors** | `intrinsic_layer_demo.png` |
+| **Public Dataset Validation** | `public_benchmark_comparison.png` |
+| **Geometry and Depth Validation** | `public_depth_comparison.png` |
+| **Frontier Selector Performance** | `frontier_review.png` |
+| **Prompt-Conditioned Extraction** | `prompt_extract_benchmark.png` |
+| **Transparent Scene Decomposition** | `transparent_benchmark.png` |

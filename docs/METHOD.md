@@ -1,58 +1,53 @@
-# Method
+# Methodology
 
-## Problem
+## Problem Formulation
 
-The task is to convert one RGB image into a stack of semantic RGBA layers that can be recomposed, reordered, edited, recolored, relit, or animated.
+The primary challenge addressed by LayerForge-X is the decomposition of a single RGB image into a structured stack of semantically meaningful RGBA layers. This representation must facilitate downstream tasks such as recomposition, spatial reordering, semantic editing, and relighting.
 
-## DALG: Depth-Aware Amodal Layer Graph
+## Depth-Aware Amodal Layer Graph (DALG)
 
-Each node in the graph carries more than a cutout. Concretely, a node stores:
+The DALG serves as the canonical representation for a decomposed scene. Each node within the graph encapsulates a discrete semantic entity, storing the following attributes:
 
-- the visible mask and a soft alpha;
-- a semantic label and a higher-level semantic group;
-- three depth statistics — median depth, a near percentile, a far percentile;
-- an amodal mask estimating the full extent including hidden parts;
-- an RGBA albedo layer;
-- an RGBA shading layer;
-- and occlusion links to other nodes.
+- **Masking and Alpha:** A visible mask accompanied by a refined soft alpha matte.
+- **Semantic Metadata:** A semantic label and a hierarchical semantic group identifier.
+- **Geometry:** Three distinct depth statistics: median depth, a "near" percentile, and a "far" percentile.
+- **Amodal Extent:** An estimated amodal mask representing the full object extent, including occluded regions.
+- **Intrinsic Properties:** Decoupled RGBA albedo and shading layers.
+- **Topology:** Pairwise occlusion links and relative depth relationships to other nodes.
 
-## Pipeline
+## Pipeline Architecture
 
-1. **Segment proposal.** Pick a segmenter: SLIC for the deterministic fallback, Mask2Former for closed-set panoptic segmentation, or GroundingDINO + SAM2 for open-vocabulary prompts.
-2. **Depth estimation.** One of: the geometric luminance baseline, Depth Anything V2, Depth Pro, Marigold, or an ensemble.
-3. **Overlap resolution.** Where proposed masks overlap, pixels are assigned to the nearer or higher-priority mask.
-4. **Stuff-plane splitting.** Large regions such as sky, road, wall, or background are split into depth-quantile planes so they do not dominate the ordering stage.
-5. **Alpha refinement.** Binary masks are converted to soft alpha, with depth edges used to harden boundaries where the depth map indicates a genuine discontinuity.
-6. **Ordering and occlusion graph.** Adjacent regions with distinct depth near their shared boundary become front-to-back edges. The default fast path uses this boundary-local evidence directly; the learned variant trains a lightweight pairwise ranker on synthetic scenes and uses the predicted near/far probabilities to sort the layer stack.
-7. **Amodal completion.** Masks are expanded conservatively through closing, hole filling, and hull-limited dilation.
-8. **Background completion.** Removable foreground is inpainted to create an edit-ready background layer.
-9. **Intrinsic split.** Albedo and shading are computed globally and then masked per layer.
-10. **Export.** Ordered stack, grouped stack, graph JSON, metrics, and debug panels.
+1. **Segmentation Proposal:** The system supports multiple segmentation architectures, including SLIC for deterministic baselines, Mask2Former for closed-set panoptic segmentation, and an ensemble of GroundingDINO and SAM2 for open-vocabulary, prompt-conditioned extraction.
+2. **Monocular Depth Estimation:** Depth is estimated using strong public models such as Depth Anything V2, Depth Pro, or Marigold, with support for ensemble-based refinement.
+3. **Overlap Resolution:** Overlapping mask proposals are resolved by assigning pixels based on relative depth or pre-defined semantic priority.
+4. **Spatial Partitioning of Background Regions:** Large "stuff" regions (e.g., sky, terrain, architectural surfaces) are partitioned into depth-quantile planes to prevent them from dominating the global ordering process.
+5. **Alpha Matting and Refinement:** Binary masks are converted into soft alpha mattes, with depth discontinuities used to refine and harden boundaries.
+6. **Order Inference and Occlusion Graph Construction:** Adjacent regions are analyzed for depth discrepancies at their shared boundaries to establish front-to-back edges. A learned pairwise ranker, trained on synthetic data, provides an optional high-fidelity ordering mechanism.
+7. **Amodal Completion:** Object masks are expanded using morphological operations and hull-limited dilation to estimate occluded regions.
+8. **Background Completion (Inpainting):** Foreground entities are removed and the resulting voids are filled using advanced inpainting techniques (e.g., LaMa) to create an edit-ready background layer.
+9. **Intrinsic Decomposition:** Global albedo and shading components are computed and subsequently masked to generate per-layer intrinsic properties.
+10. **Structured Export:** The final output includes an ordered layer stack, grouped layers, a DALG manifest (JSON), quantitative metrics, and diagnostic visualization panels.
 
-## Learned pairwise ordering
+## Learning-Based Pairwise Order Estimation
 
-The optional learned ordering module is deliberately lightweight:
+The framework incorporates an optional, lightweight module for pairwise depth ranking:
 
-- training data comes from the synthetic LayerBench scenes already used for benchmarking;
-- predicted segments are matched to ground-truth layers by IoU;
-- matched layer pairs generate feature vectors built from depth statistics, mask overlap/boundary evidence, and region geometry;
-- a small logistic model is fit in NumPy and saved as a JSON ranker;
-- inference uses the pairwise scores to produce a global near-to-far order.
+- **Training Data:** Derived from the synthetic **LayerBench** dataset, which provides ground-truth depth and occlusion metadata.
+- **Feature Engineering:** Region-wise features are extracted, including depth statistics, mask overlap metrics, and geometric properties.
+- **Model Architecture:** A logistic regression model is trained on these features to predict the probability of a "nearer" relationship between layer pairs.
+- **Global Ordering:** Pairwise scores are aggregated to produce a globally consistent near-to-far ordering of the layer stack.
 
-This keeps the learned component easy to reproduce on a single GPU workstation while still giving the report a real "classical heuristic vs learned ordering" ablation.
+## System Novelty and Architectural Contributions
 
-## Defensible novelty
+The primary contribution of LayerForge-X lies in the holistic integration of diverse computer vision tasks into a unified, inspectable representation:
 
-The main novelty lies in the representation and the integration strategy rather than in any single upstream module:
+> *LayerForge-X establishes a robust framework for single-image scene decomposition by synthesizing semantic grouping, monocular geometry, amodal reasoning, soft alpha matting, and intrinsic decomposition into a coherent Depth-Aware Amodal Layer Graph.*
 
-> A single-image editable layer graph that combines semantic grouping, monocular geometry, amodal extent, soft alpha, completed background, and intrinsic appearance factors in a single inspectable output.
+While individual modules build on existing segmentation and depth architectures, the contribution lies in their integration into a single DALG pipeline and in the evaluation protocol used to measure layered scene understanding.
 
-LayerForge-X does not claim novelty in SAM, monocular depth estimation, or intrinsic decomposition individually. The contribution is the integration of those capabilities into a coherent, benchmarkable layered representation in which the graph, rather than an unordered folder of PNGs, is the primary output.
+## Performance Evaluation and Analysis
 
-## Current benchmark readout
+Experimental results on held-out synthetic datasets demonstrate the efficacy of the learning-based ordering module:
 
-The completed benchmark runs in the repo support the following measured claim:
-
-- on a held-out synthetic split, the learned pairwise ranker improves recomposition PSNR from `19.1589` to `19.4138` while leaving mean best IoU (`0.1549`) and pairwise layer-order accuracy (`0.1667`) unchanged.
-
-That pattern is plausible: ordering gets slightly better for compositing, but the headline order metric is bottlenecked by over-segmentation in the deterministic classical proposal stage. The right way to present that is as evidence that the ordering module helps, but that better proposals are still the main lever.
+- The learned pairwise ranker improves recomposition PSNR from **19.1589** to **19.4138**.
+- Current performance bottlenecks are primarily associated with over-segmentation in the initial proposal stage, rather than the ordering logic itself. This indicates that future improvements in segmentation fidelity will yield significant gains in overall system performance.

@@ -1,27 +1,37 @@
-# Literature Review Structure
+# Literature Review and Theoretical Framework
 
-This is the compact version of the related-work review. The long-form version lives in `final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md`.
+This document provides a condensed overview of the research areas and foundational technologies that inform the LayerForge-X architecture. A comprehensive, long-form review is available in `docs/final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md`.
 
-## Layered representations
+## Layered Scene Representations
 
-Layered Depth Images are the natural ancestor here: they store multiple samples along a camera ray instead of a single visible surface, which is exactly what disocclusion-aware editing or rendering needs. The more recent "3D photo" line of work extends this idea by combining single-image depth with inpainting to synthesise parallax views.
+The concept of the **Layered Depth Image (LDI)**, as proposed by Shade et al., serves as the primary theoretical precursor to the current work. LDIs store multiple depth and color samples along each camera ray, facilitating disocclusion-aware rendering and view synthesis. LayerForge-X extends this principle by formalizing these layers into a semantically meaningful, editable scene graph (DALG) that supports both instance-level and region-level manipulation.
 
-## Segmentation
+## Semantic and Instance Segmentation
 
-Panoptic segmentation is the appropriate closed-set starting point because the project requires both object instances and stuff regions. A thing-only detector is insufficient for scenes such as roads, interiors, or street environments. Mask2Former is a reasonable universal baseline. For user control and open-vocabulary coverage, GroundingDINO plus SAM2 is stronger because it lets users define layer groups beyond the fixed COCO vocabulary using natural-language prompts.
+High-fidelity scene decomposition necessitates robust segmentation of both discrete objects ("things") and amorphous background regions ("stuff").
 
-## Monocular geometry
+- **Panoptic Segmentation:** Serves as the baseline for closed-set scene understanding, with **Mask2Former** providing a unified architecture for semantic and instance-level proposals.
+- **Open-Vocabulary Grounded Segmentation:** For dynamic, user-defined layer extraction, the integration of **GroundingDINO** and **SAM2** enables natural-language conditioning, allowing for the decomposition of entities beyond fixed datasets (e.g., COCO, ADE20K).
 
-Depth Pro, Depth Anything V2, Marigold, and MoGe-style geometry models are all plausible single-image depth backends. Depth is used in three places here: for near/far ordering, for splitting large "stuff" planes into depth bins, and for driving the parallax preview.
+## Monocular Geometry and Depth Estimation
 
-## Matting
+Accurate depth ordering is critical for establishing a consistent occlusion graph. LayerForge-X leverages modern monocular depth estimation (MDE) models, including **Depth Anything V2**, **Depth Pro**, **Marigold**, and **MoGe**, to drive three core functions:
 
-Hard binary masks are where most segmentation-for-editing pipelines fall over. Hair, fur, motion blur, glass, and even good antialiasing all need fractional alpha. Image matting and Matte Anything-style approaches motivate keeping soft alpha as a first-class output rather than a cosmetic afterthought.
+1. **Pairwise Ordering:** Determining the relative front-to-back relationship between adjacent layers.
+2. **Spatial Stratification:** Partitioning large, depth-spanning background regions into manageable planes.
+3. **Parallax Synthesis:** Providing the geometric priors required for interactive 3D previews.
 
-## Amodal segmentation and inpainting
+## Alpha Matting and Boundary Refinement
 
-Amodal segmentation predicts hidden object extent, while inpainting predicts hidden appearance. Together they address the hidden-scene question that editing operations eventually expose. LaMa is a solid baseline for background completion, while newer object-removal diffusion methods are plausible upgrades when additional compute is available.
+The transition from binary segmentation masks to production-quality layers requires precise alpha matting to handle semi-transparent structures, such as hair, fur, glass, and motion blur. Drawing from the "Matting Anything" line of research, LayerForge-X treats soft alpha as a fundamental layer attribute, employing boundary-aware refinement to ensure seamless recomposition.
 
-## Intrinsic decomposition
+## Amodal Reasoning and Content Completion
 
-Albedo/shading decomposition is an advanced extension. It matters for practical reasons: recolouring or relighting without baking the original illumination into the texture requires some notion of factored appearance. The IIW/WHDR benchmark remains the standard evaluation path for comparison against prior work.
+To support true editability, the system must reason about occluded content.
+
+- **Amodal Segmentation:** Estimates the full spatial extent of objects, even when partially hidden.
+- **Image Inpainting:** Fills disoccluded regions using advanced architectures like **LaMa**, ensuring that background layers remain coherent after foreground removal. Together, these components facilitate the transition from a 2D image to a multi-layered, interactive scene.
+
+## Intrinsic Decomposition
+
+The decoupling of **albedo** (surface reflectance) and **shading** (illumination effects) is essential for advanced editing tasks, such as relighting or recoloring. By integrating intrinsic decomposition, LayerForge-X provides a more granular representation of scene appearance, evaluated against standard benchmarks such as **Intrinsic Images in the Wild (IIW)**.

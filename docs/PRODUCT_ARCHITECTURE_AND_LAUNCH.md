@@ -1,103 +1,66 @@
-# LayerForge Product, Architecture, and Launch Plan
+# Product Strategy, Architecture, and Roadmap
 
-This repository has a clear product anchor: LayerForge is neither only a decomposition
-pipeline nor only a hosted model endpoint. The intended product shape is a
-**self-evaluating layer-representation platform** built around a canonical
-Depth-Aware Amodal Layer Graph (DALG).
+The LayerForge-X ecosystem is developed with a clear architectural vision: it is established as a **comprehensive platform for layered scene representation**, centered on the canonical **Depth-Aware Amodal Layer Graph (DALG)**.
 
-## Product thesis
+## Core Value Proposition
 
-LayerForge should treat the graph manifest as the system of record. PNG stacks,
-PSD-ready folders, debug previews, and benchmark tables are projections of that
-graph, not the primary object.
+In the LayerForge-X paradigm, the DALG manifest serves as the **authoritative system of record**. Auxiliary outputs, such as PNG stacks, PSD-compatible folder structures, and diagnostic metrics, are treated as derived projections of the underlying graph.
 
-The practical promise is:
+The system facilitates the following core capabilities:
 
-- convert one still image into an editable scene asset;
-- preserve near/far order, occlusion evidence, and optional amodal support;
-- route between native, recursive, prompt-targeted, transparent, and Qwen-enriched decompositions;
-- score those candidates with fidelity and editability metrics;
-- export a stable design manifest for downstream tools.
+- **Scene Asset Synthesis:** Transformation of a single RGB bitmap into an editable, multi-layered asset.
+- **Ordered Scene Representation:** Preservation of depth hierarchy, occlusion evidence, and amodal extents.
+- **Mode Flexibility:** Support for native, recursive (peeling), prompt-targeted, and external (Qwen) enrichment tracks.
+- **Performance Evaluation:** Automated scoring using fidelity and editability-centric metrics.
+- **Standardized Export:** Generation of a stable design manifest for seamless integration into downstream creative pipelines.
 
-## Core surfaces
+## System Interfaces and Roles
 
-The current repository already contains the engine pieces needed for the product
-shape below:
+The current implementation provides the core engines necessary for the following product surfaces:
 
-| Surface | Repo anchor | Product role |
+| Surface | Representative Anchor | Role in Ecosystem |
 | --- | --- | --- |
-| Inference engine | `layerforge run`, `peel`, `extract`, `transparent`, `enrich-qwen` | Generate candidate layer graphs |
-| Evaluator | `self_eval.py`, `editability.py`, `scripts/run_frontier_comparison.py` | Select the best usable representation |
-| Canonical scene artifact | `dalg_manifest.json`, `schemas/dalg.schema.json` | Stable graph contract across modes |
-| API contract | `docs/api/openapi.yaml` | Defines how a future control plane should expose jobs and DALG assets |
-| Export surface | `layerforge export-design` | Produce a design-manifest JSON from any completed run |
+| **Inference Engine** | `layerforge run`, `peel`, `extract`, `transparent`, `enrich-qwen` | Synthesizes candidate DALG representations |
+| **Automated Evaluator** | `self_eval.py`, `editability.py`, `run_frontier_comparison.py` | Validates and selects optimal representations |
+| **Canonical Scene Artifact** | `dalg_manifest.json`, `schemas/dalg.schema.json` | Establishes a stable graph contract across all modes |
+| **API Interface** | `docs/api/openapi.yaml` | Defines the control-plane contract for DALG asset delivery |
+| **Design Export** | `layerforge export-design` | Generates specialized manifests for design-tool ingestion |
 
-## Architecture
+## Multi-Plane Architecture
 
-LayerForge should evolve as four planes, not one giant service:
+LayerForge-X is architected across four distinct planes to ensure scalability and modularity:
 
-1. Experience plane
-   - web editor
-   - shared review links
-   - SDKs and docs
-2. Control plane
-   - tenants, workspaces, projects, recipes, jobs, exports, billing
-3. Inference plane
-   - native pipeline
-   - recursive peeling
-   - promptable target extraction
-   - transparent/alpha-composited approximation
-   - Qwen raw and Qwen graph enrichment
-   - quality routing and self-evaluation
-4. Data and telemetry plane
-   - immutable assets
-   - DALG manifests
-   - metrics, traces, audit logs, and recipe history
+1. **Experience Plane:** Comprises the web-based editor, collaborative review tools, and SDK documentation.
+2. **Control Plane:** Manages workspaces, project lifecycle, job orchestration, and asset delivery.
+3. **Inference Plane:** Houses the core decomposition engines, including native pipelines, recursive peeling, and external model enrichment (Qwen).
+4. **Data and Telemetry Plane:** Manages immutable DALG assets, metrics, audit trails, and performance history.
 
-The current repository reflects the object model required for that transition,
-even though it does not yet ship the control plane or browser editor.
+## The DALG Manifest as a Unified Standard
 
-## Why DALG is the canonical object
+The DALG manifest is designed to unify diverse decomposition methods under a single schema. This ensures that downstream consumers (e.g., web editors, creative plugins) can process a consistent scene-graph structure regardless of whether the layers were generated via native inference, recursive peeling, or external model enrichment.
 
-The canonical DALG export exists to prevent the product from fragmenting into
-mode-specific JSON blobs. The same schema now covers:
+## Strategic Roadmap and Target Markets
 
-- native LayerForge runs;
-- recursive peeling runs;
-- promptable extraction runs;
-- transparent decomposition runs;
-- Qwen/external RGBA enrichment runs.
+The initial deployment of LayerForge-X targets high-volume creative operations and AI-driven product teams:
 
-That means the future editor, API, and export adapters can consume one scene
-graph shape instead of reverse-engineering multiple manifests.
+1. **SaaS Preview and Export:** Establishing a web-based portal for rapid asset generation and validation.
+2. **Collaborative Workflow Integration:** Implementing team-based features, including recipe sharing and comparative reviews.
+3. **Enterprise Governance:** Deploying advanced security controls, audit logging, and isolated compute environments.
+4. **Public SDK Release:** Exposing the DALG contract for third-party plugin development once the core schema has reached maturity.
 
-## Launch strategy
+## Implementation Status
 
-The most credible first customers are:
+### Current Capabilities (v1.0-Final)
+- Full support for native, peeling, and Qwen-enriched inference.
+- Canonical DALG export and design-manifest generation.
+- Automated benchmarking suite and qualitative figure generation.
+- Lightweight local web UI for result inspection.
 
-- e-commerce media operations teams;
-- creative operations teams with repeated asset cleanup work;
-- AI-native product teams that need a decomposition API rather than a desktop tool.
+### Future Development (Post-v1.0)
+- Real-time collaborative editor integration.
+- Advanced video-to-DALG decomposition.
+- Fine-grained control over generative inpainting within the DAG context.
 
-Recommended sequence:
-
-1. Shared SaaS for fast preview and export.
-2. Team features: comments, approvals, recipes, compare views.
-3. Enterprise controls: SSO, audit logs, isolated deployments.
-4. Public plugin/export SDK only after the DALG contract stays stable.
-
-## Scope discipline
-
-The repo should keep these boundaries:
-
-- still images first;
-- API-first and editor-second, not native desktop first;
-- productization over training a new foundation model;
-- quality routing over adding model soup.
-
-## Implemented now vs later
-
-Implemented now:
 
 - canonical DALG schema and DALG export command;
 - contract-first OpenAPI document;

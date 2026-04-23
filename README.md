@@ -1,33 +1,33 @@
 <h1 align="center">LayerForge-<span style="color:#1a7af8;">X</span></h1>
 
-**LayerForge-<span style="color:#1a7af8;">X</span>** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
+**LayerForge-<span style="color:#1a7af8;">X</span>** decomposes a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
 
 <p>
   <img src="docs/assets/brand/layerforge-logo.png" alt="LayerForge-X logo" width="720" />
 </p>
 
-## Submission quick links
+## Submission Index and Resources
 
-- Submission index: `docs/SUBMISSION_INDEX.md`
-- Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
-- Final report PDF: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf`
-- Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
-- Canonical manifest: `PROJECT_MANIFEST.json`
-- Submission evidence pack: `report_artifacts/README.md`
-- Current results summary: `docs/RESULTS_SUMMARY_CURRENT.md`
-- Figure index: `docs/FIGURES.md`
-- Public project site: `https://alikestocode.github.io/LayerForge-X-final/`
-- Local browser interface: `layerforge webui --open-browser`
-- GitHub Pages source: `docs/index.html`
+- **Submission Index:** `docs/SUBMISSION_INDEX.md`
+- **Final Report (DOCX):** `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
+- **Final Report (PDF):** `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf`
+- **Final Report (Markdown):** `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
+- **Canonical Project Manifest:** `PROJECT_MANIFEST.json`
+- **Evidence and Metrics Pack:** `report_artifacts/README.md`
+- **Current Results Summary:** `docs/RESULTS_SUMMARY_CURRENT.md`
+- **Figure Index:** `docs/FIGURES.md`
+- **Public Project Site:** [https://alikestocode.github.io/LayerForge-X-final/](https://alikestocode.github.io/LayerForge-X-final/)
+- **Local Browser Interface:** `layerforge webui --open-browser`
+- **GitHub Pages Source:** `docs/index.html`
 
-## Visual evidence at a glance
+## Visual Documentation and Evidence
 
-The repository now ships two browser-facing surfaces:
+The framework provides two primary interfaces for result inspection:
 
-- a static GitHub Pages site in `docs/` for browsing the final report, figures, and evidence pack;
-- a lightweight local browser UI, started with `layerforge webui --open-browser`, for editors or reviewers who want to upload an image and run the existing LayerForge modes without working directly from the CLI.
+- **Static Documentation Site:** Located in `docs/`, this site facilitates browsing the final report, figures, and the evidence pack.
+- **Local Interactive UI:** Accessible via `layerforge webui --open-browser`, this interface allows for real-time image upload and execution of LayerForge decomposition modes.
 
-The comparison panels below summarize the measured LayerForge/Qwen story and the auxiliary prompt/transparent tracks that are part of the shipped evidence pack.
+The following figures provide a comparative analysis of the LayerForge-X pipeline against the Qwen-Image-Layered baseline, alongside specialized prompt-conditioned and transparent-layer extraction tracks.
 
 <p>
   <img src="docs/figures/frontier_review.png" alt="LayerForge frontier comparison figure" width="100%" />
@@ -42,62 +42,63 @@ The comparison panels below summarize the measured LayerForge/Qwen story and the
   <img src="docs/figures/transparent_benchmark.png" alt="Transparent decomposition benchmark figure" width="100%" />
 </p>
 
-The measured five-image frontier review currently reports:
+### Frontier Performance Metrics (Five-Image Review)
 
-| Method | Mean PSNR | Mean SSIM | Mean self-eval | Notes |
+The following table summarizes the performance of LayerForge-X variants against external baselines:
+
+| Method | Mean PSNR | Mean SSIM | Mean Self-Eval | Observations |
 |---|---:|---:|---:|---|
-| LayerForge native | 37.6688 | 0.9708 | 0.6981 | strongest archived structural selector score |
-| LayerForge peeling | 27.0988 | 0.9096 | 0.5314 | recursive residual decomposition path |
-| Qwen raw (4) | 29.0757 | 0.8850 | 0.2824 | direct Qwen-Image-Layered baseline |
-| Qwen + graph preserve (4) | 28.5539 | 0.8638 | 0.5843 | best external visual order plus DALG metadata |
-| Qwen + graph reorder (4) | 28.5397 | 0.8637 | 0.5834 | graph-reordered Qwen stack |
+| **LayerForge Native** | 37.6688 | 0.9708 | 0.6981 | Highest structural fidelity and selector score |
+| LayerForge Peeling | 27.0988 | 0.9096 | 0.5314 | Recursive residual decomposition approach |
+| Qwen Raw (4) | 29.0757 | 0.8850 | 0.2824 | Direct Qwen-Image-Layered baseline |
+| Qwen + Graph Preserve (4) | 28.5539 | 0.8638 | 0.5843 | Optimized visual order with DALG metadata |
+| Qwen + Graph Reorder (4) | 28.5397 | 0.8637 | 0.5834 | Reordered graph-based Qwen stack |
 
-The project specification can be summarized as follows:
+## Project Objectives and Representation
 
-> Given a single bitmap RGB image, output re-composable RGBA layers with semantic grouping, depth order, and optional per-layer albedo/shading.
+The primary objective of LayerForge-X is defined as follows:
 
-LayerForge-X formalizes that goal as a **Depth-Aware Amodal Layer Graph (DALG)**:
+> *Given a single bitmap RGB image, synthesize a set of re-composable RGBA layers characterized by semantic grouping, depth ordering, and optional per-layer intrinsic properties (albedo and shading).*
 
-- every node is an editable RGBA layer;
-- each node carries a semantic label, a semantic group, the visible mask, a soft alpha, the estimated amodal mask, some depth statistics, and (optionally) matched albedo/shading layers;
-- edges record pairwise occlusion and near/far evidence between neighbouring nodes;
-- the final stack is written out near → far, together with debug visualisations and quantitative metrics.
+LayerForge-X formalizes this objective through a **Depth-Aware Amodal Layer Graph (DALG)**:
 
-Qwen-Image-Layered is an important frontier baseline for the same problem class. The repository therefore includes an `enrich-qwen` command that imports RGBA layers produced by Qwen (or another external decomposer) and augments them with LayerForge-X depth ordering, occlusion-graph metadata, amodal masks, and intrinsic layers.
+- **Nodes:** Represent editable RGBA layers, each containing a semantic label, grouping metadata, visible and amodal masks, soft alpha matting, depth statistics, and optional intrinsic layers.
+- **Edges:** Encode pairwise occlusion relationships and relative depth evidence between adjacent nodes.
+- **Output:** A structured stack ordered from near to far, accompanied by comprehensive diagnostic visualizations and quantitative metrics.
 
-The optional intrinsic split is surfaced in the measured artifact pack as a stretch-level export path rather than a standalone headline claim. The shipped report and figure index therefore include a dedicated intrinsic-layer demonstration alongside the main decomposition comparisons.
+### External Model Enrichment (Qwen-Image-Layered)
 
-Submission note: the heavyweight local `runs/`, `results/`, and `data/` directories were used to generate the measurements, but they are not required for browsing the public evidence pack. In the submission archive and public repository, treat `PROJECT_MANIFEST.json`, `report_artifacts/`, and `docs/figures/` as the canonical evidence pack.
+Recognizing Qwen-Image-Layered as a significant baseline, LayerForge-X includes an `enrich-qwen` command. This utility imports RGBA layers from external decomposers and augments them with LayerForge-X metadata, including depth ordering, occlusion graphs, amodal completions, and intrinsic decomposition.
 
-## Repo layout
+## Repository Architecture
 
 ```text
 configs/
-  fast.yaml                  # deterministic fallback; works without huge model downloads
-  cutting_edge.yaml          # GroundingDINO/SAM2 + ensemble depth config
+  fast.yaml                  # Deterministic fallback; optimized for low-latency execution
+  cutting_edge.yaml          # Advanced ensemble configuration (GroundingDINO, SAM2, multiple depth models)
 
 src/layerforge/
-  alpha.py                   # soft alpha refinement
-  benchmark.py               # synthetic benchmark runner
-  cli.py                     # command-line interface
-  compose.py                 # straight-alpha RGBA compositing
-  dalg.py                    # canonical DALG design-manifest export
-  depth.py                   # luminance/DepthPro/DepthAnything/Marigold hooks
-  editability.py             # anti-trivial editability metrics + target export helpers
-  graph.py                   # DALG construction and boundary-weighted ordering
-  inpaint.py                 # OpenCV/LaMa-style completion hooks
-  intrinsics.py              # Retinex-style albedo/shading split + external hook
-  peeling.py                 # recursive semantic layer peeling + effects extraction
-  pipeline.py                # full pipeline
-  qwen_io.py                 # import/enrich Qwen or external RGBA layers
-  ranker.py                  # lightweight learned pairwise near/far ranker
-  segment.py                 # classical, Mask2Former, GroundingDINO+SAM2 modes
-  transparent.py             # transparent / alpha-composited foreground recovery
-  visualize.py               # overlays/contact sheets
+  alpha.py                   # Soft alpha matting and boundary refinement
+  benchmark.py               # Framework for synthetic and real-world benchmarking
+  cli.py                     # Unified command-line interface
+  compose.py                 # Alpha-blending and layer recomposition logic
+  dalg.py                    # DALG manifest generation and export
+  depth.py                   # Monocular geometry hooks (DepthPro, DepthAnything, Marigold)
+  editability.py             # Quantitative editability metrics and target export utilities
+  graph.py                   # Graph construction and boundary-weighted ordering algorithms
+  inpaint.py                 # Background completion and content-aware inpainting
+  intrinsics.py              # Intrinsic decomposition (albedo/shading)
+  peeling.py                 # Recursive semantic peeling and effect extraction
+  pipeline.py                # Core end-to-end execution pipeline
+  qwen_io.py                 # External model integration and enrichment
+  ranker.py                  # Learning-based pairwise near/far ranking module
+  segment.py                 # Segmentation architectures (Mask2Former, GroundingDINO+SAM2)
+  transparent.py             # Transparent foreground recovery and alpha-compositing
+  visualize.py               # Diagnostic overlays and visualization tools
 
 scripts/
-  collect_run_metrics.py      # compact markdown/json tables from run directories
-  export_report_artifacts.py # copy audit-safe metrics snapshots for ZIP submissions
+  collect_run_metrics.py      # Automated metric aggregation and reporting
+  export_report_artifacts.py  # Audit-compliant artifact packaging for submissions
   generate_report_figures.py # report-ready comparison panels and graphs
   make_synthetic_dataset.py  # synthetic LayerBench generator
   make_transparent_dataset.py # synthetic transparent benchmark generator

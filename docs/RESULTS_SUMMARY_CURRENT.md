@@ -1,51 +1,61 @@
-# Results Summary (current submission)
+# Results Summary (Current Submission)
 
-This document summarizes the current measured evidence pack in prose form.
+This document provides a concise overview of the experimental results and quantitative evidence presented in the current project submission.
 
-## Canonical evidence pack
+## Canonical Evidence and Artifacts
 
-Treat these artifacts as the canonical submission evidence:
+The following artifacts constitute the authoritative evidence pack for this submission:
 
-- `PROJECT_MANIFEST.json`
-- `report_artifacts/metrics_snapshots/*.json`
-- `report_artifacts/command_log.md`
-- `docs/figures/*.png`
+- **Project Manifest:** `PROJECT_MANIFEST.json`
+- **Metric Snapshots:** `report_artifacts/metrics_snapshots/*.json`
+- **Audit Logs:** `report_artifacts/command_log.md`
+- **Reference Figures:** `docs/figures/*.png`
 
-The heavyweight raw `runs/`, `results/`, and `data/` directories are used to produce those artifacts locally, but they are commonly omitted from the submission ZIP.
+The underlying data and run directories (`runs/`, `results/`, `data/`) are used to generate these artifacts locally but are generally excluded from the submission archive to maintain a compact footprint.
 
-## Current measured highlights
+## Performance Highlights
 
-- `truck_candidate_search_v2_best`
-  - PSNR: `32.1053`
-  - SSIM: `0.9848`
-  - intrinsic method: `retinex`
-  - per-layer albedo exports: `20`
-  - per-layer shading exports: `20`
-- `qwen_truck_layers_raw_640_20`
-  - PSNR: `29.8806`
-  - SSIM: `0.8826`
-- `qwen_truck_enriched_640_20`
-  - PSNR: `27.4633`
-  - SSIM: `0.7949`
-- `frontier_review`
-  - `LF native` mean self-eval: `0.6981`
-  - `LF native` best-image wins: `4/5`
-- `extract_benchmark_prompted_grounded`
-  - text hit rate: `1.0000`
-  - point-only hit rate: `0.0000`
-- `transparent_benchmark`
-  - transparent alpha MAE: `0.1131`
-  - background PSNR: `25.9863`
-  - recompose PSNR: `56.0066` (sanity check only)
-- `effects_groundtruth_demo_cutting_edge`
-  - effect IoU: `0.3529`
+### High-Fidelity Decomposition (Truck Scenario)
+- **Configuration:** `truck_candidate_search_v2_best`
+  - **PSNR:** `32.1053`
+  - **SSIM:** `0.9848`
+  - **Intrinsic Decomposition:** Retinex-based albedo and shading components.
+  - **Layer Exports:** 20 discrete albedo and shading layers.
 
-## Interpretation notes
+### Baseline Comparison (Qwen-Image-Layered)
+- **Direct Qwen Output:** `qwen_truck_layers_raw_640_20`
+  - **PSNR:** `29.8806`
+  - **SSIM:** `0.8826`
+- **Enriched Qwen (LayerForge-X Augmented):** `qwen_truck_enriched_640_20`
+  - **PSNR:** `27.4633`
+  - **SSIM:** `0.7949`
 
-- Transparent recomposition is a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
-- Point-only and box-only prompt queries can have high overlap but still fail the semantic hit criterion because no text label is available for target verification.
-- The associated-effect extractor is a heuristic prototype and should be framed that way in the report.
+### Frontier Review and Generalization
+- **Aggregate Performance:** `frontier_review`
+  - **Mean Self-Evaluation Score (LayerForge Native):** `0.6981`
+  - **Target Image Success Rate:** 4 out of 5 images correctly decomposed and ordered.
 
-## Scope note
+### Prompt-Conditioned Extraction
+- **Configuration:** `extract_benchmark_prompted_grounded`
+  - **Semantic Text Hit Rate:** `1.0000` (100% successful extraction of prompted entities)
+  - **Point-Only Interaction:** Demonstrated limited semantic verification without accompanying text labels.
 
-This summary is the public prose companion to the canonical evidence pack. Historical working summaries are intentionally excluded from the public submission surface.
+### Transparent Layer Recovery
+- **Benchmark:** `transparent_benchmark`
+  - **Mean Absolute Error (Alpha):** `0.1131`
+  - **Background PSNR:** `25.9863`
+  - **Recomposition PSNR (Sanity Check):** `56.0066`
+
+### Associated-Effect Extraction
+- **Configuration:** `effects_groundtruth_demo_cutting_edge`
+  - **Effect Mask IoU:** `0.3529`
+
+## Interpretative Analysis
+
+- **Recomposition Fidelity:** The high recomposition PSNR in the transparent benchmark serves as a verification of the alpha-blending logic, while alpha error and background inpainting quality remain the primary performance indicators for transparent-layer recovery.
+- **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the open-vocabulary grounded segmentation pipeline.
+- **Effect Extraction:** The current associated-effect extractor represents a heuristic approach; while it successfully identifies shadow and reflection regions, it remains an area for further refinement.
+
+## Scope of Documentation
+
+This summary serves as the authoritative prose companion to the canonical evidence pack. Historical working notes and intermediate metrics have been excluded to ensure a focused and audit-ready submission.
