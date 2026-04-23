@@ -42,4 +42,4 @@ This directory contains the public documentation surface for the repository.
 
 ## Notes on omitted heavyweight artifacts
 
-The public repository and submission archive do not include the heavyweight local `runs/`, `results/`, or `data/` directories used during measurement. The shipped source of truth is the evidence pack rooted at `../PROJECT_MANIFEST.json` and `../report_artifacts/`.
+The public repository and submission archive do not include the heavyweight local `runs/`, `results/`, or `data/` directories used during measurement. The canonical reported artifacts are rooted at `../PROJECT_MANIFEST.json` and `../report_artifacts/`.

@@ -13,7 +13,7 @@
 - **Final Report (PDF):** `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf`
 - **Final Report (Markdown):** `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
 - **Canonical Project Manifest:** `PROJECT_MANIFEST.json`
-- **Evidence and Metrics Pack:** `report_artifacts/README.md`
+- **Report Artifacts and Metric Snapshots:** `report_artifacts/README.md`
 - **Current Results Summary:** `docs/RESULTS_SUMMARY_CURRENT.md`
 - **Figure Index:** `docs/FIGURES.md`
 - **Public Project Site:** [https://alikestocode.github.io/LayerForge-X-final/](https://alikestocode.github.io/LayerForge-X-final/)
@@ -24,7 +24,7 @@
 
 The framework provides two primary interfaces for result inspection:
 
-- **Static Documentation Site:** Located in `docs/`, this site facilitates browsing the final report, figures, and the evidence pack.
+- **Static Documentation Site:** Located in `docs/`, this site facilitates browsing the final report, figures, and reported artifacts.
 - **Local Interactive UI:** Accessible via `layerforge webui --open-browser`, this interface allows for real-time image upload and execution of LayerForge decomposition modes.
 
 The following figures provide a comparative analysis of the LayerForge-X pipeline against the Qwen-Image-Layered baseline, alongside specialized prompt-conditioned and transparent-layer extraction tracks.
@@ -191,7 +191,7 @@ The repository includes a static project site rooted at `docs/`. Once GitHub Pag
 https://alikestocode.github.io/LayerForge-X-final/
 ```
 
-The site is data-driven from the committed evidence pack and links directly to the final report, figures, and submission-safe JSON summaries.
+The site is data-driven from the committed manifest and metric snapshots and links directly to the final report, figures, and JSON summaries.
 
 ### Local web UI
 
@@ -247,7 +247,7 @@ layerforge run \
 
 The current highest-performing native configuration is `configs/best_score.yaml`: ensemble depth, stronger boundary settings, and adaptive merge. The dominant control variable remains the prompt list. For a known scene, curated prompts with `--prompt-source manual` provide the strongest measured performance; for an automated default, `--prompt-source augment` preserves the manual seed classes and adds Gemini-generated extensions.
 
-Measured locally and summarized in the shipped evidence pack:
+Measured locally and summarized in the committed report artifacts:
 
 | Run | Layers | PSNR | SSIM |
 |---|---:|---:|---:|
@@ -257,7 +257,7 @@ Measured locally and summarized in the shipped evidence pack:
 | `runs/truck_best_score_augment` | 19 | 31.1524 | 0.9804 |
 | `runs/truck_candidate_search_v2/best` | 20 | 32.1053 | 0.9848 |
 
-These results show that the updated native LayerForge recipe materially improves over the earlier native run in both reconstruction fidelity and stack compactness. In the submission archive, those local runs are represented by the copied summaries under `report_artifacts/metrics_snapshots/`.
+These results show that the updated native LayerForge recipe materially improves over the earlier native run in both reconstruction fidelity and stack compactness. In the public repository and submission ZIP, those local runs are represented by the copied summaries under `report_artifacts/metrics_snapshots/`.
 
 ## Candidate search
 
@@ -279,7 +279,7 @@ That command writes:
 - `runs/truck_candidate_search_v2/candidates/*`
 - `runs/truck_candidate_search_v2/best`
 
-For submission-safe auditing, `python scripts/export_report_artifacts.py` also copies the selected summary into `report_artifacts/metrics_snapshots/truck_search_summary.json`.
+For repository-level auditing, `python scripts/export_report_artifacts.py` also copies the selected summary into `report_artifacts/metrics_snapshots/truck_search_summary.json`.
 
 The current reproducible winner on the truck scene is `manual_precision` at `PSNR 32.1053`, `SSIM 0.9848`, `20` layers.
 
@@ -370,7 +370,7 @@ runs/frontier_review/
     why_selected.md
 ```
 
-The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. In the archived evidence pack it combines measured recomposition fidelity with anti-trivial editability signals, semantic separation, alpha quality, and graph confidence so that easy copy-like decompositions are penalized instead of rewarded. Runtime is currently reserved for future selector tuning because the shipped five-image summary was rescored from cached runs rather than from a fresh timed sweep. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
+The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. In the committed frontier summary it combines measured recomposition fidelity with editability penalties against copy-like decompositions, semantic separation, alpha quality, and graph confidence. Runtime is currently reserved for future selector tuning because the shipped five-image summary was rescored from cached runs rather than from a fresh timed sweep. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
 
 Measured five-image frontier review, summarized in `report_artifacts/metrics_snapshots/frontier_review_summary.json`:
 
@@ -503,7 +503,7 @@ layerforge enrich-qwen \
   --preserve-external-order
 ```
 
-Add `--preserve-external-order` when you want the enriched export to keep the best external visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
+Add `--preserve-external-order` when you want the enriched export to keep the selected external visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
 
 The output directory will contain ordered layers, albedo/shading layers, amodal masks, and a `debug/layer_graph.json` describing the graph structure.
 
@@ -525,7 +525,7 @@ report_artifacts/
   figure_sources/figure_manifest.json
 ```
 
-`PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` are the canonical submission evidence. The raw benchmark directories are local-generation inputs, not required submission contents.
+`PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` are the canonical reported artifacts for the repository. The raw benchmark directories are local-generation inputs, not required repository contents.
 
 ## Collecting report metrics
 
@@ -623,7 +623,7 @@ The original `basic` mode is still the default so the existing lightweight bench
 
 ### Measured fast-path baseline
 
-The deterministic fallback was actually run on `12` synthetic scenes. The submission-safe summary snapshot is `report_artifacts/metrics_snapshots/synthetic_benchmark_summary.json`.
+The deterministic fallback was actually run on `12` synthetic scenes. The corresponding summary snapshot is `report_artifacts/metrics_snapshots/synthetic_benchmark_summary.json`.
 
 | Split | Segmenter | Depth | Ordering | Mean best IoU | PLOA | Recompose PSNR |
 |---|---|---|---|---:|---:|---:|
@@ -656,7 +656,7 @@ layerforge benchmark-coco-panoptic \
   --seed 7
 ```
 
-Measured result in the local evidence pack:
+Measured result in the committed metric snapshots:
 
 | Split | Segmenter | Images | Group mIoU | Thing mIoU | Stuff mIoU | Mean predicted segments |
 |---|---|---:|---:|---:|---:|---:|
@@ -704,7 +704,7 @@ layerforge benchmark-ade20k \
   --seed 7
 ```
 
-Measured result in the local evidence pack:
+Measured result in the committed metric snapshots:
 
 | Split | Segmenter | Images | Group mIoU | Thing mIoU | Stuff mIoU | Mean image mIoU | Mean predicted segments |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -777,7 +777,7 @@ layerforge benchmark-diode \
   --seed 7
 ```
 
-Measured full-split results in the local evidence pack:
+Measured full-split results in the committed metric snapshots:
 
 | Variant | Alignment | Images | AbsRel | RMSE | delta1 | SILog |
 |---|---|---:|---:|---:|---:|---:|

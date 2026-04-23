@@ -17,7 +17,7 @@ This file is the shortest path through the submission archive.
 - Final report pack guide: `docs/final_report_pack/README.md`
 - Current prose summary: `docs/RESULTS_SUMMARY_CURRENT.md`
 
-## Canonical evidence pack
+## Canonical reported artifacts
 
 - Manifest: `PROJECT_MANIFEST.json`
 - Artifact README: `report_artifacts/README.md`
@@ -37,4 +37,4 @@ This file is the shortest path through the submission archive.
 
 ## Submission note
 
-The heavyweight local `runs/`, `results/`, and `data/` directories used to generate the measurements are commonly omitted from the submission ZIP. The documents and JSON snapshots above are the intended source of truth for the submitted evidence pack.
+The heavyweight local `runs/`, `results/`, and `data/` directories used to generate the measurements are commonly omitted from the submission ZIP. The documents and JSON snapshots above are the canonical reported artifacts for the submitted repository and ZIP.

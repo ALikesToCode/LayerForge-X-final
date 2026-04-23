@@ -1,6 +1,6 @@
 # Report Tables
 
-This document collects table-ready values from the measured local runs summarized in the submission evidence pack. Cells corresponding to unmeasured experiments remain blank by design.
+This document collects table-ready values from the measured local runs summarized in the committed report artifacts. Cells corresponding to unmeasured experiments remain blank by design.
 
 ## Table 1 — Visible grouping on public datasets
 
@@ -67,7 +67,7 @@ Notes:
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/editability_suite_summary.json`;
-- this suite is the anti-triviality guardrail for the frontier selector: `Qwen raw (4)` reconstructs reasonably well, but its object-removal response is near zero and its background-hole ratio is effectively `1.0`;
+- this suite prevents the frontier selector from favoring copy-like decompositions: `Qwen raw (4)` reconstructs reasonably well, but its object-removal response is near zero and its background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge metadata remain easy to move, recolor, and remove without damaging the rest of the frame.
 
 ## Table 6 — Five-image Qwen raw versus hybrid review
@@ -76,7 +76,7 @@ Notes:
 |---|---:|---|---:|---:|---|
 | LF native | 5 | yes | 27.3438 | 0.9464 | strongest mean SSIM; much larger average stack |
 | Qwen raw 4 | 5 | no | 29.0757 | 0.8850 | best mean PSNR on this measured set |
-| Q+G preserve 4 | 5 | yes | 28.5539 | 0.8638 | fair metadata-first hybrid; preserves the best external visual order |
+| Q+G preserve 4 | 5 | yes | 28.5539 | 0.8638 | fair metadata-first hybrid; preserves the selected external visual stack |
 | Q+G reorder 4 | 5 | yes | 28.5397 | 0.8637 | explicit graph-order export |
 
 Per-image note:
@@ -101,10 +101,10 @@ Notes:
 
 | Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 | highest frontier score after anti-triviality penalties |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 | highest frontier score after editability penalties against copy-like decompositions |
 | LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 | explicit recursive removal path; not the strongest measured row yet |
 | Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 | compact generative baseline; weak editability signals |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 | fair metadata-first hybrid; preserves the best external visual order |
+| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 | fair metadata-first hybrid; preserves the selected external visual stack |
 | Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 | explicit graph-order export; wins the cat image in the hardened review |
 
 Notes:
@@ -143,5 +143,5 @@ Notes:
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`;
-- this should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
+- this row is best interpreted as approximate transparent-layer recovery rather than as a generative transparent-decomposition result;
 - the strongest scene family is `flare_ring`, while `semi_transparent_panel` remains the hardest synthetic variant in the current prototype.

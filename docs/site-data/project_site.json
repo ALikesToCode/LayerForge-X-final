@@ -46,7 +46,7 @@
       "mean_ssim": 0.9708095078479693
     },
     {
-      "description": "Raw Qwen layers with DALG metadata while preserving the best external visual stack.",
+      "description": "Raw Qwen layers with DALG metadata while preserving the selected external visual stack.",
       "images": 5,
       "label": "Qwen + graph preserve (4)",
       "mean_psnr": 28.553930610543226,
@@ -83,7 +83,7 @@
     "Native layered decomposition with semantic grouping, occlusion ordering, and optional per-layer intrinsics.",
     "Qwen-Image-Layered import and graph enrichment in preserve-order and reorder modes.",
     "Recursive semantic peeling, prompt-conditioned extraction, transparent-layer recovery, and effect-layer prototyping.",
-    "Submission-safe evidence pack with measured JSON snapshots, figures, and a reproducible report build path."
+    "Committed metric snapshots, generated figures, and a reproducible report build path."
   ],
   "docs_links": [
     {
@@ -124,7 +124,7 @@
     },
     {
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/README.md",
-      "label": "Submission evidence pack on GitHub"
+      "label": "Repository artifacts on GitHub"
     }
   ],
   "figures": [
@@ -135,31 +135,31 @@
       "title": "Truck recomposition study"
     },
     {
-      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "caption": "Generated figure from the measured LayerForge comparisons.",
       "key": "truck_layer_stack_comparison",
       "path": "figures/truck_layer_stack_comparison.png",
       "title": "Truck Layer Stack Comparison"
     },
     {
-      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "caption": "Generated figure from the measured LayerForge comparisons.",
       "key": "truck_metrics_comparison",
       "path": "figures/truck_metrics_comparison.png",
       "title": "Truck Metrics Comparison"
     },
     {
-      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "caption": "Generated figure from the measured LayerForge comparisons.",
       "key": "truck_prompt_ablation",
       "path": "figures/truck_prompt_ablation.png",
       "title": "Truck Prompt Ablation"
     },
     {
-      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "caption": "Generated figure from the measured LayerForge comparisons.",
       "key": "synthetic_ordering_ablation",
       "path": "figures/synthetic_ordering_ablation.png",
       "title": "Synthetic Ordering Ablation"
     },
     {
-      "caption": "Generated figure from the measured LayerForge evidence pack.",
+      "caption": "Generated figure from the measured LayerForge comparisons.",
       "key": "qualitative_gallery",
       "path": "figures/qualitative_gallery.png",
       "title": "Qualitative Gallery"

@@ -1,6 +1,6 @@
 # Diagnostic Visualization and Figure Index
 
-This document serves as the authoritative index for the diagnostic visualizations and comparative figures generated from the experimental runs. These assets constitute the primary qualitative evidence for the LayerForge-X submission.
+This document serves as the primary index for the diagnostic visualizations and comparative figures generated from the experimental runs. These assets constitute the main qualitative figure set for the LayerForge-X repository and report.
 
 ## Reproduction and Asset Generation
 
@@ -10,7 +10,7 @@ To regenerate the complete figure pack, execute the following command:
 .venv/bin/python scripts/generate_report_figures.py
 ```
 
-*Note: Full regeneration requires access to the high-volume `runs/`, `results/`, and `data/` directories. For the final submission, pre-generated PNG assets are provided in `docs/figures/`, with their underlying dependencies documented in `report_artifacts/figure_sources/figure_manifest.json`.*
+*Note: Full regeneration requires access to the high-volume `runs/`, `results/`, and `data/` directories. The repository therefore ships pre-generated PNG assets in `docs/figures/`, with their underlying dependencies documented in `report_artifacts/figure_sources/figure_manifest.json`.*
 
 ## Figure Catalog
 
@@ -28,7 +28,7 @@ To regenerate the complete figure pack, execute the following command:
 - **[Prompt-Conditioned Extraction Benchmark](figures/prompt_extract_benchmark.png):** Quantitative analysis of semantic hit rates and extraction fidelity across text, point, box, and hybrid query types.
 - **[Transparent Layer Recovery Benchmark](figures/transparent_benchmark.png):** Evaluation of alpha-composited decomposition, focusing on alpha MAE and background inpainting quality.
 
-## Strategic Integration in Research Report
+## Recommended placement in the report
 
 The following mapping identifies the recommended placement of these figures within the final research report:
 

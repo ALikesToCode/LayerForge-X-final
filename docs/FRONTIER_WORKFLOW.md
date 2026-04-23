@@ -31,10 +31,10 @@ python scripts/run_frontier_comparison.py \
 ```
 
 ### Generated Artifacts
-The workflow produces a comprehensive evidence pack, including:
+The workflow produces a complete frontier artifact set, including:
 - `frontier_summary.json/md`: Aggregate performance metrics and candidate comparisons.
 - `editability_suite_summary.json`: Quantitative scores for object removal, movement, and intrinsic edits.
-- `best_decomposition.json`: The authoritative DALG manifest for the selected winner.
+- `best_decomposition.json`: The canonical DALG manifest for the selected winner.
 - `why_selected.md`: A diagnostic report detailing the selection rationale.
 
 ## Automated Self-Evaluation Logic

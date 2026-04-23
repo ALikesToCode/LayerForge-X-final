@@ -1,6 +1,6 @@
 # Comparative Analysis: Qwen-Image-Layered Baseline
 
-*Submission note: the high-volume `runs/` and `data/` directories used for these experiments are omitted from the submission archive. The source-of-truth evidence for this comparison is `PROJECT_MANIFEST.json` together with the metric snapshots in `report_artifacts/metrics_snapshots/`.*
+*Repository note: the high-volume `runs/` and `data/` directories used for these experiments are omitted from the public repository and submission ZIP. The canonical reported artifacts for this comparison are `PROJECT_MANIFEST.json` together with the metric snapshots in `report_artifacts/metrics_snapshots/`.*
 
 ## Role of Qwen-Image-Layered in Evaluation
 
@@ -62,4 +62,4 @@ Our evaluation includes a comparative review across five diverse images. The res
 
 ## Formal Comparative Statement
 
-LayerForge-X acknowledges Qwen-Image-Layered as an important frontier generative baseline. The contribution of LayerForge-X is the explicit structural layer on top: depth ordering, graph relations, amodal support, and audit-ready manifests. The repository therefore positions Qwen and LayerForge-X as complementary rather than interchangeable systems.
+LayerForge-X acknowledges Qwen-Image-Layered as an important frontier generative baseline. The contribution of LayerForge-X is the explicit structural layer on top: depth ordering, graph relations, amodal support, and explicit DALG manifests. The repository therefore positions Qwen and LayerForge-X as complementary rather than interchangeable systems.

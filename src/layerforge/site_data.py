@@ -107,7 +107,7 @@ def _frontier_comparisons(frontier_summary: dict[str, Any]) -> list[dict[str, An
         "LayerForge native": "Full native graph pipeline with semantic grouping, amodal completion, intrinsics, and ordered RGBA export.",
         "LayerForge peeling": "Graph-guided recursive peeling with residual inpainting and explicit front-to-back layer logging.",
         "Qwen raw (4)": "Direct Qwen-Image-Layered RGBA decomposition used as the frontier generative baseline.",
-        "Qwen + graph preserve (4)": "Raw Qwen layers with DALG metadata while preserving the best external visual stack.",
+        "Qwen + graph preserve (4)": "Raw Qwen layers with DALG metadata while preserving the selected external visual stack.",
         "Qwen + graph reorder (4)": "Raw Qwen layers re-exported through the LayerForge depth graph for graph-ordered layering.",
     }
     output: list[dict[str, Any]] = []
@@ -146,7 +146,7 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
         if key in {"figure_index", "candidate_search_summary"}:
             continue
         rel = raw_path.removeprefix("docs/")
-        meta = FIGURE_META.get(key, {"title": key.replace("_", " ").title(), "caption": "Generated figure from the measured LayerForge evidence pack."})
+        meta = FIGURE_META.get(key, {"title": key.replace("_", " ").title(), "caption": "Generated figure from the measured LayerForge comparisons."})
         figures.append({"key": key, "path": rel, **meta})
 
     docs_links = [
@@ -159,7 +159,7 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
         {"label": "Project specification", "href": "FINAL_PROJECT_SPEC.md"},
         {"label": "API contract", "href": "api/README.md"},
         {"label": "Canonical manifest on GitHub", "href": _blob_url(repo_url, "PROJECT_MANIFEST.json")},
-        {"label": "Submission evidence pack on GitHub", "href": _blob_url(repo_url, "report_artifacts/README.md")},
+        {"label": "Repository artifacts on GitHub", "href": _blob_url(repo_url, "report_artifacts/README.md")},
     ]
 
     return {
@@ -188,7 +188,7 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
             "Native layered decomposition with semantic grouping, occlusion ordering, and optional per-layer intrinsics.",
             "Qwen-Image-Layered import and graph enrichment in preserve-order and reorder modes.",
             "Recursive semantic peeling, prompt-conditioned extraction, transparent-layer recovery, and effect-layer prototyping.",
-            "Submission-safe evidence pack with measured JSON snapshots, figures, and a reproducible report build path.",
+            "Committed metric snapshots, generated figures, and a reproducible report build path.",
         ],
         "audiences": AUDIENCE_CARDS,
         "comparisons": _frontier_comparisons(frontier),

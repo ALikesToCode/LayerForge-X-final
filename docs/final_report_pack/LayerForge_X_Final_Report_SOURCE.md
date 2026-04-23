@@ -63,11 +63,11 @@ This report makes six concrete claims:
 
 ### Main measured summary
 
-Abbreviations in the tables below: `LF` = LayerForge, `Q raw4` = four-layer raw Qwen, `Q+G-P4` = four-layer Qwen plus LayerForge graph enrichment with the best external visual order preserved, and `Q+G-R4` = the same imported four-layer stack exported in graph order.
+Abbreviations in the tables below: `LF` = LayerForge, `Q raw4` = four-layer raw Qwen, `Q+G-P4` = four-layer Qwen plus LayerForge graph enrichment with the selected external visual stack preserved, and `Q+G-R4` = the same imported four-layer stack exported in graph order.
 
 #### Five-image Qwen raw versus hybrid review
 
-All rows below are five-image means. `Q+G-P4` keeps the best external Qwen stack, while `Q+G-R4` exports the same imported layers in graph order.
+All rows below are five-image means. `Q+G-P4` keeps the selected external Qwen stack, while `Q+G-R4` exports the same imported layers in graph order.
 
 | Row | Mean PSNR | Mean SSIM |
 |---|---:|---:|
@@ -143,12 +143,12 @@ Stability metrics:
 - Raw Qwen remains the stronger compact pure-PSNR baseline on the measured five-image sweep.
 - Native LayerForge posts the strongest mean SSIM on the same images, at the cost of a larger average stack.
 - The measured frontier candidate bank selects `LF native` for `4/5` images, with `Q+G reorder 4` winning the cat scene.
-- The `Q+G preserve 4` row is the most direct metadata-first hybrid comparison because it keeps the **best external visual order** while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
-- The editability suite is the anti-triviality guardrail for the selector, which is why raw Qwen's object-removal response remains near zero despite reasonable recomposition scores.
+- The `Q+G preserve 4` row is the most direct metadata-first hybrid comparison because it keeps the selected external visual stack while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
+- The editability suite prevents the selector from favoring copy-like decompositions, which is why raw Qwen's object-removal response remains near zero despite reasonable recomposition scores.
 - Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
-- The intrinsic export path is present as a Retinex-style stretch module. The new intrinsic demo figure should be read as evidence of exported appearance factors for recolouring-style edits, not as a state-of-the-art intrinsic benchmark.
+- The intrinsic export path is present as a Retinex-style stretch module. The new intrinsic demo figure should be read as evidence of exported appearance factors for recolouring-style edits, not as a standalone intrinsic benchmark.
 
 # 7. Discussion
 
@@ -176,7 +176,7 @@ LayerForge-X is best interpreted as a self-evaluating layer-representation syste
 
 # Appendix A: Artifact Map
 
-Submission source-of-truth files:
+Canonical reported files:
 
 - [../../PROJECT_MANIFEST.json](../../PROJECT_MANIFEST.json)
 - [../../report_artifacts/README.md](../../report_artifacts/README.md)
@@ -209,7 +209,7 @@ python scripts/build_site_data.py
 python scripts/make_submission_zip.py
 ```
 
-Those commands connect the final report outputs to the compact JSON summaries and generated figures that are shipped in the evidence pack.
+Those commands connect the final report outputs to the compact JSON summaries and generated figures that are stored in the report-artifact set.
 
 # Appendix D: Extra Literature Notes
 

@@ -14,7 +14,7 @@ The project is evaluated across multiple measurable properties rather than throu
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the present repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical evidence pack for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` provides a prose summary of those artifacts.
+For the present repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the canonical reported artifacts for quantitative results. `docs/RESULTS_SUMMARY_CURRENT.md` provides a prose summary of those artifacts.
 
 ---
 

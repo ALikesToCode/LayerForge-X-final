@@ -18,7 +18,7 @@ Interpretation:
 
 ## B.2 Frontier candidate-bank review
 
-The five-image frontier comparison was measured locally, and the submission archive ships the copied summary in `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
+The five-image frontier comparison was measured locally, and the public repository ships the copied summary in `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
 
 | Row | PSNR | SSIM | Self-eval | Wins |
 |---|---:|---:|---:|---:|
@@ -30,7 +30,7 @@ The five-image frontier comparison was measured locally, and the submission arch
 
 Interpretation:
 
-- `LayerForge native` is the highest-scoring candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once anti-triviality penalties are enabled;
+- `LayerForge native` is the highest-scoring candidate-bank row under the explicit self-evaluation score and wins `4/5` measured images once editability penalties against copy-like decompositions are enabled;
 - `Qwen + graph reorder` wins the cat scene, showing that imported generative stacks can still outperform the native path on specific compact images;
 - `Qwen raw` remains the compact generative baseline, but it is no longer the strongest editable representation once structure and editability are scored explicitly.
 
@@ -60,7 +60,7 @@ Stability metrics:
 
 Interpretation:
 
-- the editability suite acts as the anti-triviality guardrail for the frontier selector;
+- the editability suite prevents the frontier selector from favoring copy-like decompositions;
 - `Qwen raw (4)` demonstrates why recomposition alone is insufficient, because remove/move/recolor responses are near zero while the background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks combined with explicit LayerForge graph metadata remain easy to move, recolor, and remove cleanly.
 
@@ -97,7 +97,7 @@ The transparent or alpha-composited recovery path has a measured synthetic bench
 Interpretation:
 
 - transparent recomposition is a sanity check; alpha error and clean-background quality are the primary transparent metrics;
-- the current path should be described as approximate transparent-layer recovery rather than state-of-the-art generative transparent decomposition;
+- the current path is best interpreted as approximate transparent-layer recovery rather than as a generative transparent-decomposition result;
 - the prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant.
 
 ## B.6 Main ablation matrix

@@ -167,13 +167,13 @@ The self-evaluation score is intentionally explicit. It combines:
 
 ```text
 recomposition fidelity
-edit-preservation and anti-trivial copy penalties
+edit-preservation penalties against copy-like decompositions
 semantic separation
 alpha quality
 graph confidence
 ```
 
-In the archived five-image evidence pack, the active weighted score is
+In the committed five-image frontier summary, the active weighted score is
 
 ```text
 score = 0.20 * recomposition_fidelity

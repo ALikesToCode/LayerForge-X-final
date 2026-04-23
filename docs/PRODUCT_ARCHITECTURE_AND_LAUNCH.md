@@ -1,10 +1,10 @@
 # Product Strategy, Architecture, and Roadmap
 
-The LayerForge-X ecosystem is developed with a clear architectural vision: it is established as a **comprehensive platform for layered scene representation**, centered on the canonical **Depth-Aware Amodal Layer Graph (DALG)**.
+The LayerForge-X ecosystem is organized as a modular layered scene-representation system centered on the canonical **Depth-Aware Amodal Layer Graph (DALG)**.
 
 ## Core Value Proposition
 
-In the LayerForge-X paradigm, the DALG manifest serves as the **authoritative system of record**. Auxiliary outputs, such as PNG stacks, PSD-compatible folder structures, and diagnostic metrics, are treated as derived projections of the underlying graph.
+Within LayerForge-X, the DALG manifest serves as the **canonical system of record**. Auxiliary outputs, such as PNG stacks, PSD-compatible folder structures, and diagnostic metrics, are treated as derived projections of the underlying graph.
 
 The system facilitates the following core capabilities:
 

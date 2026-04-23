@@ -24,7 +24,7 @@ Each decomposed layer is treated as a first-class entity, enriched with a compre
 
 ### Contribution 4: External Model Enrichment (Qwen-Image-Layered Integration)
 
-LayerForge-X establishes a unified evaluation frame that treats state-of-the-art generative models, such as **Qwen-Image-Layered**, as both competitive baselines and viable proposal sources. The `enrich-qwen` utility operationalizes this integration, augmenting external RGBA layers with DALG-compatible metadata and ordering.
+LayerForge-X establishes a unified evaluation frame that treats strong generative models, such as **Qwen-Image-Layered**, as both competitive baselines and viable proposal sources. The `enrich-qwen` utility operationalizes this integration, augmenting external RGBA layers with DALG-compatible metadata and ordering.
 
 ### Contribution 5: Multi-Axial Benchmarking Protocol
 

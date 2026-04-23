@@ -4,14 +4,14 @@ This document provides a concise overview of the experimental results and quanti
 
 ## Canonical Evidence and Artifacts
 
-The following artifacts constitute the authoritative evidence pack for this submission:
+The following artifacts constitute the canonical reported artifacts for the current repository state:
 
 - **Project Manifest:** `PROJECT_MANIFEST.json`
 - **Metric Snapshots:** `report_artifacts/metrics_snapshots/*.json`
 - **Audit Logs:** `report_artifacts/command_log.md`
 - **Reference Figures:** `docs/figures/*.png`
 
-The underlying data and run directories (`runs/`, `results/`, `data/`) are used to generate these artifacts locally but are generally excluded from the submission archive to maintain a compact footprint.
+The underlying data and run directories (`runs/`, `results/`, `data/`) are used to generate these artifacts locally but are generally excluded from the public repository and submission ZIP to keep the distribution compact.
 
 ## Performance Highlights
 
@@ -58,4 +58,4 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 
 ## Scope of Documentation
 
-This summary serves as the authoritative prose companion to the canonical evidence pack. Historical working notes and intermediate metrics have been excluded to ensure a focused and audit-ready submission.
+This summary serves as the prose companion to the canonical reported artifacts. Historical working notes and intermediate metrics are excluded so that the public repository remains focused on the verified measurements and figures.
