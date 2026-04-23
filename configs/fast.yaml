@@ -32,7 +32,7 @@ matting:
   alpha_band_px: 9
   preserve_depth_edges: true
 transparent:
-  backend: heuristic
+  backend: auto
   model: ZhengPeng7/BiRefNet-matting
   backend_max_side: 1024
   backend_crop_expand_px: 48

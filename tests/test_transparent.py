@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from layerforge.config import load_config
 from layerforge.transparent import _refine_transparent_alpha, recover_transparent_foreground
 
 
@@ -53,3 +54,15 @@ def test_refine_transparent_alpha_can_use_backend_prediction(monkeypatch) -> Non
 
     assert float(alpha[4:12, 4:12].mean()) > 0.75
     assert metadata["backend"] == "birefnet"
+
+
+def test_shipped_configs_prefer_auto_transparent_backend() -> None:
+    for path in [
+        "configs/fast.yaml",
+        "configs/cutting_edge.yaml",
+        "configs/frontier.yaml",
+        "configs/best_score.yaml",
+        "configs/recursive_peeling.yaml",
+    ]:
+        cfg = load_config(path)
+        assert cfg["transparent"]["backend"] == "auto"
