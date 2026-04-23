@@ -377,6 +377,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 point=point,
                 box=box,
                 target_name=target_name,
+                device=device,
             )
         elif mode == "peel":
             pipeline = _get_pipeline(config_path, device)

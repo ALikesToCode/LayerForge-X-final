@@ -207,3 +207,4 @@ def test_transparent_frontier_uses_selected_run(tmp_path: Path, monkeypatch) -> 
     assert exit_code == 0
     assert captured["path_or_dir"] == winner_dir
     assert captured["export_kwargs"]["prompt"] == "glass"
+    assert captured["export_kwargs"]["device"] == "auto"

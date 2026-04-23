@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pytest
 
-from layerforge.peeling import extract_associated_effect_layer
+from layerforge.peeling import _refine_effect_alpha, extract_associated_effect_layer
 from layerforge.pipeline import LayerForgePipeline
 
 
@@ -38,6 +38,41 @@ def test_extract_associated_effect_layer_detects_shadow_region() -> None:
     assert layer.group == "effect"
     assert layer.label == "person effect"
     assert float(layer.alpha[24:34, 14:30].mean()) > 0.05
+
+
+def test_refine_effect_alpha_can_use_backend_prediction(monkeypatch) -> None:
+    residual_alpha = np.zeros((24, 24), dtype=np.float32)
+    residual_alpha[10:16, 7:19] = 0.2
+    core_mask = np.zeros((24, 24), dtype=bool)
+    core_mask[4:10, 8:16] = True
+    candidate_mask = np.zeros((24, 24), dtype=bool)
+    candidate_mask[10:16, 7:19] = True
+    current_rgb = np.full((24, 24, 3), 210, dtype=np.uint8)
+
+    matte_alpha = np.zeros((24, 24), dtype=np.float32)
+    matte_alpha[4:10, 8:16] = 1.0
+    matte_alpha[10:16, 7:19] = 0.7
+
+    monkeypatch.setattr(
+        "layerforge.peeling.predict_alpha_matte",
+        lambda *args, **kwargs: (matte_alpha, {"backend": "birefnet", "used": True}),
+    )
+
+    alpha, metadata = _refine_effect_alpha(
+        current_rgb=current_rgb,
+        residual_alpha=residual_alpha,
+        core_mask=core_mask,
+        candidate_mask=candidate_mask,
+        cfg={
+            "alpha_backend": "birefnet",
+            "alpha_backend_weight": 1.0,
+        },
+        device="cpu",
+    )
+
+    assert float(alpha[10:16, 7:19].mean()) > 0.55
+    assert float(alpha[4:10, 8:16].mean()) < 0.05
+    assert metadata["backend"] == "birefnet"
 
 
 @pytest.mark.slow

@@ -14,6 +14,7 @@ from .graph import build_completed_background_layer, build_layers, grouped_layer
 from .image_io import load_rgb, save_depth16, save_gray, save_rgb, save_rgba
 from .inpaint import inpaint_background
 from .intrinsics import decompose_intrinsics, intrinsic_rgba
+from .matting import predict_alpha_matte
 from .metrics import compute_run_metrics
 from .segment import resolve_disjoint_masks, segment_image, summarize_segments
 from .types import Layer, PipelineOutputs
@@ -59,6 +60,7 @@ def extract_associated_effect_layer(
     depth_p90: float | None = None,
     albedo: np.ndarray | None = None,
     shading: np.ndarray | None = None,
+    device: str = "auto",
 ) -> Layer | None:
     if not bool(cfg.get("enabled", True)):
         return None
@@ -108,8 +110,16 @@ def extract_associated_effect_layer(
         return None
 
     alpha_scale = max(1e-3, float(cfg.get("alpha_scale", 0.18)))
-    alpha = np.clip(delta / alpha_scale, 0.0, 1.0).astype(np.float32)
-    alpha *= candidate.astype(np.float32)
+    residual_alpha = np.clip(delta / alpha_scale, 0.0, 1.0).astype(np.float32)
+    residual_alpha *= candidate.astype(np.float32)
+    alpha, alpha_backend_meta = _refine_effect_alpha(
+        current_rgb=current_rgb,
+        residual_alpha=residual_alpha,
+        core_mask=core,
+        candidate_mask=candidate,
+        cfg=cfg,
+        device=device,
+    )
     visible = alpha > 0.05
     if int(visible.sum()) < int(cfg.get("min_area_px", 80)):
         return None
@@ -144,8 +154,45 @@ def extract_associated_effect_layer(
             "delta_mean": float(delta[visible].mean()) if visible.any() else 0.0,
             "support_dilate_px": support_dilate_px,
             "use_provided_reference": use_provided_reference,
+            "alpha_backend": alpha_backend_meta,
         },
     )
+
+
+def _refine_effect_alpha(
+    *,
+    current_rgb: np.ndarray,
+    residual_alpha: np.ndarray,
+    core_mask: np.ndarray,
+    candidate_mask: np.ndarray,
+    cfg: dict[str, Any],
+    device: str = "auto",
+) -> tuple[np.ndarray, dict[str, Any]]:
+    alpha = np.clip(np.asarray(residual_alpha, dtype=np.float32), 0.0, 1.0)
+    backend_alpha, backend_meta = predict_alpha_matte(
+        current_rgb,
+        np.logical_or(core_mask, candidate_mask),
+        {
+            "backend": cfg.get("alpha_backend", "auto"),
+            "model": cfg.get("alpha_backend_model", "ZhengPeng7/BiRefNet-matting"),
+            "max_side": cfg.get("alpha_backend_max_side", 1024),
+            "crop_expand_px": cfg.get("alpha_backend_crop_expand_px", 48),
+            "support_expand_px": cfg.get("alpha_backend_support_expand_px", 16),
+            "respect_support_mask": cfg.get("alpha_backend_respect_support_mask", True),
+            "prefer_half": cfg.get("alpha_backend_prefer_half", True),
+        },
+        device=device,
+    )
+    if backend_alpha is None:
+        return alpha, backend_meta
+
+    core_alpha = core_mask.astype(np.float32)
+    effect_alpha = np.clip(backend_alpha.astype(np.float32) - core_alpha, 0.0, 1.0)
+    effect_alpha *= candidate_mask.astype(np.float32)
+    backend_weight = float(cfg.get("alpha_backend_weight", 0.75))
+    alpha = np.clip(np.maximum(alpha, effect_alpha * backend_weight), 0.0, 1.0)
+    alpha *= candidate_mask.astype(np.float32)
+    return alpha, backend_meta
 
 
 def run_recursive_peeling(image_path: str | Path, output_dir: str | Path, cfg: dict[str, Any], device: str = "auto") -> PipelineOutputs:
@@ -222,6 +269,7 @@ def run_recursive_peeling(image_path: str | Path, output_dir: str | Path, cfg: d
             depth_p90=selected.depth_p90,
             albedo=albedo,
             shading=shading,
+            device=device,
         )
         if effect_layer is not None:
             peel_layers.append(effect_layer)

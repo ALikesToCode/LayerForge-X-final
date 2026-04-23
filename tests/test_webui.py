@@ -212,6 +212,7 @@ def test_webui_transparent_mode_can_use_frontier_base(tmp_path: Path, monkeypatc
 
     def fake_export(path_or_dir, **kwargs):  # type: ignore[no-untyped-def]
         captured["path_or_dir"] = Path(path_or_dir)
+        captured["export_kwargs"] = kwargs
         transparent_dir = work_root / "jobs" / "transparent" / "transparent_extract"
         transparent_dir.mkdir(parents=True, exist_ok=True)
         (transparent_dir / "transparent_metrics.json").write_text(json.dumps({"selected_target": {"name": "glass"}, "recompose_psnr": 33.0}), encoding="utf-8")
@@ -234,3 +235,4 @@ def test_webui_transparent_mode_can_use_frontier_base(tmp_path: Path, monkeypatc
     assert result["status"] == "ok"
     assert result["mode"] == "transparent"
     assert captured["path_or_dir"] == winner_dir
+    assert captured["export_kwargs"]["device"] == "cpu"

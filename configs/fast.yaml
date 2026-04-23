@@ -31,6 +31,15 @@ layering:
 matting:
   alpha_band_px: 9
   preserve_depth_edges: true
+transparent:
+  backend: heuristic
+  model: ZhengPeng7/BiRefNet-matting
+  backend_max_side: 1024
+  backend_crop_expand_px: 48
+  backend_support_expand_px: 12
+  backend_respect_support_mask: true
+  backend_prefer_half: true
+  backend_blend_weight: 0.75
 inpainting:
   method: opencv_telea
   radius: 5
@@ -38,6 +47,12 @@ intrinsics:
   method: retinex
   sigma: 28.0
   external_command: ""
+target_selection:
+  backend: auto
+  candidate_limit: 6
+  gemini_model: gemini-2.5-flash
+  gemini_max_side: 1024
+  gemini_timeout_sec: 180
 qwen:
   min_alpha: 0.02
   preserve_external_order: false
@@ -56,6 +71,14 @@ effects:
   alpha_scale: 0.14
   min_area_px: 36
   prefer_downward: true
+  alpha_backend: heuristic
+  alpha_backend_model: ZhengPeng7/BiRefNet-matting
+  alpha_backend_max_side: 1024
+  alpha_backend_crop_expand_px: 48
+  alpha_backend_support_expand_px: 16
+  alpha_backend_respect_support_mask: true
+  alpha_backend_prefer_half: true
+  alpha_backend_weight: 0.75
 render:
   parallax_frames: 24
   parallax_pixels: 28

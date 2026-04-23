@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from layerforge.editability import evaluate_run_editability, export_target_assets
+from layerforge.editability import evaluate_run_editability, export_target_assets, select_editable_layer
 
 
 def _write_rgba(path: Path, rgba: np.ndarray) -> None:
@@ -83,3 +83,71 @@ def test_export_target_assets_selects_prompt_named_layer(tmp_path: Path) -> None
     assert (tmp_path / "extract" / "target_metadata.json").exists()
     assert exported["exports"]["target_rgba"] == "target_rgba.png"
     assert not exported["exports"]["edit_preview_move"].startswith("/")
+
+
+def test_select_editable_layer_can_use_gemini_selector(monkeypatch) -> None:
+    def make_layer(name: str, label: str, x0: int, x1: int, color: tuple[int, int, int]) -> dict[str, object]:
+        rgba = np.zeros((32, 32, 4), dtype=np.uint8)
+        rgba[8:24, x0:x1, :3] = np.array(color, dtype=np.uint8)
+        rgba[8:24, x0:x1, 3] = 255
+        mask = rgba[..., 3] > 0
+        return {
+            "name": name,
+            "label": label,
+            "group": "vehicle",
+            "rank": 0,
+            "rgba": rgba,
+            "alpha": rgba[..., 3].astype(np.float32) / 255.0,
+            "mask": mask,
+            "bbox": (x0, 8, x1, 24),
+        }
+
+    layers = [
+        make_layer("000_red_car", "red car", 4, 14, (220, 60, 50)),
+        make_layer("001_blue_bike", "blue bike", 18, 28, (50, 80, 220)),
+    ]
+
+    monkeypatch.setattr(
+        "layerforge.editability._gemini_select_layer_name",
+        lambda *args, **kwargs: "001_blue_bike",
+    )
+
+    selected = select_editable_layer(
+        layers,
+        prompt="blue bike",
+        cfg={"backend": "gemini", "candidate_limit": 2},
+    )
+
+    assert selected is not None
+    assert selected["name"] == "001_blue_bike"
+
+
+def test_select_editable_layer_auto_falls_back_to_heuristic_on_gemini_error(monkeypatch) -> None:
+    rgba = np.zeros((24, 24, 4), dtype=np.uint8)
+    rgba[4:20, 4:20, :3] = np.array([200, 60, 50], dtype=np.uint8)
+    rgba[4:20, 4:20, 3] = 255
+    mask = rgba[..., 3] > 0
+    layer = {
+        "name": "000_red_car",
+        "label": "red car",
+        "group": "vehicle",
+        "rank": 0,
+        "rgba": rgba,
+        "alpha": rgba[..., 3].astype(np.float32) / 255.0,
+        "mask": mask,
+        "bbox": (4, 4, 20, 20),
+    }
+
+    def boom(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise RuntimeError("gemini unavailable")
+
+    monkeypatch.setattr("layerforge.editability._gemini_select_layer_name", boom)
+
+    selected = select_editable_layer(
+        [layer],
+        prompt="red car",
+        cfg={"backend": "auto", "candidate_limit": 1},
+    )
+
+    assert selected is not None
+    assert selected["name"] == "000_red_car"

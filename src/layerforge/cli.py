@@ -286,6 +286,7 @@ def cmd_transparent(args: argparse.Namespace) -> int:
         point=parse_point(args.point),
         box=parse_box(args.box),
         target_name=args.target_name,
+        device=args.device,
     )
     if args.frontier:
         print(f"winner:   {selection['selected_label']}")

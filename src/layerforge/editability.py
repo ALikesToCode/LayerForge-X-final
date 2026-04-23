@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy import ndimage as ndi
 
 from .image_io import save_gray, save_rgb, save_rgba
@@ -16,6 +16,13 @@ from .utils import ensure_dir, write_json
 
 
 EDIT_EXCLUDED_GROUPS = set(BACKGROUND_GROUPS) | {"effect"}
+DEFAULT_TARGET_SELECTION_CONFIG = {
+    "backend": "auto",
+    "candidate_limit": 6,
+    "gemini_model": "gemini-2.5-flash",
+    "gemini_max_side": 1024,
+    "gemini_timeout_sec": 180,
+}
 
 
 def _resolve_manifest_path(path_or_dir: str | Path) -> Path:
@@ -174,6 +181,155 @@ def _layer_text_score(layer: dict[str, Any], prompt: str | None) -> float:
     return float(matches) / float(max(1, len(tokens)))
 
 
+def _score_editable_layers(
+    layers: list[dict[str, Any]],
+    *,
+    prompt: str | None = None,
+    point: tuple[int, int] | None = None,
+    box: tuple[int, int, int, int] | None = None,
+    target_name: str | None = None,
+) -> list[tuple[float, dict[str, Any]]]:
+    if not layers:
+        return []
+    h, w = layers[0]["rgba"].shape[:2]
+    point_x, point_y = point if point is not None else (None, None)
+    box_mask = _box_mask((h, w), box)
+    non_background = [layer for layer in layers if str(layer.get("group")) not in EDIT_EXCLUDED_GROUPS]
+    pool = non_background or [layer for layer in layers if str(layer.get("group")) != "effect"] or layers
+    candidates: list[tuple[float, dict[str, Any]]] = []
+    for layer in pool:
+        mask = layer["mask"]
+        alpha_area = float(mask.mean())
+        score = alpha_area
+        if target_name and str(layer.get("name")) == target_name:
+            score += 10.0
+        score += 2.5 * _layer_text_score(layer, prompt)
+        if point_x is not None and point_y is not None and 0 <= point_x < w and 0 <= point_y < h and mask[point_y, point_x]:
+            score += 4.0
+        if np.any(box_mask):
+            intersection = np.logical_and(mask, box_mask).sum()
+            union = np.logical_or(mask, box_mask).sum()
+            if union > 0:
+                score += 3.0 * float(intersection / union)
+        if alpha_area > 0.92 and len(pool) > 1:
+            score -= 1.25
+        candidates.append((score, layer))
+    candidates.sort(key=lambda item: (item[0], float(item[1]["mask"].sum())), reverse=True)
+    return candidates
+
+
+def _render_candidate_preview(layer: dict[str, Any], input_rgb: np.ndarray | None, tile_size: tuple[int, int]) -> Image.Image:
+    tile_w, tile_h = tile_size
+    x1, y1, x2, y2 = layer["bbox"]
+    pad = 12
+    if input_rgb is not None:
+        h, w = input_rgb.shape[:2]
+        cx1, cy1 = max(0, x1 - pad), max(0, y1 - pad)
+        cx2, cy2 = min(w, x2 + pad), min(h, y2 + pad)
+        crop = input_rgb[cy1:cy2, cx1:cx2].copy()
+        mask = layer["mask"][cy1:cy2, cx1:cx2]
+        crop_f = crop.astype(np.float32)
+        crop_f[~mask] = crop_f[~mask] * 0.35 + 255.0 * 0.65
+        preview = Image.fromarray(np.clip(crop_f, 0, 255).astype(np.uint8), mode="RGB")
+    else:
+        rgba = layer["rgba"]
+        if x2 > x1 and y2 > y1:
+            rgba = rgba[max(0, y1 - pad) : y2 + pad, max(0, x1 - pad) : x2 + pad]
+        arr = rgba.astype(np.float32)
+        alpha = arr[..., 3:4] / 255.0
+        yy, xx = np.indices(arr.shape[:2])
+        checker = (((xx // 10) + (yy // 10)) % 2) * 24 + 224
+        checker_rgb = np.repeat(checker[..., None], 3, axis=2).astype(np.float32)
+        preview_rgb = np.clip(arr[..., :3] * alpha + checker_rgb * (1.0 - alpha), 0, 255).astype(np.uint8)
+        preview = Image.fromarray(preview_rgb, mode="RGB")
+    preview.thumbnail((tile_w, tile_h - 28), Image.Resampling.LANCZOS)
+    card = Image.new("RGB", (tile_w, tile_h), (250, 250, 248))
+    offset_x = (tile_w - preview.width) // 2
+    offset_y = max(10, (tile_h - 24 - preview.height) // 2)
+    card.paste(preview, (offset_x, offset_y))
+    return card
+
+
+def _build_candidate_sheet(
+    candidates: list[dict[str, Any]],
+    *,
+    input_rgb: np.ndarray | None,
+    columns: int = 2,
+    tile_size: tuple[int, int] = (220, 170),
+) -> Image.Image:
+    if not candidates:
+        raise ValueError("At least one candidate is required")
+    rows = (len(candidates) + columns - 1) // columns
+    padding = 18
+    tile_w, tile_h = tile_size
+    canvas = Image.new(
+        "RGB",
+        (columns * tile_w + (columns + 1) * padding, rows * tile_h + (rows + 1) * padding),
+        (245, 244, 240),
+    )
+    draw = ImageDraw.Draw(canvas)
+    font = ImageFont.load_default()
+    for idx, layer in enumerate(candidates):
+        row, col = divmod(idx, columns)
+        x = padding + col * (tile_w + padding)
+        y = padding + row * (tile_h + padding)
+        card = _render_candidate_preview(layer, input_rgb, tile_size)
+        canvas.paste(card, (x, y))
+        draw.rounded_rectangle((x, y, x + tile_w, y + tile_h), radius=16, outline=(215, 212, 204), width=2)
+        badge = chr(ord("A") + idx)
+        draw.rounded_rectangle((x + 10, y + 10, x + 38, y + 34), radius=10, fill=(27, 114, 242))
+        draw.text((x + 20, y + 16), badge, font=font, fill=(255, 255, 255))
+        draw.text((x + 48, y + tile_h - 30), str(layer.get("label", layer.get("name", badge)))[:26], font=font, fill=(24, 24, 24))
+    return canvas
+
+
+def _gemini_select_layer_name(
+    candidates: list[dict[str, Any]],
+    *,
+    prompt: str | None,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    input_rgb: np.ndarray | None,
+    cfg: dict[str, Any],
+) -> str | None:
+    from .gemini_io import gemini_generate_content, parse_jsonish_text, prepare_gemini_image
+
+    sheet = _build_candidate_sheet(candidates, input_rgb=input_rgb)
+    prepared = prepare_gemini_image(sheet, int(cfg.get("gemini_max_side", 1024)))
+    candidate_lines = []
+    for idx, layer in enumerate(candidates):
+        badge = chr(ord("A") + idx)
+        candidate_lines.append(
+            f'{badge}: name="{layer.get("name")}", label="{layer.get("label")}", group="{layer.get("group")}", bbox={list(layer.get("bbox", (0,0,0,0)))}'
+        )
+    prompt_text = (
+        "Select the single best editable RGBA layer candidate for the requested target.\n"
+        f"Target prompt: {prompt or 'none'}\n"
+        f"Point hint: {list(point) if point is not None else None}\n"
+        f"Box hint: {list(box) if box is not None else None}\n"
+        "Candidates shown in the image:\n"
+        + "\n".join(candidate_lines)
+        + '\nReturn JSON only as {"candidate_id":"A"} or {"candidate_name":"000_example"}.'
+    )
+    text = gemini_generate_content(
+        prepared,
+        prompt_text,
+        model=str(cfg.get("gemini_model", "gemini-2.5-flash")),
+        timeout_sec=int(cfg.get("gemini_timeout_sec", 180)),
+        response_mime_type="application/json",
+    )
+    payload = parse_jsonish_text(text)
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Gemini selector returned non-object payload: {payload!r}")
+    candidate_name = payload.get("candidate_name")
+    if candidate_name:
+        return str(candidate_name)
+    candidate_id = str(payload.get("candidate_id", "")).strip().upper()
+    if len(candidate_id) == 1 and "A" <= candidate_id <= chr(ord("A") + len(candidates) - 1):
+        return str(candidates[ord(candidate_id) - ord("A")]["name"])
+    raise RuntimeError(f"Gemini selector returned no usable candidate identifier: {payload!r}")
+
+
 def _load_graph_edge_count(run_dir: Path) -> int:
     for name in ("layer_graph.json", "peeling_graph.json"):
         path = run_dir / "debug" / name
@@ -233,34 +389,44 @@ def select_editable_layer(
     point: tuple[int, int] | None = None,
     box: tuple[int, int, int, int] | None = None,
     target_name: str | None = None,
+    input_rgb: np.ndarray | None = None,
+    cfg: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
-    if not layers:
+    config = dict(DEFAULT_TARGET_SELECTION_CONFIG)
+    if cfg:
+        config.update(cfg)
+    candidates = _score_editable_layers(
+        layers,
+        prompt=prompt,
+        point=point,
+        box=box,
+        target_name=target_name,
+    )
+    if not candidates:
         return None
-    h, w = layers[0]["rgba"].shape[:2]
-    point_x, point_y = point if point is not None else (None, None)
-    box_mask = _box_mask((h, w), box)
-    candidates = []
-    non_background = [layer for layer in layers if str(layer.get("group")) not in EDIT_EXCLUDED_GROUPS]
-    pool = non_background or [layer for layer in layers if str(layer.get("group")) != "effect"] or layers
-    for layer in pool:
-        mask = layer["mask"]
-        alpha_area = float(mask.mean())
-        score = alpha_area
-        if target_name and str(layer.get("name")) == target_name:
-            score += 10.0
-        score += 2.5 * _layer_text_score(layer, prompt)
-        if point_x is not None and point_y is not None and 0 <= point_x < w and 0 <= point_y < h and mask[point_y, point_x]:
-            score += 4.0
-        if np.any(box_mask):
-            intersection = np.logical_and(mask, box_mask).sum()
-            union = np.logical_or(mask, box_mask).sum()
-            if union > 0:
-                score += 3.0 * float(intersection / union)
-        if alpha_area > 0.92 and len(pool) > 1:
-            score -= 1.25
-        candidates.append((score, layer))
-    candidates.sort(key=lambda item: (item[0], float(item[1]["mask"].sum())), reverse=True)
-    return candidates[0][1] if candidates else None
+    backend = str(config.get("backend", "auto")).lower()
+    if backend not in {"heuristic", "auto", "gemini", "hybrid"}:
+        raise ValueError(f"Unsupported target selection backend: {backend}")
+    use_gemini = backend in {"auto", "gemini", "hybrid"} and bool(prompt or point or box)
+    if use_gemini:
+        top_candidates = [layer for _, layer in candidates[: max(1, int(config.get("candidate_limit", 6)))]]
+        try:
+            selected_name = _gemini_select_layer_name(
+                top_candidates,
+                prompt=prompt,
+                point=point,
+                box=box,
+                input_rgb=input_rgb,
+                cfg=config,
+            )
+            if selected_name:
+                for _, layer in candidates:
+                    if str(layer.get("name")) == selected_name:
+                        return layer
+        except Exception:
+            if backend == "gemini":
+                raise
+    return candidates[0][1]
 
 
 def evaluate_run_editability(
@@ -277,7 +443,14 @@ def evaluate_run_editability(
     run_dir = _resolve_manifest_path(path_or_dir).parent
     output_root = ensure_dir(Path(output_dir) if output_dir is not None else run_dir / "debug")
     baseline = _composite_rgba_layers(layers)[..., :3]
-    target = select_editable_layer(layers, prompt=prompt, point=point, box=box, target_name=target_name)
+    target = select_editable_layer(
+        layers,
+        prompt=prompt,
+        point=point,
+        box=box,
+        target_name=target_name,
+        input_rgb=input_rgb,
+    )
     if target is None:
         metrics = {
             "selected_target": None,
@@ -434,11 +607,26 @@ def export_target_assets(
     point: tuple[int, int] | None = None,
     box: tuple[int, int, int, int] | None = None,
     target_name: str | None = None,
+    cfg: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    manifest, layers, _ = load_ordered_layers(path_or_dir)
+    manifest, layers, input_rgb = load_ordered_layers(path_or_dir)
     run_dir = _resolve_manifest_path(path_or_dir).parent
     output_root = ensure_dir(Path(output_dir) if output_dir is not None else run_dir / "target_extract")
-    target = select_editable_layer(layers, prompt=prompt, point=point, box=box, target_name=target_name)
+    run_config = manifest.get("config", {}) if isinstance(manifest.get("config"), dict) else {}
+    selection_cfg = dict(DEFAULT_TARGET_SELECTION_CONFIG)
+    if isinstance(run_config.get("target_selection"), dict):
+        selection_cfg.update(run_config["target_selection"])
+    if cfg:
+        selection_cfg.update(cfg)
+    target = select_editable_layer(
+        layers,
+        prompt=prompt,
+        point=point,
+        box=box,
+        target_name=target_name,
+        input_rgb=input_rgb,
+        cfg=selection_cfg,
+    )
     if target is None:
         raise ValueError("No editable target layer could be selected")
     save_rgba(output_root / "target_rgba.png", target["rgba"])
