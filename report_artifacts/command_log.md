@@ -66,7 +66,7 @@ python scripts/run_effects_demo.py --scene-dir runs/effects_demo_source/scene_00
 ## Native search run
 
 ```bash
-layerforge autotune --input data/demo/truck.jpg --output runs/truck_state_of_art_search_v2 --config configs/best_score.yaml --prompts "truck,road,sky,tree,building,window,wheel,car" --device cuda --no-parallax
+layerforge autotune --input data/demo/truck.jpg --output runs/truck_candidate_search_v2 --config configs/best_score.yaml --prompts "truck,road,sky,tree,building,window,wheel,car" --device cuda --no-parallax
 ```
 
 ## Public grouping and depth benchmarks

@@ -54,7 +54,7 @@
     "truck_layer_stack_comparison": [
       "runs/qwen_truck_layers_raw_640_20",
       "runs/qwen_truck_enriched_640_20",
-      "runs/truck_state_of_art_search_v2/best"
+      "runs/truck_candidate_search_v2/best"
     ],
     "truck_metrics_comparison": [
       "runs/qwen_truck_layers_raw_640_20",
@@ -62,18 +62,18 @@
       "runs/truck_best_score",
       "runs/truck_best_score_manual",
       "runs/truck_best_score_augment",
-      "runs/truck_state_of_art_search_v2/best"
+      "runs/truck_candidate_search_v2/best"
     ],
     "truck_prompt_ablation": [
       "runs/truck_best_score",
       "runs/truck_best_score_manual",
       "runs/truck_best_score_augment",
-      "runs/truck_state_of_art_search_v2"
+      "runs/truck_candidate_search_v2"
     ],
     "truck_recomposition_comparison": [
       "runs/qwen_truck_layers_raw_640_20",
       "runs/qwen_truck_enriched_640_20",
-      "runs/truck_state_of_art_search_v2/best"
+      "runs/truck_candidate_search_v2/best"
     ]
   }
 }

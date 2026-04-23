@@ -242,10 +242,10 @@ def load_truck_runs() -> dict[str, dict]:
         "layerforge_search_best": {
             "label": "LayerForge candidate",
             "subtitle": "Autotune-selected best native run on this image",
-            "metrics": load_json("runs/truck_state_of_art_search_v2/best/metrics.json"),
-            "manifest": load_json("runs/truck_state_of_art_search_v2/best/manifest.json"),
-            "recomposed": "runs/truck_state_of_art_search_v2/best/debug/recomposed_rgb.png",
-            "sheet": "runs/truck_state_of_art_search_v2/best/debug/grouped_layer_contact_sheet.png",
+            "metrics": load_json("runs/truck_candidate_search_v2/best/metrics.json"),
+            "manifest": load_json("runs/truck_candidate_search_v2/best/manifest.json"),
+            "recomposed": "runs/truck_candidate_search_v2/best/debug/recomposed_rgb.png",
+            "sheet": "runs/truck_candidate_search_v2/best/debug/grouped_layer_contact_sheet.png",
             "accent": (129, 52, 52),
         },
         "layerforge_augment": {

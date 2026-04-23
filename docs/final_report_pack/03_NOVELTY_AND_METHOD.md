@@ -1,4 +1,4 @@
-# Novelty and Method: LayerForge-X
+# 3. Method
 
 ## Core idea
 

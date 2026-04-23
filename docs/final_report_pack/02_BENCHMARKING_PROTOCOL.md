@@ -1,4 +1,4 @@
-# Benchmarking Protocol for LayerForge-X
+# 4. Experiments and Evaluation Protocol
 
 ## Goal
 

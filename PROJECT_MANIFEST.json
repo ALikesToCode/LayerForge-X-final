@@ -83,7 +83,7 @@
       "recompose_psnr": 31.152377832742634,
       "recompose_ssim": 0.9804187458561303
     },
-    "truck_state_of_art_search_v2_best": {
+    "truck_candidate_search_v2_best": {
       "num_layers": 20.0,
       "premerge_semantic_layers": 32.0,
       "merge_reduction": 13.0,
@@ -255,7 +255,7 @@
     "prompt_extract_benchmark": "docs/figures/prompt_extract_benchmark.png",
     "transparent_benchmark": "docs/figures/transparent_benchmark.png",
     "figure_index": "docs/FIGURES.md",
-    "state_of_art_summary": "report_artifacts/metrics_snapshots/truck_search_summary.json"
+    "candidate_search_summary": "report_artifacts/metrics_snapshots/truck_search_summary.json"
   },
   "public_benchmarks": {
     "implemented_now": [

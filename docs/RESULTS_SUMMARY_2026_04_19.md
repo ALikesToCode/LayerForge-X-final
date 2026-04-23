@@ -395,7 +395,7 @@ Measured comparison:
 | `runs/truck_best_score` | Gemini-assisted prompts | 26 | 38 | 13 | 30.8214 | 0.9812 |
 | `runs/truck_best_score_augment` | curated + Gemini augment | 19 | 31 | 13 | 31.1524 | 0.9804 |
 | `runs/truck_best_score_manual` | curated prompts | 19 | 35 | 17 | 31.3040 | 0.9813 |
-| `runs/truck_state_of_art_search_v2/best` | autotune-selected winner (`manual_precision`) | 20 | 32 | 13 | 32.1053 | 0.9848 |
+| `runs/truck_candidate_search_v2/best` | autotune-selected winner (`manual_precision`) | 20 | 32 | 13 | 32.1053 | 0.9848 |
 
 Important reading of these runs:
 
@@ -473,17 +473,18 @@ Measured truck comparison:
 | Run | Mode | Layers | PSNR | SSIM |
 |---|---|---:|---:|---:|
 | `runs/qwen_truck_layers_raw_640_20` | raw Qwen RGBA | 4 | 29.8806 | 0.8826 |
-| `runs/qwen_truck_enriched_640_20` | Qwen + LayerForge graph enrichment (preserve order) | 4 | 27.4633 | 0.7949 |
+| `runs/qwen_truck_enriched_640_20` | Qwen + LayerForge graph enrichment (preserve best external visual order) | 4 | 27.4633 | 0.7949 |
 | `runs/demo_grounded_depthpro_final` | old native LayerForge | 45 | 14.6477 | 0.8348 |
 | `runs/truck_best_score` | improved native LayerForge, automated | 26 | 30.8214 | 0.9812 |
 | `runs/truck_best_score_manual` | improved native LayerForge, best measured | 19 | 31.3040 | 0.9813 |
-| `runs/truck_state_of_art_search_v2/best` | improved native LayerForge, autotune winner | 20 | 32.1053 | 0.9848 |
+| `runs/truck_candidate_search_v2/best` | improved native LayerForge, autotune winner | 20 | 32.1053 | 0.9848 |
 
 Notes:
 
 - the Qwen run used the official `Qwen/Qwen-Image-Layered` diffusers pipeline
 - because the model is too large for a naive full-GPU load on a 24 GB card, the successful run used `--offload sequential`
 - the raw-Qwen recomposition metric now scores both manifest and reversed-manifest interpretations and keeps the better reconstruction
+- `--preserve-external-order` means preserve the best external visual stack, not blindly preserve the raw manifest order
 - the old native LayerForge run clearly lost to Qwen on this example
 - the upgraded native LayerForge recipe now beats both the raw Qwen row and the `Q+G` hybrid on this truck image
 - the autotune-selected native winner is the strongest measured run currently in the repo on this truck benchmark

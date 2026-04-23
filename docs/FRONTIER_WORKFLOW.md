@@ -192,4 +192,4 @@ Measured summary from `runs/transparent_benchmark/transparent_benchmark_summary.
 | Recompose PSNR | 56.0066 |
 | Recompose SSIM | 0.9996 |
 
-This path should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition.
+Transparent recomposition is a sanity check here; alpha error and clean-background quality are the primary transparent-layer metrics. This path should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition.

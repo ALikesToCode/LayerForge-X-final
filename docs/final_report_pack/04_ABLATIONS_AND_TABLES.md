@@ -1,4 +1,4 @@
-# Ablations, Tables, and Figures for LayerForge-X
+# Appendix B. Extended Tables and Ablations
 
 This document collects every planned ablation, every table the report needs, every figure the report needs, and the slide sequence for the presentation. It is the working document — fill values in as runs complete.
 
@@ -24,11 +24,11 @@ The repo now also contains the measured five-image frontier comparison at `runs/
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
+| LF peel | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
+| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
+| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
+| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
 
 Interpretation:
 
@@ -43,11 +43,11 @@ The frontier review is now paired with an editability suite so recomposition fid
 
 | Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
 |---|---:|---:|---:|---:|---:|---:|
-| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
-| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
-| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
-| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
-| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw 4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Q+G preserve 4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Q+G reorder 4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
 
 Interpretation:
 
@@ -87,6 +87,7 @@ The transparent / alpha-composited recovery path now has a measured synthetic be
 
 Interpretation:
 
+- transparent recomposition is a sanity check here; alpha error and clean-background quality are the primary transparent metrics;
 - this path should be presented as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
 - the current prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant;
 - despite that, it is now a measured component and belongs in the report as a frontier-aligned extension.

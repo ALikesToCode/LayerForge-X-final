@@ -132,14 +132,14 @@ Interpretation:
 
 - raw Qwen still wins mean PSNR on this five-image review, which keeps it as the clean compact generative baseline;
 - native LayerForge now wins mean SSIM on the same image set, but it does so with a much larger average stack (`16.6` layers versus Qwen's `4`);
-- `Qwen + graph preserve` is now the honest metadata-first hybrid row, because it keeps the external visual stack while adding graph, amodal, and intrinsic structure;
+- `Qwen + graph preserve` is now the honest metadata-first hybrid row, because it keeps the best external visual stack while adding graph, amodal, and intrinsic structure;
 - `Qwen + graph reorder` is the graph-altered export row, and its mean metrics are only slightly below the preserve-order variant on this review.
 
 ## What the hybrid row means
 
 The `Q+G preserve` row in the report should not be described as "our model with Qwen." It is more precise to say:
 
-> Qwen provides the initial semantically disentangled RGBA layers, while LayerForge-X adds explicit depth estimation, graph edges, amodal support, and intrinsic appearance layers without changing the interpreted external stack.
+> Qwen provides the initial semantically disentangled RGBA layers, while LayerForge-X adds explicit depth estimation, graph edges, amodal support, and intrinsic appearance layers without changing the best interpreted external visual stack.
 
 The `Q+G reorder` row is the separate answer to a different question:
 
@@ -158,7 +158,7 @@ The repo now contains both the original Qwen comparison and the upgraded native 
 | `runs/demo_grounded_depthpro_final` | 45 | 14.6477 | 0.8348 | old native LayerForge decomposition before the new merge/depth recipe |
 | `runs/truck_best_score` | 26 | 30.8214 | 0.9812 | improved native LayerForge with Gemini-assisted prompting |
 | `runs/truck_best_score_manual` | 19 | 31.3040 | 0.9813 | highest measured native LayerForge run with curated prompts |
-| `runs/truck_state_of_art_search_v2/best` | 20 | 32.1053 | 0.9848 | autotune-selected reproducible winner from the native candidate ladder |
+| `runs/truck_candidate_search_v2/best` | 20 | 32.1053 | 0.9848 | autotune-selected reproducible winner from the native candidate ladder |
 
 Interpretation:
 

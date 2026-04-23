@@ -1,4 +1,4 @@
-# Literature Review: LayerForge-X
+# 2. Related Work
 
 ## Project framing
 

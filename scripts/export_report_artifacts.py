@@ -17,8 +17,8 @@ SNAPSHOTS = {
     "diode_depth_scale_benchmark_summary.json": ROOT / "results/diode_depthpro_scale_full/diode_depth_benchmark_summary.json",
     "diode_geometric_benchmark_summary.json": ROOT / "results/diode_geometric_full/diode_depth_benchmark_summary.json",
     "synthetic_benchmark_summary.json": ROOT / "results/synthetic_fast/synthetic_benchmark_summary.json",
-    "truck_best_metrics.json": ROOT / "runs/truck_state_of_art_search_v2/best/metrics.json",
-    "truck_search_summary.json": ROOT / "runs/truck_state_of_art_search_v2/search_summary.json",
+    "truck_best_metrics.json": ROOT / "runs/truck_candidate_search_v2/best/metrics.json",
+    "truck_search_summary.json": ROOT / "runs/truck_candidate_search_v2/search_summary.json",
     "qwen_baseline_metrics.json": ROOT / "runs/qwen_truck_layers_raw_640_20/metrics.json",
     "qwen_enriched_metrics.json": ROOT / "runs/qwen_truck_enriched_640_20/metrics.json",
     "qwen_five_image_review_summary.json": ROOT / "runs/qwen_five_image_review/comparison_summary.json",
@@ -34,12 +34,12 @@ FIGURE_SOURCES = {
     "truck_recomposition_comparison": [
         "runs/qwen_truck_layers_raw_640_20",
         "runs/qwen_truck_enriched_640_20",
-        "runs/truck_state_of_art_search_v2/best",
+        "runs/truck_candidate_search_v2/best",
     ],
     "truck_layer_stack_comparison": [
         "runs/qwen_truck_layers_raw_640_20",
         "runs/qwen_truck_enriched_640_20",
-        "runs/truck_state_of_art_search_v2/best",
+        "runs/truck_candidate_search_v2/best",
     ],
     "truck_metrics_comparison": [
         "runs/qwen_truck_layers_raw_640_20",
@@ -47,13 +47,13 @@ FIGURE_SOURCES = {
         "runs/truck_best_score",
         "runs/truck_best_score_manual",
         "runs/truck_best_score_augment",
-        "runs/truck_state_of_art_search_v2/best",
+        "runs/truck_candidate_search_v2/best",
     ],
     "truck_prompt_ablation": [
         "runs/truck_best_score",
         "runs/truck_best_score_manual",
         "runs/truck_best_score_augment",
-        "runs/truck_state_of_art_search_v2",
+        "runs/truck_candidate_search_v2",
     ],
     "synthetic_ordering_ablation": [
         "results/synthetic_fast",
@@ -163,7 +163,7 @@ python scripts/run_effects_demo.py --scene-dir runs/effects_demo_source/scene_00
 ## Native search run
 
 ```bash
-layerforge autotune --input data/demo/truck.jpg --output runs/truck_state_of_art_search_v2 --config configs/best_score.yaml --prompts "truck,road,sky,tree,building,window,wheel,car" --device cuda --no-parallax
+layerforge autotune --input data/demo/truck.jpg --output runs/truck_candidate_search_v2 --config configs/best_score.yaml --prompts "truck,road,sky,tree,building,window,wheel,car" --device cuda --no-parallax
 ```
 
 ## Public grouping and depth benchmarks

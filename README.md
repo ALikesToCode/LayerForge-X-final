@@ -140,7 +140,7 @@ Measured truck runs already in the repo:
 | `runs/truck_best_score` | 26 | 30.8214 | 0.9812 |
 | `runs/truck_best_score_manual` | 19 | 31.3040 | 0.9813 |
 | `runs/truck_best_score_augment` | 19 | 31.1524 | 0.9804 |
-| `runs/truck_state_of_art_search_v2/best` | 20 | 32.1053 | 0.9848 |
+| `runs/truck_candidate_search_v2/best` | 20 | 32.1053 | 0.9848 |
 
 So the repo is no longer stuck in the "interpretable but low-fidelity" regime. The upgraded native LayerForge recipe is now materially better than the old native run on both fidelity and stack compactness.
 
@@ -151,7 +151,7 @@ For the strongest native result on a specific image, use the search mode. It run
 ```bash
 layerforge autotune \
   --input data/demo/truck.jpg \
-  --output runs/truck_state_of_art_search_v2 \
+  --output runs/truck_candidate_search_v2 \
   --config configs/best_score.yaml \
   --prompts "truck,road,sky,tree,building,window,wheel,car" \
   --device cuda \
@@ -160,9 +160,9 @@ layerforge autotune \
 
 That command writes:
 
-- `runs/truck_state_of_art_search_v2/search_summary.json`
-- `runs/truck_state_of_art_search_v2/candidates/*`
-- `runs/truck_state_of_art_search_v2/best`
+- `runs/truck_candidate_search_v2/search_summary.json`
+- `runs/truck_candidate_search_v2/candidates/*`
+- `runs/truck_candidate_search_v2/best`
 
 For submission-safe auditing, `python scripts/export_report_artifacts.py` also copies the selected summary into `report_artifacts/metrics_snapshots/truck_search_summary.json`.
 
@@ -344,7 +344,7 @@ Measured transparent benchmark (`runs/transparent_benchmark/transparent_benchmar
 | Recompose PSNR | 56.0066 |
 | Recompose SSIM | 0.9996 |
 
-This path is still an approximation, not a full generative transparent-layer model, but it now has a measured benchmark instead of only qualitative examples.
+Transparent recomposition is reported as a sanity check; the primary metrics are alpha error and clean-background quality. This path is still an approximation, not a full generative transparent-layer model, but it now has a measured benchmark instead of only qualitative examples.
 
 ## Qwen / external layer enrichment
 
@@ -388,7 +388,7 @@ layerforge enrich-qwen \
   --preserve-external-order
 ```
 
-Add `--preserve-external-order` when you want the enriched export to keep Qwen's interpreted visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
+Add `--preserve-external-order` when you want the enriched export to keep the best external visual stack and only add LayerForge metadata. Leave that flag off when you want the exported stack reordered by the depth graph.
 
 The output directory will contain ordered layers, albedo/shading layers, amodal masks, and a `debug/layer_graph.json` describing the graph structure.
 
@@ -422,7 +422,7 @@ python scripts/collect_run_metrics.py \
   runs/truck_best_score \
   runs/truck_best_score_manual \
   runs/truck_best_score_augment \
-  runs/truck_state_of_art_search_v2/best \
+  runs/truck_candidate_search_v2/best \
   runs/qwen_truck_layers_raw_640_20 \
   runs/qwen_truck_enriched_640_20
 ```

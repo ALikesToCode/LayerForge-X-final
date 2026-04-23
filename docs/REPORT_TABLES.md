@@ -58,11 +58,11 @@ Notes:
 
 | Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
 |---|---:|---:|---:|---:|---:|---:|
-| LayerForge native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
-| LayerForge peeling | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
-| Qwen raw (4) | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
-| Qwen + graph preserve (4) | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
-| Qwen + graph reorder (4) | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
+| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
+| Qwen raw 4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
+| Q+G preserve 4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
+| Q+G reorder 4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
 
 Notes:
 
@@ -74,10 +74,10 @@ Notes:
 
 | Method | Images | Graph | Mean PSNR ↑ | Mean SSIM ↑ | Notes |
 |---|---:|---|---:|---:|---|
-| LayerForge native | 5 | yes | 27.3438 | 0.9464 | strongest mean SSIM; much larger average stack |
-| Qwen raw (4) | 5 | no | 29.0757 | 0.8850 | best mean PSNR on this measured set |
-| Qwen + LayerForge graph preserve (4) | 5 | yes | 28.5539 | 0.8638 | fair metadata-first hybrid; preserves Qwen visual order |
-| Qwen + LayerForge graph reorder (4) | 5 | yes | 28.5397 | 0.8637 | explicit graph-order export |
+| LF native | 5 | yes | 27.3438 | 0.9464 | strongest mean SSIM; much larger average stack |
+| Qwen raw 4 | 5 | no | 29.0757 | 0.8850 | best mean PSNR on this measured set |
+| Q+G preserve 4 | 5 | yes | 28.5539 | 0.8638 | fair metadata-first hybrid; preserves the best external visual order |
+| Q+G reorder 4 | 5 | yes | 28.5397 | 0.8637 | explicit graph-order export |
 
 Per-image note:
 
@@ -101,11 +101,11 @@ Notes:
 
 | Method | Images | Mean PSNR ↑ | Mean SSIM ↑ | Mean self-eval score ↑ | Best-image wins | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| LayerForge native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | strongest overall frontier score after anti-triviality penalties |
-| LayerForge peeling | 5 | 27.0988 | 0.9096 | 0.4783 | 0 | explicit recursive removal path; no longer wins on truck after the score hardening |
-| Qwen raw (4) | 5 | 29.0757 | 0.8850 | 0.2541 | 0 | compact generative baseline; weak editability signals |
-| Qwen + graph preserve (4) | 5 | 28.5539 | 0.8638 | 0.5259 | 0 | fair metadata-first hybrid; just below reorder on the current sweep |
-| Qwen + graph reorder (4) | 5 | 28.5397 | 0.8637 | 0.5251 | 1 | explicit graph-order export; wins the cat image in the hardened review |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 | strongest overall frontier score after anti-triviality penalties |
+| LF peel | 5 | 27.0988 | 0.9096 | 0.4783 | 0 | explicit recursive removal path; not the strongest measured row yet |
+| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2541 | 0 | compact generative baseline; weak editability signals |
+| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5259 | 0 | fair metadata-first hybrid; preserves the best external visual order |
+| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5251 | 1 | explicit graph-order export; wins the cat image in the hardened review |
 
 Notes:
 
@@ -137,7 +137,7 @@ Notes:
 | Transparent alpha MAE ↓ | 0.1131 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
 | Background PSNR ↑ | 25.9863 | clean-background estimate from inpainting plus transparent foreground recovery |
 | Background SSIM ↑ | 0.9541 | background structure remains strong despite approximate separation |
-| Recompose PSNR ↑ | 56.0066 | recomposition is very strong on the measured synthetic set |
+| Recompose PSNR ↑ | 56.0066 | sanity check only; alpha error and clean-background quality matter more here |
 | Recompose SSIM ↑ | 0.9996 | reconstruction remains near-perfect once foreground and background are recombined |
 
 Notes:
