@@ -1,4 +1,4 @@
-# LayerForge-X++ Frontier Workflow
+<h1 align="center">LayerForge-<span style="color:#1a7af8;">X</span>++ Frontier Workflow</h1>
 
 LayerForge-X++ defines the repository's primary hybrid evaluation workflow:
 

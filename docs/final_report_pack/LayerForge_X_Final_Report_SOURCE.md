@@ -1,4 +1,4 @@
-# LayerForge-X Final Report
+<h1 align="center">LayerForge-<span style="color:#1a7af8;">X</span> Final Report</h1>
 
 # Abstract
 

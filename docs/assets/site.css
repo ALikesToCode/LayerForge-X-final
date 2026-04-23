@@ -13,8 +13,8 @@
 
     --accent: #e4e4e7; /* Light grey/white accent */
     --accent-glow: rgba(255, 255, 255, 0.1);
-    --accent-blue: #3b82f6;
-    --accent-blue-soft: rgba(59, 130, 246, 0.15);
+    --accent-blue: #1a7af8; /* Vibrant logo blue */
+    --accent-blue-soft: rgba(26, 122, 248, 0.15);
 
     --error: #ef4444;
     --error-soft: rgba(239, 68, 68, 0.15);
@@ -115,6 +115,11 @@ code {
 .brandmark__text {
     display: inline-flex;
     align-items: center;
+}
+
+.brand-x {
+    color: var(--accent-blue);
+    margin-left: 1px;
 }
 
 .site-nav__links {

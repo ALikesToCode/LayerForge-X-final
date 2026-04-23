@@ -1,6 +1,6 @@
-# LayerForge-X
+<h1 align="center">LayerForge-<span style="color:#1a7af8;">X</span></h1>
 
-**LayerForge-X** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
+**LayerForge-<span style="color:#1a7af8;">X</span>** converts a single RGB image into a depth-aware, semantically grouped, amodal RGBA layer graph.
 
 <p>
   <img src="docs/assets/brand/layerforge-logo.png" alt="LayerForge-X logo" width="720" />
