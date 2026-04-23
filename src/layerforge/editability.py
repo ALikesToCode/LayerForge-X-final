@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,10 @@ def _resolve_path(base: Path, raw: str | Path) -> Path:
     if candidate.exists():
         return candidate
     return value.resolve()
+
+
+def _portable_relpath(base: Path, target: Path) -> str:
+    return os.path.relpath(str(target), start=str(base))
 
 
 def _load_rgb(path: Path) -> np.ndarray:
@@ -402,11 +407,11 @@ def evaluate_run_editability(
         "edit_success_score": round(edit_success_score, 6),
         "occlusion_edge_count": int(_load_graph_edge_count(run_dir)),
         "preview_paths": {
-            "baseline": str((output_root / "edit_baseline.png").resolve()),
-            "remove": str((output_root / "edit_remove.png").resolve()),
-            "move": str((output_root / "edit_move.png").resolve()),
-            "recolor": str((output_root / "edit_recolor.png").resolve()),
-            "background_blur": str((output_root / "edit_background_blur.png").resolve()),
+            "baseline": _portable_relpath(run_dir, output_root / "edit_baseline.png"),
+            "remove": _portable_relpath(run_dir, output_root / "edit_remove.png"),
+            "move": _portable_relpath(run_dir, output_root / "edit_move.png"),
+            "recolor": _portable_relpath(run_dir, output_root / "edit_recolor.png"),
+            "background_blur": _portable_relpath(run_dir, output_root / "edit_background_blur.png"),
         },
     }
 
@@ -470,11 +475,11 @@ def export_target_assets(
         "point": list(point) if point is not None else None,
         "box": list(box) if box is not None else None,
         "exports": {
-            "target_rgba": str((output_root / "target_rgba.png").resolve()),
-            "target_alpha": str((output_root / "target_alpha.png").resolve()),
-            "background_completed": str((output_root / "background_completed.png").resolve()),
-            "edit_preview_move": str((output_root / "edit_preview_move.png").resolve()),
-            "edit_preview_remove": str((output_root / "edit_preview_remove.png").resolve()),
+            "target_rgba": _portable_relpath(output_root, output_root / "target_rgba.png"),
+            "target_alpha": _portable_relpath(output_root, output_root / "target_alpha.png"),
+            "background_completed": _portable_relpath(output_root, output_root / "background_completed.png"),
+            "edit_preview_move": _portable_relpath(output_root, output_root / "edit_preview_move.png"),
+            "edit_preview_remove": _portable_relpath(output_root, output_root / "edit_preview_remove.png"),
         },
     }
     write_json(output_root / "target_metadata.json", metadata)

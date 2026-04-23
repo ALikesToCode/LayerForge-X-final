@@ -17,8 +17,7 @@
   ],
   "properties": {
     "$schema": {
-      "type": "string",
-      "format": "uri"
+      "const": "https://layerforge.dev/schemas/dalg.schema.json"
     },
     "kind": {
       "const": "layerforge.dalg"

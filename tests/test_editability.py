@@ -69,6 +69,8 @@ def test_evaluate_run_editability_penalizes_copy_like_background(tmp_path: Path)
 
     assert honest["edit_success_score"] > copy_like["edit_success_score"]
     assert honest["background_hole_ratio"] < copy_like["background_hole_ratio"]
+    assert not honest["preview_paths"]["baseline"].startswith("/")
+    assert honest["preview_paths"]["baseline"] == "debug/edit_baseline.png"
 
 
 def test_export_target_assets_selects_prompt_named_layer(tmp_path: Path) -> None:
@@ -79,3 +81,5 @@ def test_export_target_assets_selects_prompt_named_layer(tmp_path: Path) -> None
     assert (tmp_path / "extract" / "target_rgba.png").exists()
     assert (tmp_path / "extract" / "background_completed.png").exists()
     assert (tmp_path / "extract" / "target_metadata.json").exists()
+    assert exported["exports"]["target_rgba"] == "target_rgba.png"
+    assert not exported["exports"]["edit_preview_move"].startswith("/")

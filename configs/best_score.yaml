@@ -8,7 +8,7 @@ io:
 segmentation:
   method: grounded_sam2
   prompts: []
-  prompt_source: gemini
+  prompt_source: augment
   min_area_ratio: 0.001
   nms_iou: 0.80
   slic_segments: 128

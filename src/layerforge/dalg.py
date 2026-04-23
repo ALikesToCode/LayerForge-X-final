@@ -8,6 +8,7 @@ from PIL import Image
 
 
 CANONICAL_DALG_SCHEMA_VERSION = "1.0.0"
+CANONICAL_DALG_SCHEMA_URL = "https://layerforge.dev/schemas/dalg.schema.json"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -152,7 +153,7 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
     ]
 
     dalg = {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$schema": CANONICAL_DALG_SCHEMA_URL,
         "kind": "layerforge.dalg",
         "schema_version": CANONICAL_DALG_SCHEMA_VERSION,
         "canvas": canvas,
