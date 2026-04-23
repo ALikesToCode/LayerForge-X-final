@@ -151,3 +151,23 @@ def test_select_editable_layer_auto_falls_back_to_heuristic_on_gemini_error(monk
 
     assert selected is not None
     assert selected["name"] == "000_red_car"
+
+
+def test_export_target_assets_point_only_records_inferred_semantic_identity(tmp_path: Path, monkeypatch) -> None:
+    run_dir = _make_run(tmp_path, copy_like_background=False)
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    manifest["ordered_layers_near_to_far"][0]["name"] = "000_object_region"
+    manifest["ordered_layers_near_to_far"][0]["label"] = "object region"
+    (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "layerforge.editability._gemini_infer_target_prompt",
+        lambda *args, **kwargs: "red car",
+    )
+
+    exported = export_target_assets(run_dir, output_dir=tmp_path / "extract_point", point=(16, 16))
+
+    assert exported["selected_target"]["name"] == "000_object_region"
+    assert exported["selected_target"]["semantic_label"] == "red car"
+    assert exported["selected_target"]["semantic_name"] == "red_car"
+    assert exported["resolved_prompt"] == "red car"

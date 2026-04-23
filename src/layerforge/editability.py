@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,50 @@ DEFAULT_TARGET_SELECTION_CONFIG = {
     "gemini_model": "gemini-2.5-flash",
     "gemini_max_side": 1024,
     "gemini_timeout_sec": 180,
+    "infer_prompt_from_geometry": True,
+    "geometry_prompt_backend": "auto",
+    "siglip_model": "google/siglip2-base-patch16-224",
+}
+
+SIGLIP2_TARGET_LABELS = [
+    "building",
+    "building facade",
+    "office building",
+    "wall",
+    "window",
+    "road",
+    "street",
+    "sky",
+    "tree",
+    "plant",
+    "grass",
+    "person",
+    "truck",
+    "car",
+    "bus",
+    "bicycle",
+    "motorcycle",
+    "wheel",
+    "chair",
+    "table",
+    "sofa",
+    "furniture",
+    "food",
+    "sign",
+    "glass panel",
+    "door",
+    "boat",
+    "animal",
+]
+
+VISUAL_LABEL_CANONICAL_MAP = {
+    "building facade": "building",
+    "office building": "building",
+    "wall": "building",
+    "window": "building",
+    "street": "road",
+    "plant": "tree",
+    "furniture": "chair",
 }
 
 
@@ -179,6 +224,134 @@ def _layer_text_score(layer: dict[str, Any], prompt: str | None) -> float:
     ).lower()
     matches = sum(1 for token in tokens if token in hay)
     return float(matches) / float(max(1, len(tokens)))
+
+
+def _slugify_label(text: str | None) -> str | None:
+    tokens = _tokenize(text)
+    if not tokens:
+        return None
+    return "_".join(tokens[:6])
+
+
+def _canonicalize_visual_label(label: str | None) -> str | None:
+    normalized = " ".join(_tokenize(label))
+    if not normalized:
+        return None
+    return VISUAL_LABEL_CANONICAL_MAP.get(normalized, normalized)
+
+
+def _cue_crop(input_rgb: np.ndarray, *, point: tuple[int, int] | None, box: tuple[int, int, int, int] | None) -> Image.Image:
+    h, w = input_rgb.shape[:2]
+    if box is not None:
+        x1, y1, x2, y2 = [int(v) for v in box]
+    elif point is not None:
+        px, py = [int(v) for v in point]
+        radius = max(48, min(h, w) // 8)
+        x1, y1, x2, y2 = px - radius, py - radius, px + radius, py + radius
+    else:
+        return Image.fromarray(input_rgb, mode="RGB")
+    pad = 24
+    x1 = max(0, x1 - pad)
+    y1 = max(0, y1 - pad)
+    x2 = min(w, x2 + pad)
+    y2 = min(h, y2 + pad)
+    if x2 <= x1 or y2 <= y1:
+        return Image.fromarray(input_rgb, mode="RGB")
+    return Image.fromarray(input_rgb[y1:y2, x1:x2], mode="RGB")
+
+
+def _gemini_infer_target_prompt(
+    *,
+    input_rgb: np.ndarray,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    cfg: dict[str, Any],
+) -> str | None:
+    from .gemini_io import gemini_generate_content, parse_jsonish_text, prepare_gemini_image
+
+    crop = _cue_crop(input_rgb, point=point, box=box)
+    prepared = prepare_gemini_image(crop, int(cfg.get("gemini_max_side", 1024)))
+    prompt_text = (
+        "Identify the single primary object or surface indicated by this image crop.\n"
+        f"Point hint: {list(point) if point is not None else None}\n"
+        f"Box hint: {list(box) if box is not None else None}\n"
+        'Return JSON only as {"target_label":"short noun phrase"}.\n'
+        "Use a concise semantic label such as building, glass panel, road sign, person, truck, wheel, chair, or window."
+    )
+    text = gemini_generate_content(
+        prepared,
+        prompt_text,
+        model=str(cfg.get("gemini_model", "gemini-2.5-flash")),
+        timeout_sec=int(cfg.get("gemini_timeout_sec", 180)),
+        response_mime_type="application/json",
+    )
+    payload = parse_jsonish_text(text)
+    if isinstance(payload, dict):
+        label = str(payload.get("target_label", "")).strip().lower()
+    else:
+        label = str(payload).strip().lower()
+    return label or None
+
+
+@lru_cache(maxsize=2)
+def _load_siglip2_zero_shot_pipeline(model_name: str):
+    from transformers import pipeline
+
+    return pipeline("zero-shot-image-classification", model=model_name, device="cpu")
+
+
+def _siglip2_infer_target_prompt(
+    *,
+    input_rgb: np.ndarray,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    cfg: dict[str, Any],
+) -> str | None:
+    crop = _cue_crop(input_rgb, point=point, box=box)
+    pipe = _load_siglip2_zero_shot_pipeline(str(cfg.get("siglip_model", "google/siglip2-base-patch16-224")))
+    results = pipe(crop, candidate_labels=SIGLIP2_TARGET_LABELS)
+    if not results:
+        return None
+    label = str(results[0].get("label", "")).strip().lower()
+    return _canonicalize_visual_label(label)
+
+
+def _infer_target_prompt_from_geometry(
+    *,
+    input_rgb: np.ndarray,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    cfg: dict[str, Any],
+) -> str | None:
+    backend = str(cfg.get("geometry_prompt_backend", "auto")).lower()
+    if backend not in {"auto", "gemini", "siglip2", "none"}:
+        raise ValueError(f"Unsupported geometry prompt backend: {backend}")
+    if backend == "none":
+        return None
+    if backend in {"auto", "gemini"}:
+        try:
+            label = _gemini_infer_target_prompt(input_rgb=input_rgb, point=point, box=box, cfg=cfg)
+            if label:
+                return _canonicalize_visual_label(label)
+        except Exception:
+            if backend == "gemini":
+                raise
+    if backend in {"auto", "siglip2"}:
+        return _siglip2_infer_target_prompt(input_rgb=input_rgb, point=point, box=box, cfg=cfg)
+    return None
+
+
+def infer_target_prompt_from_geometry(
+    input_rgb: np.ndarray,
+    *,
+    point: tuple[int, int] | None = None,
+    box: tuple[int, int, int, int] | None = None,
+    cfg: dict[str, Any] | None = None,
+) -> str | None:
+    config = dict(DEFAULT_TARGET_SELECTION_CONFIG)
+    if cfg:
+        config.update(cfg)
+    return _infer_target_prompt_from_geometry(input_rgb=input_rgb, point=point, box=box, cfg=config)
 
 
 def _score_editable_layers(
@@ -395,9 +568,28 @@ def select_editable_layer(
     config = dict(DEFAULT_TARGET_SELECTION_CONFIG)
     if cfg:
         config.update(cfg)
+    inferred_prompt: str | None = None
+    effective_prompt = prompt
+    if (
+        input_rgb is not None
+        and not prompt
+        and bool(point or box)
+        and bool(config.get("infer_prompt_from_geometry", True))
+    ):
+        try:
+            inferred_prompt = _infer_target_prompt_from_geometry(
+                input_rgb=input_rgb,
+                point=point,
+                box=box,
+                cfg=config,
+            )
+            if inferred_prompt:
+                effective_prompt = inferred_prompt
+        except Exception:
+            inferred_prompt = None
     candidates = _score_editable_layers(
         layers,
-        prompt=prompt,
+        prompt=effective_prompt,
         point=point,
         box=box,
         target_name=target_name,
@@ -407,13 +599,13 @@ def select_editable_layer(
     backend = str(config.get("backend", "auto")).lower()
     if backend not in {"heuristic", "auto", "gemini", "hybrid"}:
         raise ValueError(f"Unsupported target selection backend: {backend}")
-    use_gemini = backend in {"auto", "gemini", "hybrid"} and bool(prompt or point or box)
+    use_gemini = backend in {"auto", "gemini", "hybrid"} and bool(effective_prompt or point or box)
     if use_gemini:
         top_candidates = [layer for _, layer in candidates[: max(1, int(config.get("candidate_limit", 6)))]]
         try:
             selected_name = _gemini_select_layer_name(
                 top_candidates,
-                prompt=prompt,
+                prompt=effective_prompt,
                 point=point,
                 box=box,
                 input_rgb=input_rgb,
@@ -422,11 +614,21 @@ def select_editable_layer(
             if selected_name:
                 for _, layer in candidates:
                     if str(layer.get("name")) == selected_name:
-                        return layer
+                        resolved = dict(layer)
+                        if inferred_prompt:
+                            resolved["semantic_label"] = inferred_prompt
+                            resolved["semantic_name"] = _slugify_label(inferred_prompt)
+                            resolved["resolved_prompt"] = inferred_prompt
+                        return resolved
         except Exception:
             if backend == "gemini":
                 raise
-    return candidates[0][1]
+    resolved = dict(candidates[0][1])
+    if inferred_prompt:
+        resolved["semantic_label"] = inferred_prompt
+        resolved["semantic_name"] = _slugify_label(inferred_prompt)
+        resolved["resolved_prompt"] = inferred_prompt
+    return resolved
 
 
 def evaluate_run_editability(
@@ -655,11 +857,14 @@ def export_target_assets(
         "selected_target": {
             "name": target["name"],
             "label": target["label"],
+            "semantic_name": target.get("semantic_name"),
+            "semantic_label": target.get("semantic_label"),
             "group": target["group"],
             "rank": int(target["rank"]),
             "bbox": [int(v) for v in target["bbox"]],
         },
         "prompt": prompt,
+        "resolved_prompt": target.get("resolved_prompt"),
         "point": list(point) if point is not None else None,
         "box": list(box) if box is not None else None,
         "exports": {

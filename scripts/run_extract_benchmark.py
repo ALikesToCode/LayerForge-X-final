@@ -72,17 +72,29 @@ def center_from_alpha(alpha: np.ndarray) -> tuple[int, int]:
 def evaluate_query(run_dir: Path, scene_dir: Path, query_name: str, kwargs: dict, gt_name: str, gt_alpha: np.ndarray, out_root: Path) -> dict:
     query_out = out_root / query_name
     metadata = export_target_assets(run_dir, output_dir=query_out, **kwargs)
+    selected_target = metadata["selected_target"]
     pred_alpha = np.asarray(Image.open(query_out / "target_alpha.png").convert("L"), dtype=np.uint8).astype(np.float32) / 255.0
     pred_mask = pred_alpha > 0.05
     gt_mask = gt_alpha > 0.05
-    selected_name = str(metadata["selected_target"]["name"])
-    hit = gt_name in selected_name or selected_name in gt_name
+    selected_name = str(selected_target["name"])
+    semantic_candidates = [
+        selected_name,
+        str(selected_target.get("label", "")),
+        str(selected_target.get("semantic_name", "")),
+        str(selected_target.get("semantic_label", "")),
+        str(metadata.get("resolved_prompt", "")),
+    ]
+    gt_key = gt_name.replace(" ", "_").lower()
+    normalized = [item.replace(" ", "_").lower() for item in semantic_candidates if item]
+    hit = any(gt_key in item or item in gt_key for item in normalized)
     alpha_mae = float(np.mean(np.abs(pred_alpha - gt_alpha)))
     row = {
         "scene": scene_dir.name,
         "query_type": query_name,
         "target_name": gt_name,
         "selected_name": selected_name,
+        "selected_semantic_name": selected_target.get("semantic_name"),
+        "selected_semantic_label": selected_target.get("semantic_label"),
         "target_hit": bool(hit),
         "target_iou": float(mask_iou(gt_mask, pred_mask)),
         "alpha_mae": alpha_mae,

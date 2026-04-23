@@ -62,6 +62,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "gemini_model": "gemini-2.5-flash",
         "gemini_max_side": 1024,
         "gemini_timeout_sec": 180,
+        "infer_prompt_from_geometry": True,
+        "geometry_prompt_backend": "auto",
+        "siglip_model": "google/siglip2-base-patch16-224",
     },
     "qwen": {
         "min_alpha": 0.02,

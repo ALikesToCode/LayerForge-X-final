@@ -74,6 +74,9 @@ target_selection:
   gemini_model: gemini-2.5-flash
   gemini_max_side: 1024
   gemini_timeout_sec: 180
+  infer_prompt_from_geometry: true
+  geometry_prompt_backend: auto
+  siglip_model: google/siglip2-base-patch16-224
 qwen:
   min_alpha: 0.02
   preserve_external_order: false
