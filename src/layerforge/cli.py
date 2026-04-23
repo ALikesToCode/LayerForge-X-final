@@ -9,6 +9,7 @@ from .dalg import export_dalg_manifest
 from .editability import export_target_assets
 from .pipeline import LayerForgePipeline
 from .transparent import export_transparent_assets
+from .webui import serve_webui
 
 
 def parse_prompts(text: str | None) -> list[str] | None:
@@ -294,6 +295,10 @@ def cmd_train_ranker(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_webui(args: argparse.Namespace) -> int:
+    return serve_webui(host=args.host, port=args.port, open_browser=args.open_browser)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="layerforge", description="LayerForge-X: depth-aware amodal layer graph generator")
     sub = p.add_subparsers(dest="command", required=True)
@@ -465,6 +470,12 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--device", default="auto")
     train.add_argument("--max-scenes", type=int, default=None)
     train.set_defaults(func=cmd_train_ranker)
+
+    webui = sub.add_parser("webui", help="Serve the local browser interface for editors, reviewers, and non-CLI users")
+    webui.add_argument("--host", default="127.0.0.1")
+    webui.add_argument("--port", type=int, default=8765)
+    webui.add_argument("--open-browser", action="store_true")
+    webui.set_defaults(func=cmd_webui)
     return p
 
 

@@ -148,11 +148,11 @@ def export_transparent_assets(
         "point": list(point) if point is not None else None,
         "box": list(box) if box is not None else None,
         "exports": {
-            "transparent_foreground_rgba": str((output_root / "transparent_foreground_rgba.png").resolve()),
-            "estimated_clean_background": str((output_root / "estimated_clean_background.png").resolve()),
-            "background_from_remaining_layers": str((output_root / "background_from_remaining_layers.png").resolve()),
-            "alpha_map": str((output_root / "alpha_map.png").resolve()),
-            "recomposition": str((output_root / "recomposition.png").resolve()),
+            "transparent_foreground_rgba": str((output_root / "transparent_foreground_rgba.png").relative_to(output_root)),
+            "estimated_clean_background": str((output_root / "estimated_clean_background.png").relative_to(output_root)),
+            "background_from_remaining_layers": str((output_root / "background_from_remaining_layers.png").relative_to(output_root)),
+            "alpha_map": str((output_root / "alpha_map.png").relative_to(output_root)),
+            "recomposition": str((output_root / "recomposition.png").relative_to(output_root)),
         },
     }
     write_json(output_root / "transparent_metrics.json", metrics)

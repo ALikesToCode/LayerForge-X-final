@@ -1,0 +1,182 @@
+(async function boot() {
+  const runtime = await fetchJson("/api/runtime");
+  const project = runtime && runtime.available ? await fetchJson("/api/project-summary") : await fetchJson("site-data/project_site.json");
+  if (project) renderRuntimeStatus(runtime, project);
+  wireForm(runtime);
+})();
+
+async function fetchJson(path) {
+  try {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error(`Failed to load ${path}`);
+    return await response.json();
+  } catch (error) {
+    console.warn(error);
+    return null;
+  }
+}
+
+function renderRuntimeStatus(runtime, project) {
+  const target = document.getElementById("runtime-status");
+  if (!target) return;
+  if (runtime && runtime.available) {
+    target.innerHTML = `
+      <article class="status-card">
+        <span class="metric-card__label">Runtime</span>
+        <strong class="metric-card__value">Local server ready</strong>
+        <div class="benchmark-card__body">Root: <code>${escapeHtml(runtime.repo_root)}</code></div>
+      </article>
+      <article class="status-card">
+        <span class="metric-card__label">Recommended command</span>
+        <strong class="metric-card__value"><code>${escapeHtml(project.local_lab.entrypoint)}</code></strong>
+      </article>
+    `;
+    document.getElementById("run-button").disabled = false;
+    document.getElementById("run-hint").textContent = "Local runtime is active. Upload an image and select a mode.";
+    return;
+  }
+  target.innerHTML = `
+    <article class="status-card">
+      <span class="metric-card__label">Runtime</span>
+      <strong class="metric-card__value">Static Pages mode</strong>
+      <div class="benchmark-card__body">The public site can browse the evidence pack, but local runs require the Python web UI server.</div>
+    </article>
+  `;
+}
+
+function wireForm(runtime) {
+  const form = document.getElementById("webui-form");
+  if (!form) return;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!runtime || !runtime.available) return;
+
+    const status = document.getElementById("run-status");
+    const button = document.getElementById("run-button");
+    const fileInput = form.elements.image;
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      setStatus("Select an input image before starting a local run.", "error");
+      return;
+    }
+
+    button.disabled = true;
+    setStatus("Running the LayerForge pipeline locally. The browser request will stay open until the selected mode completes.", "pending");
+
+    try {
+      const imageBase64 = await fileToBase64(file);
+      const payload = {
+        mode: form.elements.mode.value,
+        filename: file.name,
+        image_base64: imageBase64,
+        config: form.elements.config.value,
+        segmenter: emptyToNull(form.elements.segmenter.value),
+        depth: emptyToNull(form.elements.depth.value),
+        prompt: emptyToNull(form.elements.prompt.value),
+        point: emptyToNull(form.elements.point.value),
+        box: emptyToNull(form.elements.box.value),
+        prompt_source: emptyToNull(form.elements.prompt_source.value),
+        ordering: emptyToNull(form.elements.ordering.value),
+        device: emptyToNull(form.elements.device.value) || "auto",
+        max_layers: emptyToNull(form.elements.max_layers.value),
+        no_parallax: form.elements.no_parallax.checked,
+      };
+      const response = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "LayerForge run failed");
+      renderResult(result);
+      setStatus(`Completed ${result.mode} for ${result.input_filename}.`, "success");
+    } catch (error) {
+      setStatus(error.message || String(error), "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+function renderResult(result) {
+  const metricsTarget = document.getElementById("result-metrics");
+  const linksTarget = document.getElementById("result-links");
+  const previewsTarget = document.getElementById("result-previews");
+
+  const metricEntries = Object.entries(result.summary_metrics || {}).map(([key, value]) => ({
+    label: key.replaceAll("_", " "),
+    value: typeof value === "number" ? value.toFixed(4) : JSON.stringify(value),
+  }));
+  metricsTarget.innerHTML = metricEntries
+    .map(
+      (item) => `
+        <article class="benchmark-card">
+          <div class="benchmark-card__label">${escapeHtml(item.label)}</div>
+          <strong class="benchmark-card__value">${escapeHtml(item.value)}</strong>
+        </article>
+      `,
+    )
+    .join("");
+
+  linksTarget.innerHTML = Object.entries(result.urls || {})
+    .filter(([, value]) => value)
+    .map(
+      ([key, value]) => `
+        <article class="doc-card result-link">
+          <a href="${value}" target="_blank" rel="noreferrer">
+            <div class="doc-card__title">${escapeHtml(key)}</div>
+            <div class="doc-card__body">${escapeHtml(value)}</div>
+          </a>
+        </article>
+      `,
+    )
+    .join("");
+
+  previewsTarget.innerHTML = (result.previews || [])
+    .map(
+      (item) => `
+        <article class="figure-card">
+          <a href="${item.url}" target="_blank" rel="noreferrer">
+            <img src="${item.url}" alt="${escapeHtml(item.label)}" loading="lazy" />
+            <div class="figure-card__title">${escapeHtml(item.label)}</div>
+          </a>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const comma = result.indexOf(",");
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(reader.error || new Error("Failed to read upload"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function emptyToNull(value) {
+  const text = String(value || "").trim();
+  return text ? text : null;
+}
+
+function setStatus(message, state) {
+  const status = document.getElementById("run-status");
+  status.className = "status-banner";
+  if (state === "error") status.classList.add("is-error");
+  if (state === "pending") status.classList.add("is-pending");
+  status.textContent = message;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
