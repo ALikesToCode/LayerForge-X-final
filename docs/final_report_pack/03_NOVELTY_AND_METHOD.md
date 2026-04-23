@@ -1,4 +1,4 @@
-# 3. Method
+# 4. Method
 
 ## Core idea
 

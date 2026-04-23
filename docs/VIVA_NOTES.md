@@ -44,7 +44,7 @@ The graph edges carry pairwise occlusion evidence. That gives the representation
 - `runs/demo_grounded_depthpro_final/debug/ordered_layer_contact_sheet.png`
 - `runs/demo_grounded_depthpro_final/debug/segmentation_overlay.png`
 - `runs/demo_grounded_depthpro_final/debug/layer_graph.json`
-- `docs/RESULTS_SUMMARY_2026_04_19.md`
+- `docs/RESULTS_SUMMARY_CURRENT.md`
 
 ## Best closing line
 

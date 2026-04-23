@@ -66,7 +66,7 @@ Notes:
 
 Notes:
 
-- measured from `runs/frontier_review/editability_suite_summary.json`;
+- measured from `report_artifacts/metrics_snapshots/editability_suite_summary.json`;
 - this suite is the anti-triviality guardrail for the frontier selector: `Qwen raw (4)` reconstructs reasonably well, but its object-removal response is near zero and its background-hole ratio is effectively `1.0`;
 - the hybrid rows currently post the strongest edit-success scores because imported generative stacks plus explicit LayerForge metadata remain easy to move, recolor, and remove without damaging the rest of the frame.
 
@@ -109,7 +109,7 @@ Notes:
 
 Notes:
 
-- measured from `runs/frontier_review/frontier_summary.json`;
+- measured from `report_artifacts/metrics_snapshots/frontier_review_summary.json`;
 - this table is about candidate selection and representation quality, not a blanket "beats Qwen" claim;
 - the current best-image winners are `LayerForge native` for `truck`, `astronaut`, `coffee`, and the synthetic scene, with `Qwen + graph reorder (4)` winning `chelsea_cat`;
 - the self-eval change matters: the hardened selector now penalizes trivial copy-like backgrounds instead of rewarding them for near-perfect recomposition.
@@ -126,7 +126,7 @@ Notes:
 
 Notes:
 
-- measured from `runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`;
+- measured from `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`;
 - this benchmark intentionally separates semantic target hit from overlap and alpha quality;
 - the current weakness is prompt routing for point-only and box-only queries, not matte stability.
 
@@ -142,6 +142,6 @@ Notes:
 
 Notes:
 
-- measured from `runs/transparent_benchmark/transparent_benchmark_summary.json`;
+- measured from `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`;
 - this should be framed as an approximate transparent-layer recovery mode, not a claim of state-of-the-art generative transparent decomposition;
 - the strongest scene family is `flare_ring`, while `semi_transparent_panel` remains the hardest synthetic variant in the current prototype.

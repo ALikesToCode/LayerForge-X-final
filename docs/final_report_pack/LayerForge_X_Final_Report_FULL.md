@@ -21,7 +21,7 @@ This report makes six concrete claims:
 
 \newpage
 
-# 2. Related Work
+# 3. Related Work
 
 ## Project framing
 
@@ -171,7 +171,7 @@ Single-image layered scene decomposition sits at the intersection of image-based
 
 \newpage
 
-# 3. Method
+# 4. Method
 
 ## Core idea
 
@@ -968,7 +968,7 @@ Alpha compositing and the set of output files.
 
 \newpage
 
-# 4. Experiments and Evaluation Protocol
+# 5. Experiments and Evaluation Protocol
 
 ## Goal
 
@@ -984,7 +984,7 @@ The project shouldn't be evaluated with one vague "looks good" comparison. A lay
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the current repository state, the completed quantitative runs are summarised in `docs/RESULTS_SUMMARY_2026_04_19.md`. That file should be treated as the source of truth for reported numbers.
+For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the source of truth for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
 
 ---
 
@@ -1512,7 +1512,7 @@ If the report needs one paragraph summarising the whole evaluation, this is the 
 > We evaluate LayerForge-X across four axes: segmentation quality, layer-order correctness, recomposition fidelity, and editability. Standard panoptic metrics measure visible semantic grouping, while a synthetic layer benchmark and RGB-D datasets measure pairwise depth-order accuracy. Recomposition metrics verify that the exported RGBA stack preserves the original image. Finally, object removal, object movement, parallax, and intrinsic recolouring demonstrate that the representation is genuinely useful for editing rather than being a segmentation visualisation in disguise.
 
 
-## 5. Results
+## 6. Results
 
 ### Hero figures
 
@@ -1606,11 +1606,11 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
 
-## 6. Discussion
+## 7. Discussion
 
 The strongest reading of the current results is not that LayerForge-X universally beats generative decomposers on raw pixels. The stronger claim is that it turns native, generative, and recursive decompositions into one explicit editable graph representation with auditable metrics and exportable structure. Qwen remains the right generative RGBA baseline. LayerForge-X remains strongest when framed as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
 
-## 7. Limitations
+## 8. Limitations
 
 Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md) and [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md). The report should explicitly keep:
 
@@ -1624,22 +1624,45 @@ Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TAB
 - point-only and box-only prompt-routing ambiguity;
 - transparent-layer recovery that is still approximate rather than generative.
 
-## 8. Conclusion
+## 9. Conclusion
 
 LayerForge-X is now best understood as a self-evaluating layer-representation system rather than a simple decomposition script. It can produce native graph layers, enrich frontier RGBA layers, run recursive peeling, measure editability, benchmark prompt extraction, approximate transparent recovery, and export a canonical DALG manifest. That combination is the core project contribution.
 
+# 10. References
+
+1. Shade, J., Gortler, S., He, L., and Szeliski, R. Layered Depth Images. SIGGRAPH 1998.
+2. Shih, M.-L., Su, S.-Y., Kopf, J., and Huang, J.-B. 3D Photography using Context-aware Layered Depth Inpainting. CVPR 2020.
+3. Kirillov, A. et al. Panoptic Segmentation. CVPR 2019.
+4. Cheng, B. et al. Mask2Former for Universal Image Segmentation. CVPR 2022.
+5. Liu, S. et al. Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection. ECCV 2024 / arXiv 2023.
+6. Ravi, N. et al. SAM 2: Segment Anything in Images and Videos. 2024.
+7. Xiao, B. et al. Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks. CVPR 2024.
+8. Bochkovskiy, A. et al. Depth Pro: Sharp Monocular Metric Depth in Less Than a Second. 2024.
+9. Yang, Y. et al. Generative Image Layer Decomposition with Visual Effects. CVPR 2025.
+10. DiffDecompose: Layer-Wise Decomposition of Alpha-Composited Images via Diffusion Transformers. arXiv 2025.
+11. Referring Layer Decomposition. arXiv 2026.
+12. Qwen-Image-Layered: Towards Inherent Editability via Layer Decomposition. 2025.
+13. Yao, J. et al. Matte Anything. 2024.
+14. Suvorov, R. et al. Resolution-robust Large Mask Inpainting with Fourier Convolutions. WACV 2022.
+15. Bell, S. et al. Intrinsic Images in the Wild. SIGGRAPH 2014.
+16. Tai, Y. et al. Segment Anything, Even Occluded. 2025.
+
+
 ## Appendix A: artifact map
 
-Primary source files for the report narrative:
+Submission source-of-truth files:
 
-- [../RESULTS_SUMMARY_2026_04_19.md](../RESULTS_SUMMARY_2026_04_19.md)
+- [../../PROJECT_MANIFEST.json](../../PROJECT_MANIFEST.json)
+- [../../report_artifacts/README.md](../../report_artifacts/README.md)
+- [../../report_artifacts/metrics_snapshots/](../../report_artifacts/metrics_snapshots)
+- [../../report_artifacts/figure_sources/figure_manifest.json](../../report_artifacts/figure_sources/figure_manifest.json)
+- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
+- [../RESULTS_SUMMARY_CURRENT.md](../RESULTS_SUMMARY_CURRENT.md)
 - [../QWEN_IMAGE_LAYERED_COMPARISON.md](../QWEN_IMAGE_LAYERED_COMPARISON.md)
 - [../REPORT_TABLES.md](../REPORT_TABLES.md)
 - [../FIGURES.md](../FIGURES.md)
-- [../NEXT_REVIEW_CHECKLIST_2026_04_22.md](../NEXT_REVIEW_CHECKLIST_2026_04_22.md)
 - [../PRODUCT_ARCHITECTURE_AND_LAUNCH.md](../PRODUCT_ARCHITECTURE_AND_LAUNCH.md)
 - [../api/openapi.yaml](../api/openapi.yaml)
-- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
 
 ## Appendix B: extended tables and ablations
 
@@ -1647,7 +1670,7 @@ Primary source files for the report narrative:
 
 # Appendix B. Extended Tables and Ablations
 
-This document collects every planned ablation, every table the report needs, every figure the report needs, and the slide sequence for the presentation. It is the working document — fill values in as runs complete.
+This appendix collects the extended quantitative tables, ablation templates, and failure-analysis material that support the main report.
 
 ## Completed runs snapshot
 
@@ -1836,115 +1859,12 @@ One row per failure example. Talking about failures explicitly is one of the eas
 
 ---
 
-# Required figures
 
-## Figure 1: Pipeline diagram
+## Appendix C: command log
 
-A flow diagram in the order the pipeline runs:
+- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
 
-```text
-RGB input
-→ semantic proposals
-→ monocular depth
-→ soft alpha
-→ amodal masks
-→ occlusion graph
-→ completion
-→ intrinsic split
-→ RGBA layer stack
-```
+## Appendix D: extra literature notes
 
-## Figure 2: DALG representation
-
-A graph drawing. Nodes are layers; arrows are "occludes" edges. Use colour to distinguish semantic groups.
-
-## Figure 3: Ordered layer contact sheet
-
-All layers for a single scene, laid out near → far. This one sells the project visually better than any table.
-
-Measured file available now:
-
-```text
-docs/figures/truck_layer_stack_comparison.png
-```
-
-## Figure 4: Baseline vs full
-
-A comparison grid. Columns step through the key ablations:
-
-```text
-Input | hard masks | semantic only | depth-aware | full LayerForge-X
-```
-
-Rows cover a mix of domains so no single content type dominates:
-
-```text
-person street
-indoor furniture
-vehicle scene
-animal scene
-anime/vector scene
-```
-
-Measured file available now:
-
-```text
-docs/figures/truck_recomposition_comparison.png
-```
-
-## Figure 5: Occlusion graph improvement
-
-Pick a single scene where the global-median-depth ordering fails and the boundary graph gets it right. Highlight the contested edge.
-
-## Figure 6: Editing demo
-
-Rows:
-
-```text
-object removal
-object movement
-parallax
-albedo recolor
-background blur
-```
-
-## Figure 7: Failure cases
-
-Do not skip this. A report without a failure-cases figure looks like the author hid the hard examples.
-
-Additional measured figure files already generated:
-
-```text
-docs/figures/truck_metrics_comparison.png
-docs/figures/synthetic_ordering_ablation.png
-docs/figures/qualitative_gallery.png
-```
-
----
-
-# Presentation pitch
-
-Slide sequence for the talk:
-
-1. Problem — raster images are entangled.
-2. Motivation — editing needs layers.
-3. Related work map — LDI → 3D photo → panoptic / open-vocab → modern layer decomposition.
-4. Key idea — Depth-Aware Amodal Layer Graph.
-5. Pipeline.
-6. Boundary-weighted occlusion graph (the algorithmic contribution slide).
-7. Outputs.
-8. Benchmark tracks.
-9. Quantitative results.
-10. Qualitative edits.
-11. Ablations.
-12. Failure cases.
-13. Conclusion.
-
----
-
-# One-minute oral explanation
-
-The short script if someone asks "what's your project?" at a poster session:
-
-Single images are hard to edit because every scene element gets fused into one RGB canvas. My system converts that canvas into a structured layer graph. Each node is a semantic RGBA layer with a visible mask, a soft alpha, depth statistics, an estimated amodal extent, and optional albedo and shading. The edges record which layers occlude which. Instead of sorting masks by average depth, I build a boundary-weighted occlusion graph from local depth evidence near object contacts. That yields a near-to-far stack you can recompose, edit, inpaint, and animate. The evaluation doesn't stop at segmentation metrics — it also covers layer-order accuracy, recomposition error, amodal completion quality, and actual editing demonstrations.
-
+- [../LITERATURE_REVIEW.md](../LITERATURE_REVIEW.md)
+- [../REFERENCES.md](../REFERENCES.md)

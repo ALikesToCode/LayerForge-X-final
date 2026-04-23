@@ -1,4 +1,4 @@
-# 4. Experiments and Evaluation Protocol
+# 5. Experiments and Evaluation Protocol
 
 ## Goal
 
@@ -14,7 +14,7 @@ The project shouldn't be evaluated with one vague "looks good" comparison. A lay
 
 Because any of those can be wrong while the others look fine, the benchmark runs on multiple tracks.
 
-For the current repository state, the completed quantitative runs are summarised in `docs/RESULTS_SUMMARY_2026_04_19.md`. That file should be treated as the source of truth for reported numbers.
+For the current repository state, treat `PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` as the source of truth for reported numbers. `docs/RESULTS_SUMMARY_CURRENT.md` is the human-readable bridge to those artifacts.
 
 ---
 

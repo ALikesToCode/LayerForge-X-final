@@ -1,12 +1,14 @@
 # Figure Pack
 
-This is the figure index for the measured runs currently present in the repo.
+This is the figure index for the measured runs currently present in the local repo.
 
 Regenerate everything with:
 
 ```bash
 .venv/bin/python scripts/generate_report_figures.py
 ```
+
+Full regeneration requires the local heavyweight `runs/`, `results/`, and `data/` directories. In the submission ZIP, the pre-generated PNG files in `docs/figures/` are the delivered artifacts, and `report_artifacts/figure_sources/figure_manifest.json` records the raw dependencies used to make them.
 
 Generated assets:
 

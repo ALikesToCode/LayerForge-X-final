@@ -1,4 +1,4 @@
-# 2. Related Work
+# 3. Related Work
 
 ## Project framing
 

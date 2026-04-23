@@ -33,8 +33,19 @@ def repo_path(value: str | Path) -> Path:
     return path if path.is_absolute() else ROOT / path
 
 
+def _missing_artifact_error(resolved: Path) -> FileNotFoundError:
+    return FileNotFoundError(
+        "Missing source artifact for figure regeneration: "
+        f"{resolved}. Full figure regeneration requires the local heavyweight runs/results/data directories. "
+        "The submission ZIP ships pre-generated figures plus report_artifacts/metrics_snapshots instead."
+    )
+
+
 def load_json(path: str | Path) -> dict:
-    return json.loads(repo_path(path).read_text(encoding="utf-8"))
+    resolved = repo_path(path)
+    if not resolved.exists():
+        raise _missing_artifact_error(resolved)
+    return json.loads(resolved.read_text(encoding="utf-8"))
 
 
 def load_json_if_exists(path: str | Path) -> dict | None:
@@ -71,7 +82,10 @@ def ensure_image_miou_metrics(summary: dict) -> dict:
 
 
 def load_image(path: str | Path) -> Image.Image:
-    return Image.open(repo_path(path)).convert("RGBA")
+    resolved = repo_path(path)
+    if not resolved.exists():
+        raise _missing_artifact_error(resolved)
+    return Image.open(resolved).convert("RGBA")
 
 
 def load_font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -822,6 +836,74 @@ def generate_public_depth_comparison(output_dir: Path) -> str:
     return save(canvas, output_dir / "public_depth_comparison.png")
 
 
+def generate_effects_layer_demo(output_dir: Path) -> str:
+    base = "runs/effects_groundtruth_demo_cutting_edge"
+    cards = [
+        card_with_image(
+            title="Input",
+            subtitle="Observed RGB image",
+            image_path=f"{base}/input_rgb.png",
+            footer_lines=["Synthetic LayerBench++ scene used for the controlled effect-layer demo."],
+            accent=BLUE,
+            size=(420, 430),
+            image_box=(376, 228),
+        ),
+        card_with_image(
+            title="Clean Reference",
+            subtitle="Background without the foreground object",
+            image_path=f"{base}/reference_without_object.png",
+            footer_lines=["Used as the clean background target for residual/effect estimation."],
+            accent=GREEN,
+            size=(420, 430),
+            image_box=(376, 228),
+        ),
+        card_with_image(
+            title="Ground-Truth Effect",
+            subtitle="Target shadow/effect RGBA",
+            image_path=f"{base}/ground_truth_effect_rgba.png",
+            footer_lines=["Checkerboard preview of the transparent ground-truth effect layer."],
+            accent=ORANGE,
+            size=(420, 430),
+            image_box=(376, 228),
+            use_checkerboard=True,
+        ),
+        card_with_image(
+            title="Predicted Effect",
+            subtitle="Heuristic associated-effect extractor",
+            image_path=f"{base}/predicted_effect_rgba.png",
+            footer_lines=["Prototype result; evaluated separately from the main decomposition metrics."],
+            accent=CLAY,
+            size=(420, 430),
+            image_box=(376, 228),
+            use_checkerboard=True,
+        ),
+    ]
+    metrics = load_json(f"{base}/metrics.json")
+    canvas = Image.new("RGB", (1820, 980), BG)
+    y = make_title_block(
+        canvas,
+        "Associated-Effect Prototype",
+        "Controlled synthetic demo showing the observed input, the clean background reference, the target effect layer, and the predicted effect layer. "
+        "This figure documents what the heuristic module exports; it is not a claim that shadow/reflection decomposition is solved.",
+    )
+    place_grid(canvas, cards, origin=(36, y), cols=4, gap=18)
+    draw = ImageDraw.Draw(canvas)
+    callout_y = y + 460
+    draw.rounded_rectangle((36, callout_y, 1784, 910), radius=22, fill=(251, 248, 240), outline=DIVIDER, width=2)
+    draw.text((60, callout_y + 22), "Measured Readout", font=FONT_H3, fill=TEXT)
+    draw_wrapped_text(
+        draw,
+        (60, callout_y + 62),
+        f"Effect IoU = {float(metrics['effect_iou']):.4f}; predicted effect pixels = {int(metrics['predicted_effect_pixels'])}; "
+        f"ground-truth effect pixels = {int(metrics['ground_truth_effect_pixels'])}. "
+        "Use this as a prototype associated-effect result inspired by visual-effect layer decomposition.",
+        FONT_BODY,
+        TEXT,
+        1660,
+    )
+    return save(canvas, output_dir / "effects_layer_demo.png")
+
+
 def generate_frontier_review(output_dir: Path) -> str:
     summary = load_json("runs/frontier_review/frontier_summary.json")
     color_map = {
@@ -858,7 +940,7 @@ def generate_frontier_review(output_dir: Path) -> str:
     for row in summary.get("best_by_image", []):
         win_counts[str(row["label"])] = win_counts.get(str(row["label"]), 0) + 1
 
-    canvas = Image.new("RGB", (1820, 1150), BG)
+    canvas = Image.new("RGB", (1820, 1080), BG)
     y = make_title_block(
         canvas,
         "Frontier Review: Self-Evaluating Candidate Bank",
@@ -895,7 +977,7 @@ def generate_frontier_review(output_dir: Path) -> str:
 
     draw = ImageDraw.Draw(canvas)
     callout_y = y + 390
-    draw.rounded_rectangle((36, callout_y, 1784, 1088), radius=28, fill=CARD, outline=DIVIDER, width=2)
+    draw.rounded_rectangle((36, callout_y, 1784, 1018), radius=28, fill=CARD, outline=DIVIDER, width=2)
     draw.text((60, callout_y + 24), "Measured Selection Summary", font=FONT_H2, fill=TEXT)
     lines = [
         f"Inputs: {len(summary.get('inputs', []))} images",
@@ -1026,7 +1108,7 @@ def generate_transparent_benchmark(output_dir: Path) -> str:
             rows=recon_rows,
             size=(560, 500),
             scale_max=60.0,
-            better_note="Recomposition remains very strong across all four transparent scene families, which is why this mode is worth keeping as a measured prototype.",
+            better_note="Transparent recomposition is reported as a sanity check. Alpha error and clean-background quality are the primary transparent-layer metrics.",
         ),
     ]
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=24)
@@ -1055,6 +1137,7 @@ def main() -> int:
         "truck_prompt_ablation": generate_truck_prompt_ablation(output_dir),
         "synthetic_ordering_ablation": generate_synthetic_ablation(output_dir),
         "qualitative_gallery": generate_qualitative_gallery(output_dir),
+        "effects_layer_demo": generate_effects_layer_demo(output_dir),
         "public_benchmark_comparison": generate_public_benchmark_comparison(output_dir),
         "public_depth_comparison": generate_public_depth_comparison(output_dir),
         "frontier_review": generate_frontier_review(output_dir),

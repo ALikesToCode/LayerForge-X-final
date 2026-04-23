@@ -1,5 +1,7 @@
 # Qwen-Image-Layered Comparison
 
+Submission note: the raw local `runs/` and `data/` directories used for these experiments are omitted from the submission ZIP. The shipped source-of-truth artifacts for the measured comparison are `PROJECT_MANIFEST.json` plus `report_artifacts/metrics_snapshots/qwen_baseline_metrics.json`, `qwen_enriched_metrics.json`, and `qwen_five_image_review_summary.json`.
+
 ## Why Qwen matters
 
 Qwen-Image-Layered is the elephant in the room. It targets more or less the same endpoint LayerForge-X does — producing semantically meaningful RGBA layers from one image — and it does so with a big end-to-end generative model. Pretending it doesn't exist would be a weak way to write this project up. So instead, LayerForge-X treats it as a **frontier baseline** and an optional **proposal source**.
@@ -110,6 +112,8 @@ Each image now has four directly comparable rows:
 - `Qwen raw (4)`: direct RGBA export, scored by the better of manifest or reversed-manifest interpretation;
 - `Qwen + graph preserve (4)`: the same external stack with LayerForge graph, amodal, and intrinsic metadata while preserving Qwen's interpreted visual order;
 - `Qwen + graph reorder (4)`: the same external stack exported in graph order.
+
+In this repo, `preserve-external-order` means **preserve the best external visual stack chosen from Qwen's own candidate orderings** (manifest order versus reversed-manifest order), rather than replacing that stack with LayerForge's depth-graph order.
 
 Aggregate mean results over the five images:
 

@@ -394,7 +394,7 @@ The output directory will contain ordered layers, albedo/shading layers, amodal 
 
 ## Submission-safe report artifacts
 
-The local checkout includes heavyweight `runs/`, `results/`, and `data/` directories, but those are commonly excluded from submission ZIPs. To keep the report auditable even when those folders are omitted, export a compact artifact pack:
+The local checkout includes heavyweight `runs/`, `results/`, and `data/` directories, but those are omitted from the submission ZIP. To keep the report auditable even when those folders are absent, export a compact artifact pack:
 
 ```bash
 python scripts/export_report_artifacts.py
@@ -410,7 +410,7 @@ report_artifacts/
   figure_sources/figure_manifest.json
 ```
 
-The README and `PROJECT_MANIFEST.json` now point to these compact JSON snapshots instead of assuming the raw benchmark directories will always be present in the archive.
+`PROJECT_MANIFEST.json`, `report_artifacts/metrics_snapshots/*.json`, and `report_artifacts/command_log.md` are the canonical submission evidence. The raw benchmark directories are local-generation inputs, not required submission contents.
 
 ## Collecting report metrics
 
@@ -437,6 +437,8 @@ To regenerate the measured comparison figures used in the report pack:
 python scripts/generate_report_figures.py
 ```
 
+This full regeneration path requires the local heavyweight `runs/`, `results/`, and `data/` directories. The submission ZIP already includes the generated figure PNGs under `docs/figures/` plus the corresponding audit-safe metric snapshots under `report_artifacts/`.
+
 This writes:
 
 ```text
@@ -448,6 +450,7 @@ docs/figures/qualitative_gallery.png
 docs/figures/frontier_review.png
 docs/figures/prompt_extract_benchmark.png
 docs/figures/transparent_benchmark.png
+docs/figures/effects_layer_demo.png
 docs/figures/figure_manifest.json
 ```
 

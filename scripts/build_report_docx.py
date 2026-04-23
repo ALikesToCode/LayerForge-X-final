@@ -30,6 +30,7 @@ def main() -> int:
         ROOT / "docs" / "final_report_pack" / "02_BENCHMARKING_PROTOCOL.md",
         ROOT / "docs" / "final_report_pack" / "03_NOVELTY_AND_METHOD.md",
         ROOT / "docs" / "final_report_pack" / "04_ABLATIONS_AND_TABLES.md",
+        ROOT / "docs" / "final_report_pack" / "05_REFERENCES.md",
     ]
 
     text = base.read_text(encoding="utf-8")
@@ -38,6 +39,7 @@ def main() -> int:
         "<!-- include: 02 -->": sections[1].read_text(encoding="utf-8"),
         "<!-- include: 03 -->": sections[2].read_text(encoding="utf-8"),
         "<!-- include: 04 -->": sections[3].read_text(encoding="utf-8"),
+        "<!-- include: 05 -->": sections[4].read_text(encoding="utf-8"),
     }
     for marker, content in replacements.items():
         text = text.replace(marker, content)

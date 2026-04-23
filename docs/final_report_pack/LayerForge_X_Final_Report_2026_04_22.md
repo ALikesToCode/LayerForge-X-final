@@ -31,7 +31,7 @@ This report makes six concrete claims:
 
 <!-- include: 02 -->
 
-## 5. Results
+## 6. Results
 
 ### Hero figures
 
@@ -125,11 +125,11 @@ Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerFor
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
 
-## 6. Discussion
+## 7. Discussion
 
 The strongest reading of the current results is not that LayerForge-X universally beats generative decomposers on raw pixels. The stronger claim is that it turns native, generative, and recursive decompositions into one explicit editable graph representation with auditable metrics and exportable structure. Qwen remains the right generative RGBA baseline. LayerForge-X remains strongest when framed as a graph-aware, benchmarkable, editability-oriented complement to that frontier.
 
-## 7. Limitations
+## 8. Limitations
 
 Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md) and [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md). The report should explicitly keep:
 
@@ -143,25 +143,39 @@ Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TAB
 - point-only and box-only prompt-routing ambiguity;
 - transparent-layer recovery that is still approximate rather than generative.
 
-## 8. Conclusion
+## 9. Conclusion
 
 LayerForge-X is now best understood as a self-evaluating layer-representation system rather than a simple decomposition script. It can produce native graph layers, enrich frontier RGBA layers, run recursive peeling, measure editability, benchmark prompt extraction, approximate transparent recovery, and export a canonical DALG manifest. That combination is the core project contribution.
 
+<!-- include: 05 -->
+
 ## Appendix A: artifact map
 
-Primary source files for the report narrative:
+Submission source-of-truth files:
 
-- [../RESULTS_SUMMARY_2026_04_19.md](../RESULTS_SUMMARY_2026_04_19.md)
+- [../../PROJECT_MANIFEST.json](../../PROJECT_MANIFEST.json)
+- [../../report_artifacts/README.md](../../report_artifacts/README.md)
+- [../../report_artifacts/metrics_snapshots/](../../report_artifacts/metrics_snapshots)
+- [../../report_artifacts/figure_sources/figure_manifest.json](../../report_artifacts/figure_sources/figure_manifest.json)
+- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
+- [../RESULTS_SUMMARY_CURRENT.md](../RESULTS_SUMMARY_CURRENT.md)
 - [../QWEN_IMAGE_LAYERED_COMPARISON.md](../QWEN_IMAGE_LAYERED_COMPARISON.md)
 - [../REPORT_TABLES.md](../REPORT_TABLES.md)
 - [../FIGURES.md](../FIGURES.md)
-- [../NEXT_REVIEW_CHECKLIST_2026_04_22.md](../NEXT_REVIEW_CHECKLIST_2026_04_22.md)
 - [../PRODUCT_ARCHITECTURE_AND_LAUNCH.md](../PRODUCT_ARCHITECTURE_AND_LAUNCH.md)
 - [../api/openapi.yaml](../api/openapi.yaml)
-- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
 
 ## Appendix B: extended tables and ablations
 
 \newpage
 
 <!-- include: 04 -->
+
+## Appendix C: command log
+
+- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
+
+## Appendix D: extra literature notes
+
+- [../LITERATURE_REVIEW.md](../LITERATURE_REVIEW.md)
+- [../REFERENCES.md](../REFERENCES.md)

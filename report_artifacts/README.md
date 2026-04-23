@@ -7,3 +7,5 @@ This folder is the submission-safe evidence pack for the claims made in the READ
 - `command_log.md` lists the command families used to generate the copied artifacts.
 
 The goal is to keep the archive auditable even when heavyweight directories such as `data/`, `runs/`, and `results/` are excluded from a ZIP submission.
+
+Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the source of truth in the submission archive.
