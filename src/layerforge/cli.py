@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 from .config import load_config
 from .dalg import export_dalg_manifest
 from .editability import export_target_assets
+from .frontier import run_single_image_frontier_selection
 from .pipeline import LayerForgePipeline
 from .transparent import export_transparent_assets
 from .webui import serve_webui
@@ -30,6 +32,50 @@ def parse_box(text: str | None) -> tuple[int, int, int, int] | None:
     if len(parts) != 4:
         raise ValueError("--box expects x1,y1,x2,y2")
     return (parts[0], parts[1], parts[2], parts[3])
+
+
+def build_frontier_base_kwargs(args: argparse.Namespace, *, output_root: Path) -> dict[str, Any]:
+    return {
+        "input_path": args.input,
+        "output_root": output_root,
+        "native_config": args.config,
+        "native_segmenter": args.segmenter or "grounded_sam2",
+        "native_depth": args.depth or "ensemble",
+        "skip_native": bool(getattr(args, "frontier_skip_native", False)),
+        "peeling_config": getattr(args, "frontier_peeling_config", "configs/recursive_peeling.yaml"),
+        "peeling_segmenter": getattr(args, "frontier_peeling_segmenter", None) or args.segmenter or "grounded_sam2",
+        "peeling_depth": getattr(args, "frontier_peeling_depth", None) or args.depth or "ensemble",
+        "skip_peeling": bool(getattr(args, "frontier_skip_peeling", False)),
+        "qwen_model": getattr(args, "frontier_qwen_model", "Qwen/Qwen-Image-Layered"),
+        "qwen_layers": getattr(args, "frontier_qwen_layers", "3,4,6,8"),
+        "qwen_resolution": int(getattr(args, "frontier_qwen_resolution", 640)),
+        "qwen_steps": int(getattr(args, "frontier_qwen_steps", 10)),
+        "qwen_device": getattr(args, "frontier_qwen_device", "cuda"),
+        "qwen_dtype": getattr(args, "frontier_qwen_dtype", "bfloat16"),
+        "qwen_offload": getattr(args, "frontier_qwen_offload", "sequential"),
+        "qwen_hybrid_modes": getattr(args, "frontier_qwen_hybrid_modes", "preserve,reorder"),
+        "qwen_merge_external_layers": bool(getattr(args, "frontier_qwen_merge_external_layers", False)),
+        "skip_existing": False,
+    }
+
+
+def add_frontier_base_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--frontier", action="store_true", help="Select the strongest measured base decomposition from the native, peeling, and Qwen candidate bank before running this targeted export")
+    parser.add_argument("--frontier-output-root", default=None, help="Optional frontier working directory; defaults to <output>/frontier")
+    parser.add_argument("--frontier-skip-native", action="store_true", help="Exclude native LayerForge from the frontier base selection")
+    parser.add_argument("--frontier-skip-peeling", action="store_true", help="Exclude recursive peeling from the frontier base selection")
+    parser.add_argument("--frontier-peeling-config", default="configs/recursive_peeling.yaml")
+    parser.add_argument("--frontier-peeling-segmenter", default=None)
+    parser.add_argument("--frontier-peeling-depth", default=None)
+    parser.add_argument("--frontier-qwen-model", default="Qwen/Qwen-Image-Layered")
+    parser.add_argument("--frontier-qwen-layers", default="3,4,6,8")
+    parser.add_argument("--frontier-qwen-resolution", type=int, default=640)
+    parser.add_argument("--frontier-qwen-steps", type=int, default=10)
+    parser.add_argument("--frontier-qwen-device", default="cuda")
+    parser.add_argument("--frontier-qwen-dtype", default="bfloat16")
+    parser.add_argument("--frontier-qwen-offload", default="sequential", choices=["none", "model", "sequential"])
+    parser.add_argument("--frontier-qwen-hybrid-modes", default="preserve,reorder")
+    parser.add_argument("--frontier-qwen-merge-external-layers", action="store_true")
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -147,31 +193,44 @@ def cmd_peel(args: argparse.Namespace) -> int:
 
 
 def cmd_extract(args: argparse.Namespace) -> int:
-    cfg = load_config(args.config)
-    pipe = LayerForgePipeline(cfg, device=args.device)
     prompt_values = parse_prompts(args.prompt)
-    out = pipe.run(
-        args.input,
-        args.output,
-        segmenter=args.segmenter,
-        depth_method=args.depth,
-        prompts=prompt_values,
-        prompt_source=args.prompt_source,
-        flip_depth=args.flip_depth,
-        save_parallax=not args.no_parallax,
-        ordering_method=args.ordering,
-        ranker_model_path=args.ranker_model,
-    )
+    if args.frontier:
+        frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
+        selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
+        manifest_path = selection["manifest_path"]
+        metrics_path = selection["metrics_path"]
+        base_run_dir = selection["run_dir"]
+    else:
+        cfg = load_config(args.config)
+        pipe = LayerForgePipeline(cfg, device=args.device)
+        out = pipe.run(
+            args.input,
+            args.output,
+            segmenter=args.segmenter,
+            depth_method=args.depth,
+            prompts=prompt_values,
+            prompt_source=args.prompt_source,
+            flip_depth=args.flip_depth,
+            save_parallax=not args.no_parallax,
+            ordering_method=args.ordering,
+            ranker_model_path=args.ranker_model,
+        )
+        manifest_path = out.manifest_path
+        metrics_path = out.metrics_path
+        base_run_dir = Path(out.output_dir)
     metadata = export_target_assets(
-        out.output_dir,
+        base_run_dir,
         output_dir=Path(args.output) / "target_extract",
         prompt=args.prompt,
         point=parse_point(args.point),
         box=parse_box(args.box),
         target_name=args.target_name,
     )
-    print(f"manifest: {out.manifest_path}")
-    print(f"metrics:  {out.metrics_path}")
+    if args.frontier:
+        print(f"winner:   {selection['selected_label']}")
+        print(f"frontier: {selection['summary_path']}")
+    print(f"manifest: {manifest_path}")
+    print(f"metrics:  {metrics_path}")
     print(f"target:   {(Path(args.output) / 'target_extract' / 'target_metadata.json')}")
     print(f"selected: {metadata['selected_target']['name']}")
     return 0
@@ -184,31 +243,42 @@ def cmd_export_design(args: argparse.Namespace) -> int:
 
 
 def cmd_transparent(args: argparse.Namespace) -> int:
-    cfg = load_config(args.config)
-    pipe = LayerForgePipeline(cfg, device=args.device)
     prompt_values = parse_prompts(args.prompt)
-    run_dir = Path(args.output) / "base_run"
-    out = pipe.run(
-        args.input,
-        run_dir,
-        segmenter=args.segmenter,
-        depth_method=args.depth,
-        prompts=prompt_values,
-        prompt_source=args.prompt_source,
-        flip_depth=args.flip_depth,
-        save_parallax=False,
-        ordering_method=args.ordering,
-        ranker_model_path=args.ranker_model,
-    )
+    if args.frontier:
+        frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
+        selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
+        manifest_path = selection["manifest_path"]
+        base_run_dir = selection["run_dir"]
+    else:
+        cfg = load_config(args.config)
+        pipe = LayerForgePipeline(cfg, device=args.device)
+        run_dir = Path(args.output) / "base_run"
+        out = pipe.run(
+            args.input,
+            run_dir,
+            segmenter=args.segmenter,
+            depth_method=args.depth,
+            prompts=prompt_values,
+            prompt_source=args.prompt_source,
+            flip_depth=args.flip_depth,
+            save_parallax=False,
+            ordering_method=args.ordering,
+            ranker_model_path=args.ranker_model,
+        )
+        manifest_path = out.manifest_path
+        base_run_dir = Path(out.output_dir)
     metadata = export_transparent_assets(
-        out.output_dir,
+        base_run_dir,
         output_dir=Path(args.output) / "transparent_extract",
         prompt=args.prompt,
         point=parse_point(args.point),
         box=parse_box(args.box),
         target_name=args.target_name,
     )
-    print(f"manifest: {out.manifest_path}")
+    if args.frontier:
+        print(f"winner:   {selection['selected_label']}")
+        print(f"frontier: {selection['summary_path']}")
+    print(f"manifest: {manifest_path}")
     print(f"metrics:  {(Path(args.output) / 'transparent_extract' / 'transparent_metrics.json')}")
     print(f"selected: {metadata['selected_target']['name']}")
     return 0
@@ -402,6 +472,7 @@ def build_parser() -> argparse.ArgumentParser:
     extract.add_argument("--ordering", default=None, help="boundary | learned")
     extract.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
     extract.add_argument("--no-parallax", action="store_true")
+    add_frontier_base_arguments(extract)
     extract.set_defaults(func=cmd_extract)
 
     export_design = sub.add_parser("export-design", help="Normalize an existing LayerForge run into the canonical DALG design-manifest JSON")
@@ -424,6 +495,7 @@ def build_parser() -> argparse.ArgumentParser:
     transparent.add_argument("--flip-depth", action="store_true")
     transparent.add_argument("--ordering", default=None, help="boundary | learned")
     transparent.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
+    add_frontier_base_arguments(transparent)
     transparent.set_defaults(func=cmd_transparent)
 
     bench = sub.add_parser("benchmark", help="Run a lightweight synthetic benchmark and write a CSV/JSON report")

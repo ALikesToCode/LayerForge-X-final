@@ -50,6 +50,56 @@ def build_parser() -> argparse.ArgumentParser:
     return add_frontier_arguments(parser)
 
 
+def build_single_image_frontier_args(
+    *,
+    input_path: str | Path,
+    output_root: str | Path,
+    native_config: str = "configs/best_score.yaml",
+    native_segmenter: str = "grounded_sam2",
+    native_depth: str = "ensemble",
+    skip_native: bool = False,
+    peeling_config: str = "configs/recursive_peeling.yaml",
+    peeling_segmenter: str = "grounded_sam2",
+    peeling_depth: str = "ensemble",
+    skip_peeling: bool = False,
+    qwen_model: str = "Qwen/Qwen-Image-Layered",
+    qwen_layers: str = "3,4,6,8",
+    qwen_resolution: int = 640,
+    qwen_steps: int = 10,
+    qwen_device: str = "cuda",
+    qwen_dtype: str = "bfloat16",
+    qwen_offload: str = "sequential",
+    qwen_hybrid_modes: str = "preserve,reorder",
+    qwen_merge_external_layers: bool = False,
+    skip_existing: bool = False,
+) -> argparse.Namespace:
+    return argparse.Namespace(
+        input_dir=None,
+        inputs=[str(input_path)],
+        output_root=str(output_root),
+        native_config=native_config,
+        native_segmenter=native_segmenter,
+        native_depth=native_depth,
+        skip_native=skip_native,
+        peeling_config=peeling_config,
+        peeling_segmenter=peeling_segmenter,
+        peeling_depth=peeling_depth,
+        skip_peeling=skip_peeling,
+        qwen_model=qwen_model,
+        qwen_layers=qwen_layers,
+        qwen_resolution=qwen_resolution,
+        qwen_steps=qwen_steps,
+        qwen_device=qwen_device,
+        qwen_dtype=qwen_dtype,
+        qwen_offload=qwen_offload,
+        qwen_hybrid_modes=qwen_hybrid_modes,
+        qwen_merge_external_layers=qwen_merge_external_layers,
+        limit=1,
+        skip_existing=skip_existing,
+        dry_run=False,
+    )
+
+
 def resolve_inputs(args: argparse.Namespace) -> list[Path]:
     inputs: list[Path] = []
     if args.inputs:
@@ -362,6 +412,74 @@ def run_frontier_comparison(args: argparse.Namespace) -> int:
         )
     )
     return 0
+
+
+def run_single_image_frontier_selection(
+    *,
+    input_path: str | Path,
+    output_root: str | Path,
+    native_config: str = "configs/best_score.yaml",
+    native_segmenter: str = "grounded_sam2",
+    native_depth: str = "ensemble",
+    skip_native: bool = False,
+    peeling_config: str = "configs/recursive_peeling.yaml",
+    peeling_segmenter: str = "grounded_sam2",
+    peeling_depth: str = "ensemble",
+    skip_peeling: bool = False,
+    qwen_model: str = "Qwen/Qwen-Image-Layered",
+    qwen_layers: str = "3,4,6,8",
+    qwen_resolution: int = 640,
+    qwen_steps: int = 10,
+    qwen_device: str = "cuda",
+    qwen_dtype: str = "bfloat16",
+    qwen_offload: str = "sequential",
+    qwen_hybrid_modes: str = "preserve,reorder",
+    qwen_merge_external_layers: bool = False,
+    skip_existing: bool = False,
+) -> dict[str, Any]:
+    args = build_single_image_frontier_args(
+        input_path=input_path,
+        output_root=output_root,
+        native_config=native_config,
+        native_segmenter=native_segmenter,
+        native_depth=native_depth,
+        skip_native=skip_native,
+        peeling_config=peeling_config,
+        peeling_segmenter=peeling_segmenter,
+        peeling_depth=peeling_depth,
+        skip_peeling=skip_peeling,
+        qwen_model=qwen_model,
+        qwen_layers=qwen_layers,
+        qwen_resolution=qwen_resolution,
+        qwen_steps=qwen_steps,
+        qwen_device=qwen_device,
+        qwen_dtype=qwen_dtype,
+        qwen_offload=qwen_offload,
+        qwen_hybrid_modes=qwen_hybrid_modes,
+        qwen_merge_external_layers=qwen_merge_external_layers,
+        skip_existing=skip_existing,
+    )
+    run_frontier_comparison(args)
+    summary_path = Path(output_root) / "frontier_summary.json"
+    summary = _read_json(summary_path)
+    best_by_image = summary.get("best_by_image") or []
+    if not best_by_image:
+        raise RuntimeError("Frontier comparison produced no successful candidate selection")
+    selection = dict(best_by_image[0])
+    run_dir_value = selection.get("run_dir")
+    if not run_dir_value:
+        raise RuntimeError("Frontier comparison selection did not include a run directory")
+    run_dir = Path(run_dir_value)
+    if not run_dir.is_absolute():
+        run_dir = (ROOT / run_dir).resolve()
+    return {
+        "selected_label": selection.get("label"),
+        "run_dir": run_dir,
+        "manifest_path": run_dir / "manifest.json",
+        "metrics_path": run_dir / "metrics.json",
+        "summary_path": summary_path,
+        "selection": selection,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
