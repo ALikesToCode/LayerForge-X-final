@@ -4,13 +4,13 @@ from __future__ import annotations
 import importlib.metadata
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "report_artifacts"
+ARCHIVE_TAG = "LayerForge-X-final-submission-2026-04-23"
 
 
 SNAPSHOTS = {
@@ -111,7 +111,7 @@ COMMAND_LOG = """# Command Log
 - diffusers: `{diffusers_version}`
 - accelerate: `{accelerate_version}`
 - safetensors: `{safetensors_version}`
-- commit: `{git_commit}`
+- archive tag: `{archive_tag}`
 
 These are the exact command families used to produce the auditable summaries copied into `report_artifacts/metrics_snapshots/`.
 
@@ -201,17 +201,6 @@ def _package_version(name: str) -> str:
         return "not-installed"
 
 
-def _git_commit() -> str:
-    try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            cwd=ROOT,
-            text=True,
-        ).strip()
-    except Exception:
-        return "unknown"
-
-
 def copy_snapshots() -> None:
     dst = TARGET / "metrics_snapshots"
     dst.mkdir(parents=True, exist_ok=True)
@@ -294,7 +283,7 @@ def write_command_log() -> None:
         diffusers_version=_package_version("diffusers"),
         accelerate_version=_package_version("accelerate"),
         safetensors_version=_package_version("safetensors"),
-        git_commit=_git_commit(),
+        archive_tag=ARCHIVE_TAG,
     )
     (TARGET / "command_log.md").write_text(rendered, encoding="utf-8")
 
