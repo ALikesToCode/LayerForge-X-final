@@ -8,6 +8,8 @@ from typing import Any
 from .config import load_config
 from .dalg import export_dalg_manifest
 from .editability import export_target_assets
+from .frontier import materialize_frontier_selection
+from .frontier import resolve_frontier_native_config
 from .frontier import run_single_image_frontier_selection
 from .pipeline import LayerForgePipeline
 from .transparent import export_transparent_assets
@@ -38,7 +40,7 @@ def build_frontier_base_kwargs(args: argparse.Namespace, *, output_root: Path) -
     return {
         "input_path": args.input,
         "output_root": output_root,
-        "native_config": args.config,
+        "native_config": resolve_frontier_native_config(args.config),
         "native_segmenter": args.segmenter or "grounded_sam2",
         "native_depth": args.depth or "ensemble",
         "skip_native": bool(getattr(args, "frontier_skip_native", False)),
@@ -79,6 +81,16 @@ def add_frontier_base_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    if getattr(args, "frontier", False):
+        frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
+        selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
+        materialized = materialize_frontier_selection(selection, Path(args.output), frontier_root=frontier_root)
+        print(f"winner:   {selection['selected_label']}")
+        print(f"frontier: {selection['summary_path']}")
+        print(f"manifest: {materialized['manifest_path']}")
+        print(f"metrics:  {materialized['metrics_path']}")
+        print(f"layers:   {(Path(args.output) / 'layers_ordered_rgba')}")
+        return 0
     cfg = load_config(args.config)
     pipe = LayerForgePipeline(cfg, device=args.device)
     out = pipe.run(
@@ -392,6 +404,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--ordering", default=None, help="boundary | learned")
     run.add_argument("--ranker-model", default=None, help="Path to a trained order-ranker JSON file")
     run.add_argument("--no-parallax", action="store_true")
+    add_frontier_base_arguments(run)
     run.set_defaults(func=cmd_run)
 
     batch = sub.add_parser("batch", help="Run LayerForge-X on all images in a folder")

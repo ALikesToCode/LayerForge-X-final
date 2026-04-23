@@ -3,15 +3,18 @@ from __future__ import annotations
 import argparse
 import json
 import shlex
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 from .config import load_config
 from .editability import evaluate_run_editability
 from .proposals import build_frontier_candidate_specs
 from .self_eval import choose_best_candidates
+from .utils import write_json
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -161,6 +164,11 @@ def parse_hybrid_modes(raw: str) -> list[str]:
     if not seen:
         raise SystemExit("At least one hybrid mode must be requested.")
     return seen
+
+
+def resolve_frontier_native_config(config_path: str | Path | None) -> str:
+    raw = str(config_path or "configs/best_score.yaml")
+    return "configs/best_score.yaml" if raw == "configs/fast.yaml" else raw
 
 
 def run_command(cmd: list[str], *, cwd: Path, dry_run: bool) -> dict:
@@ -479,6 +487,48 @@ def run_single_image_frontier_selection(
         "metrics_path": run_dir / "metrics.json",
         "summary_path": summary_path,
         "selection": selection,
+    }
+
+
+def materialize_frontier_selection(
+    selection_result: dict[str, Any],
+    target_dir: str | Path,
+    *,
+    frontier_root: str | Path | None = None,
+) -> dict[str, Path]:
+    run_dir = Path(selection_result["run_dir"])
+    output_dir = Path(target_dir)
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    shutil.copytree(run_dir, output_dir)
+    selection_path = write_json(
+        output_dir / "frontier_selection.json",
+        {
+            "selected_label": selection_result.get("selected_label"),
+            "summary_path": to_repo_relative(selection_result.get("summary_path", "")),
+            "source_run_dir": to_repo_relative(run_dir),
+            "selection": selection_result.get("selection", {}),
+        },
+    )
+    why_selected = selection_result.get("selection", {}).get("self_eval_reason")
+    if why_selected:
+        (output_dir / "why_selected.md").write_text(
+            f"# Selected frontier winner\n\n{why_selected}\n",
+            encoding="utf-8",
+        )
+    if frontier_root is not None:
+        write_json(
+            output_dir / "frontier_workspace.json",
+            {
+                "frontier_root": to_repo_relative(frontier_root),
+                "summary_path": to_repo_relative(selection_result.get("summary_path", "")),
+            },
+        )
+    return {
+        "output_dir": output_dir,
+        "manifest_path": output_dir / "manifest.json",
+        "metrics_path": output_dir / "metrics.json",
+        "selection_path": selection_path,
     }
 
 
