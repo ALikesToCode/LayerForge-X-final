@@ -79,6 +79,65 @@ def test_webui_frontier_mode_returns_selected_best_run(tmp_path: Path, monkeypat
     assert result["urls"]["metrics"]
 
 
+def test_webui_run_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
+    image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
+    work_root = tmp_path / "webui"
+    winner_dir = tmp_path / "winner_run"
+    winner_dir.mkdir(parents=True)
+    (winner_dir / "manifest.json").write_text("{}", encoding="utf-8")
+    (winner_dir / "metrics.json").write_text(json.dumps({"num_layers": 4, "recompose_psnr": 30.0}), encoding="utf-8")
+    (winner_dir / "dalg_manifest.json").write_text("{}", encoding="utf-8")
+
+    captured: dict[str, object] = {}
+
+    def fail_get_pipeline(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("native pipeline should not be used when use_frontier_base is enabled")
+
+    def fake_selection(**kwargs):  # type: ignore[no-untyped-def]
+        captured["frontier_kwargs"] = kwargs
+        return {
+            "selected_label": "Qwen raw (3)",
+            "run_dir": winner_dir,
+            "manifest_path": winner_dir / "manifest.json",
+            "metrics_path": winner_dir / "metrics.json",
+            "summary_path": tmp_path / "frontier_summary.json",
+            "selection": {"label": "Qwen raw (3)", "self_eval_score": 0.62},
+        }
+
+    def fake_materialize(selection, target_dir, *, frontier_root=None):  # type: ignore[no-untyped-def]
+        captured["selection"] = selection
+        captured["target_dir"] = Path(target_dir)
+        captured["frontier_root"] = Path(frontier_root) if frontier_root is not None else None
+        out = Path(target_dir)
+        (out / "debug").mkdir(parents=True, exist_ok=True)
+        (out / "manifest.json").write_text("{}", encoding="utf-8")
+        (out / "metrics.json").write_text(json.dumps({"num_layers": 4, "recompose_psnr": 30.0}), encoding="utf-8")
+        (out / "dalg_manifest.json").write_text("{}", encoding="utf-8")
+        return {
+            "manifest_path": out / "manifest.json",
+            "metrics_path": out / "metrics.json",
+            "output_dir": out,
+            "selection_path": out / "frontier_selection.json",
+        }
+
+    monkeypatch.setattr("layerforge.webui._get_pipeline", fail_get_pipeline)
+    monkeypatch.setattr("layerforge.webui.run_single_image_frontier_selection", fake_selection, raising=False)
+    monkeypatch.setattr("layerforge.webui.materialize_frontier_selection", fake_materialize, raising=False)
+
+    payload = {
+        "mode": "run",
+        "filename": image_path.name,
+        "image_base64": base64.b64encode(image_path.read_bytes()).decode("utf-8"),
+        "config": "configs/frontier.yaml",
+        "device": "cpu",
+        "use_frontier_base": True,
+    }
+    result = run_webui_job(REPO_ROOT, payload, work_root=work_root)
+    assert result["status"] == "ok"
+    assert result["mode"] == "run"
+    assert captured["target_dir"].parent.name.startswith("jobs")
+
+
 def test_webui_extract_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
     image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
     work_root = tmp_path / "webui"
