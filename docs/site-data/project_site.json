@@ -103,6 +103,10 @@
       "label": "Final report pack guide"
     },
     {
+      "href": "documents.html",
+      "label": "Full markdown library"
+    },
+    {
       "href": "FIGURES.md",
       "label": "Figure index"
     },
@@ -253,6 +257,253 @@
         "label": "Recursive peeling"
       }
     ]
+  },
+  "markdown_catalog": [
+    {
+      "group": "Published docs",
+      "href": "BENCHMARKING.md",
+      "label": "Evaluation Framework and Benchmarking Protocol",
+      "published": true,
+      "source_path": "docs/BENCHMARKING.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "BENCHMARKING_PROTOCOL_FINAL.md",
+      "label": "Benchmarking Protocol and Evaluation Metrics",
+      "published": true,
+      "source_path": "docs/BENCHMARKING_PROTOCOL_FINAL.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "FIGURES.md",
+      "label": "Diagnostic Visualization and Figure Index",
+      "published": true,
+      "source_path": "docs/FIGURES.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "FINAL_PROJECT_SPEC.md",
+      "label": "Final Project Specification",
+      "published": true,
+      "source_path": "docs/FINAL_PROJECT_SPEC.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "FRONTIER_WORKFLOW.md",
+      "label": "Frontier Evaluation and Hybrid Workflow",
+      "published": true,
+      "source_path": "docs/FRONTIER_WORKFLOW.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "LITERATURE_REVIEW.md",
+      "label": "Literature Review and Theoretical Framework",
+      "published": true,
+      "source_path": "docs/LITERATURE_REVIEW.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "METHOD.md",
+      "label": "Methodology",
+      "published": true,
+      "source_path": "docs/METHOD.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "NOVELTY_AND_ABLATIONS_FINAL.md",
+      "label": "Novelty and Ablation Studies",
+      "published": true,
+      "source_path": "docs/NOVELTY_AND_ABLATIONS_FINAL.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
+      "label": "Product Strategy, Architecture, and Roadmap",
+      "published": true,
+      "source_path": "docs/PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "PUBLIC_BENCHMARKS.md",
+      "label": "Public Benchmarks and Reference Datasets",
+      "published": true,
+      "source_path": "docs/PUBLIC_BENCHMARKS.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "QWEN_IMAGE_LAYERED_COMPARISON.md",
+      "label": "Comparative Analysis: Qwen-Image-Layered Baseline",
+      "published": true,
+      "source_path": "docs/QWEN_IMAGE_LAYERED_COMPARISON.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "README.md",
+      "label": "Documentation Map",
+      "published": true,
+      "source_path": "docs/README.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "REFERENCES.md",
+      "label": "References to cite",
+      "published": true,
+      "source_path": "docs/REFERENCES.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "REPORT_TABLES.md",
+      "label": "Report Tables",
+      "published": true,
+      "source_path": "docs/REPORT_TABLES.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "RESULTS_SUMMARY_CURRENT.md",
+      "label": "Results Summary (Current Submission)",
+      "published": true,
+      "source_path": "docs/RESULTS_SUMMARY_CURRENT.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Published docs",
+      "href": "SUBMISSION_INDEX.md",
+      "label": "Submission Index",
+      "published": true,
+      "source_path": "docs/SUBMISSION_INDEX.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "API docs",
+      "href": "api/README.md",
+      "label": "LayerForge API Notes",
+      "published": true,
+      "source_path": "docs/api/README.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report pack",
+      "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "label": "LayerForge-X Final Report",
+      "published": true,
+      "source_path": "docs/final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report pack",
+      "href": "final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
+      "label": "LayerForge-X Final Report",
+      "published": true,
+      "source_path": "docs/final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report pack",
+      "href": "final_report_pack/README.md",
+      "label": "Final Report Pack",
+      "published": true,
+      "source_path": "docs/final_report_pack/README.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report sources",
+      "href": "final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
+      "label": "3. Related Work",
+      "published": true,
+      "source_path": "docs/final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report sources",
+      "href": "final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
+      "label": "5. Experiments and Evaluation Protocol",
+      "published": true,
+      "source_path": "docs/final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report sources",
+      "href": "final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
+      "label": "4. Method",
+      "published": true,
+      "source_path": "docs/final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report sources",
+      "href": "final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
+      "label": "B.1 Completed runs snapshot",
+      "published": true,
+      "source_path": "docs/final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Final report sources",
+      "href": "final_report_pack/sources/05_REFERENCES.md",
+      "label": "10. References",
+      "published": true,
+      "source_path": "docs/final_report_pack/sources/05_REFERENCES.md",
+      "surface_label": "Published on GitHub Pages"
+    },
+    {
+      "group": "Repository references",
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/README.md",
+      "label": "LayerForge-X",
+      "published": false,
+      "source_path": "README.md",
+      "surface_label": "Repository markdown on GitHub"
+    },
+    {
+      "group": "Repository references",
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/examples/README.md",
+      "label": "Examples",
+      "published": false,
+      "source_path": "examples/README.md",
+      "surface_label": "Repository markdown on GitHub"
+    },
+    {
+      "group": "Repository references",
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/models/README.md",
+      "label": "Models",
+      "published": false,
+      "source_path": "models/README.md",
+      "surface_label": "Repository markdown on GitHub"
+    },
+    {
+      "group": "Repository references",
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/README.md",
+      "label": "Report Artifacts",
+      "published": false,
+      "source_path": "report_artifacts/README.md",
+      "surface_label": "Repository markdown on GitHub"
+    },
+    {
+      "group": "Repository references",
+      "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/command_log.md",
+      "label": "Command Log",
+      "published": false,
+      "source_path": "report_artifacts/command_log.md",
+      "surface_label": "Repository markdown on GitHub"
+    }
+  ],
+  "markdown_stats": {
+    "published": 25,
+    "repo_only": 5,
+    "total": 30
   },
   "project": {
     "abstract": "LayerForge-X represents a single RGB image as a depth-aware amodal layer graph (DALG) whose nodes are editable RGBA layers and whose edges encode pairwise occlusion evidence. The repository couples a native graph pipeline with Qwen-Image-Layered enrichment, recursive peeling, prompt-conditioned extraction, transparent-layer recovery, and editability-aware evaluation.",

@@ -24,6 +24,7 @@ def test_site_pages_reference_brand_assets() -> None:
     pages = [
         ROOT / "docs" / "index.html",
         ROOT / "docs" / "about.html",
+        ROOT / "docs" / "documents.html",
         ROOT / "docs" / "webui.html",
     ]
     for page in pages:

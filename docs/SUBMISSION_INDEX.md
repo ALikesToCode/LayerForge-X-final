@@ -5,6 +5,7 @@ This file is the shortest path through the submission archive.
 ## Public browser surfaces
 
 - GitHub Pages site entry: `docs/index.html`
+- GitHub Pages markdown library: `docs/documents.html`
 - GitHub Pages about page: `docs/about.html`
 - Local browser interface: `docs/webui.html`
 - Local runtime command: `layerforge webui --open-browser`

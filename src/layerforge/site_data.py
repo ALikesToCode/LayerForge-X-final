@@ -61,6 +61,15 @@ AUDIENCE_CARDS = [
 ]
 
 
+MARKDOWN_GROUP_ORDER = {
+    "Published docs": 0,
+    "API docs": 1,
+    "Final report pack": 2,
+    "Final report sources": 3,
+    "Repository references": 4,
+}
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -98,6 +107,112 @@ def _discover_repo_identity(repo_root: Path) -> tuple[str, str] | None:
 
 def _blob_url(repo_url: str, path: str) -> str:
     return f"{repo_url}/blob/main/{path}"
+
+
+def _tracked_markdown_paths(repo_root: Path) -> list[Path]:
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files", "*.md"],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        proc = None
+    if proc is not None and proc.returncode == 0:
+        return [Path(line.strip()) for line in proc.stdout.splitlines() if line.strip()]
+
+    fallback: list[Path] = []
+    allowed_roots = {"docs", "examples", "models", "report_artifacts"}
+    for path in repo_root.rglob("*.md"):
+        rel = path.relative_to(repo_root)
+        if rel.parts[0].startswith(".") or rel.parts[0] == "runs":
+            continue
+        if len(rel.parts) == 1 or rel.parts[0] in allowed_roots:
+            fallback.append(rel)
+    return sorted(fallback)
+
+
+def _strip_html_tags(value: str) -> str:
+    return re.sub(r"<[^>]+>", "", value).strip()
+
+
+def _read_markdown_title(path: Path) -> str | None:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception:
+        return None
+
+    for line in text.splitlines():
+        heading = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*$", line)
+        if heading:
+            return _strip_html_tags(heading.group(1)).strip("`*_ ")
+
+        html_heading = re.search(r"<h1[^>]*>(.*?)</h1>", line, flags=re.IGNORECASE)
+        if html_heading:
+            return _strip_html_tags(html_heading.group(1))
+    return None
+
+
+def _humanize_segment(value: str) -> str:
+    return value.replace("_", " ").replace("-", " ").strip().title()
+
+
+def _markdown_label(repo_root: Path, relative_path: Path) -> str:
+    title = _read_markdown_title(repo_root / relative_path)
+    if title:
+        return title
+
+    stem = relative_path.stem
+    if stem.lower() == "readme":
+        if len(relative_path.parts) == 1:
+            return "Repository README"
+        return f"{_humanize_segment(relative_path.parent.name)} README"
+    return _humanize_segment(stem)
+
+
+def _markdown_group(relative_path: Path) -> str:
+    if relative_path.parts[0] != "docs":
+        return "Repository references"
+
+    docs_rel = relative_path.relative_to("docs")
+    if docs_rel.parts[0] == "api":
+        return "API docs"
+    if docs_rel.parts[0] == "final_report_pack":
+        if len(docs_rel.parts) > 1 and docs_rel.parts[1] == "sources":
+            return "Final report sources"
+        return "Final report pack"
+    return "Published docs"
+
+
+def _markdown_href(repo_url: str, relative_path: Path) -> tuple[str, bool]:
+    if relative_path.parts[0] == "docs":
+        return relative_path.relative_to("docs").as_posix(), True
+    return _blob_url(repo_url, relative_path.as_posix()), False
+
+
+def _markdown_catalog(repo_root: Path, repo_url: str) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    for relative_path in _tracked_markdown_paths(repo_root):
+        href, published = _markdown_href(repo_url, relative_path)
+        entries.append(
+            {
+                "label": _markdown_label(repo_root, relative_path),
+                "source_path": relative_path.as_posix(),
+                "href": href,
+                "group": _markdown_group(relative_path),
+                "published": published,
+                "surface_label": "Published on GitHub Pages" if published else "Repository markdown on GitHub",
+            }
+        )
+    return sorted(
+        entries,
+        key=lambda item: (
+            MARKDOWN_GROUP_ORDER.get(str(item["group"]), 99),
+            str(item["source_path"]),
+        ),
+    )
 
 
 def _frontier_comparisons(frontier_summary: dict[str, Any]) -> list[dict[str, Any]]:
@@ -140,6 +255,8 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
 
     measured = manifest["measured_results"]
     validated = manifest["validated"]
+    markdown_catalog = _markdown_catalog(repo_root, repo_url)
+    published_markdown = sum(1 for item in markdown_catalog if item["published"])
 
     figures: list[dict[str, Any]] = []
     for key, raw_path in manifest["figure_pack"].items():
@@ -154,6 +271,7 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
         {"label": "Final report (DOCX)", "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"},
         {"label": "Final report (Markdown)", "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md"},
         {"label": "Final report pack guide", "href": "final_report_pack/README.md"},
+        {"label": "Full markdown library", "href": "documents.html"},
         {"label": "Figure index", "href": "FIGURES.md"},
         {"label": "Current results summary", "href": "RESULTS_SUMMARY_CURRENT.md"},
         {"label": "Project specification", "href": "FINAL_PROJECT_SPEC.md"},
@@ -222,6 +340,12 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
         },
         "figures": figures,
         "docs_links": docs_links,
+        "markdown_catalog": markdown_catalog,
+        "markdown_stats": {
+            "total": len(markdown_catalog),
+            "published": published_markdown,
+            "repo_only": len(markdown_catalog) - published_markdown,
+        },
         "local_lab": {
             "entrypoint": "layerforge webui --open-browser",
             "modes": [

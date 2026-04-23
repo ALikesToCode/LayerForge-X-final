@@ -5,6 +5,7 @@ This directory contains the public documentation surface for the repository.
 ## Start here
 
 - [Submission index](SUBMISSION_INDEX.md)
+- [Markdown library](documents.html)
 - [Final report pack](final_report_pack/)
 - [Final report pack guide](final_report_pack/README.md)
 - [Figure index](FIGURES.md)
@@ -25,6 +26,7 @@ This directory contains the public documentation surface for the repository.
 ## Public web surfaces
 
 - [Project site entry](index.html)
+- [Markdown library](documents.html)
 - [About page](about.html)
 - [Local browser UI](webui.html)
 

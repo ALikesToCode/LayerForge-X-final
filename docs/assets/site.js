@@ -24,6 +24,15 @@
     renderBulletCards("contributions", data.contributions);
     renderDocList("docs-links-list", data.docs_links);
   }
+
+  if (page === "documents") {
+    renderMetricCards("markdown-metrics", [
+      { label: "Tracked markdown files", value: String(data.markdown_stats.total) },
+      { label: "Published on GitHub Pages", value: String(data.markdown_stats.published) },
+      { label: "GitHub-linked references", value: String(data.markdown_stats.repo_only) },
+    ]);
+    renderMarkdownCatalog("markdown-library", data.markdown_catalog);
+  }
 })();
 
 async function fetchJson(path) {
@@ -196,6 +205,50 @@ function renderDocList(id, items) {
   if (!target) return;
   target.innerHTML = items
     .map((item) => `<li><a href="${item.href}">${escapeHtml(item.label)}</a></li>`)
+    .join("");
+}
+
+function renderMarkdownCatalog(id, items) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const grouped = new Map();
+  for (const item of items) {
+    const groupItems = grouped.get(item.group) || [];
+    groupItems.push(item);
+    grouped.set(item.group, groupItems);
+  }
+
+  target.innerHTML = Array.from(grouped.entries())
+    .map(([group, groupItems]) => {
+      const eyebrow = groupItems[0]?.published ? "Published pages" : "Repository references";
+      const cards = groupItems
+        .map((item) => {
+          const externalAttrs = item.published ? "" : ' target="_blank" rel="noreferrer"';
+          return `
+            <article class="doc-card">
+              <a href="${item.href}"${externalAttrs}>
+                <div class="doc-card__title">${escapeHtml(item.label)}</div>
+                <div class="doc-card__body">${escapeHtml(item.source_path)}</div>
+                <div class="doc-card__body">${escapeHtml(item.surface_label)}</div>
+              </a>
+            </article>
+          `;
+        })
+        .join("");
+
+      return `
+        <section class="section-block prose-block">
+          <div class="section-head">
+            <p class="eyebrow">${escapeHtml(eyebrow)}</p>
+            <h2>${escapeHtml(group)}</h2>
+          </div>
+          <div class="doc-link-grid">
+            ${cards}
+          </div>
+        </section>
+      `;
+    })
     .join("");
 }
 

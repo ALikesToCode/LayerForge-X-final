@@ -30,3 +30,14 @@ def test_webui_static_surface_is_pages_safe() -> None:
     webui_server_text = (ROOT / "src" / "layerforge" / "webui.py").read_text(encoding="utf-8")
     assert "window.__LAYERFORGE_RUNTIME__ = true" in webui_server_text
     assert "_inject_runtime_marker" in webui_server_text
+
+
+def test_documents_page_is_wired_into_static_site() -> None:
+    script_text = (ROOT / "docs" / "assets" / "site.js").read_text(encoding="utf-8")
+    assert 'page === "documents"' in script_text
+    assert "renderMarkdownCatalog" in script_text
+
+    documents_html = (ROOT / "docs" / "documents.html").read_text(encoding="utf-8")
+    assert 'data-page="documents"' in documents_html
+    assert 'id="markdown-library"' in documents_html
+    assert 'href="documents.html"' in documents_html
