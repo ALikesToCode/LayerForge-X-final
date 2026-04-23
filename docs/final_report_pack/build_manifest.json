@@ -1,0 +1,21 @@
+{
+  "generated_at_utc": "2026-04-23T11:57:53.848453+00:00",
+  "source_shell": "docs/final_report_pack/sources/LayerForge_X_Final_Report_SOURCE.md",
+  "sources": [
+    "docs/final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
+    "docs/final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
+    "docs/final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
+    "docs/final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
+    "docs/final_report_pack/sources/05_REFERENCES.md"
+  ],
+  "outputs": {
+    "docx": "docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx",
+    "markdown": "docs/final_report_pack/LayerForge_X_Final_Report_FULL.md",
+    "pdf": "docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf"
+  },
+  "reference_doc": "docs/final_report_pack/reference.docx",
+  "tools": {
+    "pandoc": "/usr/bin/pandoc",
+    "libreoffice": "/usr/bin/libreoffice"
+  }
+}

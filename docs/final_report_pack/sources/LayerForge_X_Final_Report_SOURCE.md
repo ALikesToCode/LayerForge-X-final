@@ -43,6 +43,8 @@ This report makes six concrete claims:
 
 ![Frontier review](../figures/frontier_review.png){ width=100% }
 
+\newpage
+
 #### Promptable extraction benchmark
 
 ![Prompt extraction benchmark](../figures/prompt_extract_benchmark.png){ width=100% }
@@ -61,42 +63,60 @@ This report makes six concrete claims:
 
 ### Main measured summary
 
-Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerForge graph enrichment.
+Abbreviations in the tables below: `LF` = LayerForge, `Q raw4` = four-layer raw Qwen, `Q+G-P4` = four-layer Qwen plus LayerForge graph enrichment with the best external visual order preserved, and `Q+G-R4` = the same imported four-layer stack exported in graph order.
 
 #### Five-image Qwen raw versus hybrid review
 
-| Method | Images | Graph | Mean PSNR | Mean SSIM |
-|---|---:|---|---:|---:|
-| LF native | 5 | yes | 27.3438 | 0.9464 |
-| Qwen raw 4 | 5 | no | 29.0757 | 0.8850 |
-| Q+G preserve 4 | 5 | yes | 28.5539 | 0.8638 |
-| Q+G reorder 4 | 5 | yes | 28.5397 | 0.8637 |
+All rows below are five-image means. `Q+G-P4` keeps the best external Qwen stack, while `Q+G-R4` exports the same imported layers in graph order.
+
+| Row | Mean PSNR | Mean SSIM |
+|---|---:|---:|
+| LF native | 27.3438 | 0.9464 |
+| Q raw4 | 29.0757 | 0.8850 |
+| Q+G-P4 | 28.5539 | 0.8638 |
+| Q+G-R4 | 28.5397 | 0.8637 |
 
 #### Associated-effect demo
 
-| Artifact | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
-|---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
+| Metric | Value |
+|---|---:|
+| Predicted effect pixels | 4853 |
+| Ground-truth effect pixels | 13750 |
+| Effect IoU | 0.3529 |
 
 #### Five-image frontier candidate-bank review
 
-| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval | Best-image wins |
-|---|---:|---:|---:|---:|---:|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
+All rows below are five-image means.
+
+| Row | PSNR | SSIM | Self-eval | Wins |
+|---|---:|---:|---:|---:|
+| LF native | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LF peel | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Q raw4 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Q+G-P4 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Q+G-R4 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 #### Five-image editability suite
 
-| Method | Remove | Move | Recolor | Edit success | Non-edit preserve | Hole ratio |
-|---|---:|---:|---:|---:|---:|---:|
-| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
-| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
-| Qwen raw 4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
-| Q+G preserve 4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
-| Q+G reorder 4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+Response metrics:
+
+| Row | Remove | Move | Recolor | Edit success |
+|---|---:|---:|---:|---:|
+| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 |
+| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 |
+| Q raw4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 |
+| Q+G-P4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 |
+| Q+G-R4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 |
+
+Stability metrics:
+
+| Row | Non-edit preserve | Hole ratio |
+|---|---:|---:|
+| LF native | 0.9999 | 0.4860 |
+| LF peel | 1.0000 | 0.5433 |
+| Q raw4 | 1.0000 | 1.0000 |
+| Q+G-P4 | 0.9887 | 0.1420 |
+| Q+G-R4 | 0.9886 | 0.1427 |
 
 #### Promptable extraction benchmark
 
@@ -136,7 +156,7 @@ The current results do not support the claim that LayerForge-X universally excee
 
 # 8. Limitations
 
-Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md) and [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md). The main current limitations are:
+Failure taxonomy and evaluation details are summarized in Appendix B. The main current limitations are:
 
 - wrong semantic grouping;
 - wrong depth order;
@@ -178,9 +198,27 @@ Submission source-of-truth files:
 
 # Appendix C: Command Log
 
-- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
+The full command log is shipped in [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md). The final archive refresh used the following command families:
+
+```bash
+./.venv/bin/pytest -q
+python scripts/export_report_artifacts.py
+python scripts/generate_report_figures.py
+python scripts/build_report_docx.py
+python scripts/build_site_data.py
+python scripts/make_submission_zip.py
+```
+
+Those commands connect the final report outputs to the compact JSON summaries and generated figures that are shipped in the evidence pack.
 
 # Appendix D: Extra Literature Notes
 
-- [../LITERATURE_REVIEW.md](../LITERATURE_REVIEW.md)
-- [../REFERENCES.md](../REFERENCES.md)
+The literature used in this report clusters into five recurring themes:
+
+- layered rendering and depth-aware image representations;
+- panoptic, amodal, and promptable segmentation;
+- single-image intrinsic decomposition and matting;
+- generative layered decomposition systems such as Qwen-Image-Layered and LayerDecomp-style methods;
+- editing-oriented scene representations that prioritize reusable structure rather than one-off reconstruction.
+
+Extended repository notes remain available in `docs/LITERATURE_REVIEW.md` and `docs/REFERENCES.md`, but the report body and the references section are the intended citation surface for submission.

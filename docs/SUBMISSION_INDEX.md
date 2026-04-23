@@ -12,7 +12,9 @@ This file is the shortest path through the submission archive.
 ## Primary documents
 
 - Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
+- Final report PDF: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf`
 - Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
+- Final report pack guide: `docs/final_report_pack/README.md`
 - Current prose summary: `docs/RESULTS_SUMMARY_CURRENT.md`
 
 ## Canonical evidence pack

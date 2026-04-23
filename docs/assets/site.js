@@ -41,7 +41,8 @@ function renderHeroLinks(links, repoUrl) {
   const target = document.getElementById("hero-links");
   if (!target) return;
   const primary = [
-    { label: "Read the final report", href: "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx", className: "button-link" },
+    { label: "Read the final report (PDF)", href: "final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf", className: "button-link" },
+    { label: "Read the final report (DOCX)", href: "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx", className: "button-link button-link--secondary" },
     { label: "Inspect the evidence pack", href: "RESULTS_SUMMARY_CURRENT.md", className: "button-link button-link--secondary" },
     { label: "Open local web UI", href: "webui.html", className: "button-link button-link--secondary" },
     { label: "View source on GitHub", href: repoUrl, className: "button-link button-link--secondary" },

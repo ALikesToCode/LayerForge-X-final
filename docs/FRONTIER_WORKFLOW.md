@@ -153,7 +153,7 @@ python scripts/run_extract_benchmark.py \
   --max-scenes 10
 ```
 
-Measured summary from `runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`:
+Measured locally; the shipped source-of-truth summary is `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`:
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
@@ -183,7 +183,7 @@ python scripts/run_transparent_benchmark.py \
   --output-dir runs/transparent_benchmark
 ```
 
-Measured summary from `runs/transparent_benchmark/transparent_benchmark_summary.json`:
+Measured locally; the shipped source-of-truth summary is `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`:
 
 | Metric | Mean |
 |---|---:|

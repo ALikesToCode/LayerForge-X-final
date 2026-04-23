@@ -1095,6 +1095,8 @@ If the report needs one paragraph summarising the whole evaluation, this is the 
 
 ![Frontier review](../figures/frontier_review.png){ width=100% }
 
+\newpage
+
 #### Promptable extraction benchmark
 
 ![Prompt extraction benchmark](../figures/prompt_extract_benchmark.png){ width=100% }
@@ -1113,42 +1115,60 @@ If the report needs one paragraph summarising the whole evaluation, this is the 
 
 ### Main measured summary
 
-Abbreviations in the tables below: `LF` = LayerForge, `Q+G` = Qwen plus LayerForge graph enrichment.
+Abbreviations in the tables below: `LF` = LayerForge, `Q raw4` = four-layer raw Qwen, `Q+G-P4` = four-layer Qwen plus LayerForge graph enrichment with the best external visual order preserved, and `Q+G-R4` = the same imported four-layer stack exported in graph order.
 
 #### Five-image Qwen raw versus hybrid review
 
-| Method | Images | Graph | Mean PSNR | Mean SSIM |
-|---|---:|---|---:|---:|
-| LF native | 5 | yes | 27.3438 | 0.9464 |
-| Qwen raw 4 | 5 | no | 29.0757 | 0.8850 |
-| Q+G preserve 4 | 5 | yes | 28.5539 | 0.8638 |
-| Q+G reorder 4 | 5 | yes | 28.5397 | 0.8637 |
+All rows below are five-image means. `Q+G-P4` keeps the best external Qwen stack, while `Q+G-R4` exports the same imported layers in graph order.
+
+| Row | Mean PSNR | Mean SSIM |
+|---|---:|---:|
+| LF native | 27.3438 | 0.9464 |
+| Q raw4 | 29.0757 | 0.8850 |
+| Q+G-P4 | 28.5539 | 0.8638 |
+| Q+G-R4 | 28.5397 | 0.8637 |
 
 #### Associated-effect demo
 
-| Artifact | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
-|---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | yes | 4853 | 13750 | 0.3529 |
+| Metric | Value |
+|---|---:|
+| Predicted effect pixels | 4853 |
+| Ground-truth effect pixels | 13750 |
+| Effect IoU | 0.3529 |
 
 #### Five-image frontier candidate-bank review
 
-| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval | Best-image wins |
-|---|---:|---:|---:|---:|---:|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
+All rows below are five-image means.
+
+| Row | PSNR | SSIM | Self-eval | Wins |
+|---|---:|---:|---:|---:|
+| LF native | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LF peel | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Q raw4 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Q+G-P4 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Q+G-R4 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 #### Five-image editability suite
 
-| Method | Remove | Move | Recolor | Edit success | Non-edit preserve | Hole ratio |
-|---|---:|---:|---:|---:|---:|---:|
-| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
-| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
-| Qwen raw 4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
-| Q+G preserve 4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
-| Q+G reorder 4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+Response metrics:
+
+| Row | Remove | Move | Recolor | Edit success |
+|---|---:|---:|---:|---:|
+| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 |
+| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 |
+| Q raw4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 |
+| Q+G-P4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 |
+| Q+G-R4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 |
+
+Stability metrics:
+
+| Row | Non-edit preserve | Hole ratio |
+|---|---:|---:|
+| LF native | 0.9999 | 0.4860 |
+| LF peel | 1.0000 | 0.5433 |
+| Q raw4 | 1.0000 | 1.0000 |
+| Q+G-P4 | 0.9887 | 0.1420 |
+| Q+G-R4 | 0.9886 | 0.1427 |
 
 #### Promptable extraction benchmark
 
@@ -1188,7 +1208,7 @@ The current results do not support the claim that LayerForge-X universally excee
 
 # 8. Limitations
 
-Failure taxonomy and future-work framing are documented in [04_ABLATIONS_AND_TABLES.md](04_ABLATIONS_AND_TABLES.md) and [02_BENCHMARKING_PROTOCOL.md](02_BENCHMARKING_PROTOCOL.md). The main current limitations are:
+Failure taxonomy and evaluation details are summarized in Appendix B. The main current limitations are:
 
 - wrong semantic grouping;
 - wrong depth order;
@@ -1248,13 +1268,13 @@ This appendix collects the extended quantitative tables, measured ablations, and
 
 ## B.1 Completed runs snapshot
 
-The rows below are measured runs rather than placeholders:
+The rows below are measured runs rather than placeholders. All three use the deterministic classical segmenter with geometric-luminance depth; the changing factor is the ordering rule and the held-out split.
 
-| Variant | Segmentation | Depth | Ordering | Split | Mean best IoU | PLOA | Recompose PSNR |
-|---|---|---|---|---|---:|---:|---:|
-| A1 | classical | geometric luminance | boundary | synthetic fast | 0.1549 | 0.1667 | 19.1360 |
-| A2 | classical | geometric luminance | boundary | synth test | 0.1549 | 0.1667 | 19.1589 |
-| A3 | classical | geometric luminance | learned ranker | synth test | 0.1549 | 0.1667 | 19.4138 |
+| Variant | Split | Ordering | Mean best IoU | PLOA | Recompose PSNR |
+|---|---|---|---:|---:|---:|
+| A1 | synthetic fast | boundary | 0.1549 | 0.1667 | 19.1360 |
+| A2 | synth test | boundary | 0.1549 | 0.1667 | 19.1589 |
+| A3 | synth test | learned ranker | 0.1549 | 0.1667 | 19.4138 |
 
 Interpretation:
 
@@ -1264,15 +1284,15 @@ Interpretation:
 
 ## B.2 Frontier candidate-bank review
 
-The local working tree contains a measured five-image frontier comparison in `runs/frontier_review/frontier_summary.json`, and the submission archive ships the copied summary in `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
+The five-image frontier comparison was measured locally, and the submission archive ships the copied summary in `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
 
-| Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
-|---|---:|---:|---:|---:|---:|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
-| LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
-| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
-| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
+| Row | PSNR | SSIM | Self-eval | Wins |
+|---|---:|---:|---:|---:|
+| LF native | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LF peel | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Q raw4 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Q+G-P4 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Q+G-R4 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 Interpretation:
 
@@ -1284,13 +1304,25 @@ Interpretation:
 
 The frontier review is paired with an editability suite so that recomposition fidelity is not the only selection signal.
 
-| Method | Remove response ↑ | Move response ↑ | Recolor response ↑ | Edit success ↑ | Non-edit preservation ↑ | Background hole ratio ↓ |
-|---|---:|---:|---:|---:|---:|---:|
-| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 | 0.9999 | 0.4860 |
-| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 | 1.0000 | 0.5433 |
-| Qwen raw 4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 | 1.0000 | 1.0000 |
-| Q+G preserve 4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 | 0.9887 | 0.1420 |
-| Q+G reorder 4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 | 0.9886 | 0.1427 |
+Response metrics:
+
+| Row | Remove ↑ | Move ↑ | Recolor ↑ | Edit success ↑ |
+|---|---:|---:|---:|---:|
+| LF native | 0.1097 | 0.1011 | 0.1220 | 0.6695 |
+| LF peel | 0.1019 | 0.0808 | 0.1082 | 0.5865 |
+| Q raw4 | 0.0002 | 0.0001 | 0.0001 | 0.1506 |
+| Q+G-P4 | 0.2083 | 0.1509 | 0.1421 | 0.8633 |
+| Q+G-R4 | 0.2080 | 0.1491 | 0.1421 | 0.8607 |
+
+Stability metrics:
+
+| Row | Non-edit preserve ↑ | Hole ratio ↓ |
+|---|---:|---:|
+| LF native | 0.9999 | 0.4860 |
+| LF peel | 1.0000 | 0.5433 |
+| Q raw4 | 1.0000 | 1.0000 |
+| Q+G-P4 | 0.9887 | 0.1420 |
+| Q+G-R4 | 0.9886 | 0.1427 |
 
 Interpretation:
 
@@ -1336,31 +1368,45 @@ Interpretation:
 
 ## B.6 Main ablation matrix
 
-| Variant | Segmentation | Depth | Ordering | Alpha | Amodal | Inpaint | Intrinsic | Purpose |
-|---|---|---|---|---|---|---|---|---|
-| A | SLIC/classical | luminance | global median | hard | no | no | no | weak baseline |
-| B | Mask2Former | none | area/heuristic | hard | no | no | no | semantic-only baseline |
-| C | Mask2Former | Depth Anything V2 | global median | hard | no | no | no | depth-only test |
-| D | Mask2Former | Depth Anything V2 | boundary graph | hard | no | no | no | graph-ordering test |
-| E | Grounded-SAM2 | Depth Anything V2 | boundary graph | soft | no | no | no | promptable masks plus soft alpha |
-| F | Grounded-SAM2 | Depth Pro / MoGe | boundary graph | soft | heuristic | OpenCV | no | amodal plus completion |
-| G | Grounded-SAM2 | ensemble | learned edge ranker | soft/matting | amodal | LaMa | no | strong non-intrinsic system |
-| H | full | ensemble | learned edge ranker | soft/matting | amodal | LaMa | Retinex / Marigold-IID | full LayerForge-X |
-| I | full + peel | ensemble | graph-guided peeling | soft/matting | amodal | iterative completion | Retinex / Marigold-IID | recursive peeling variant |
+### B.6.1 Core ladder
+
+| Variant | Segmentation | Depth | Ordering | Key additions | Purpose |
+|---|---|---|---|---|---|
+| A | classical | luminance | global median | hard alpha only | weak baseline |
+| B | Mask2Former | none | area heuristic | semantic masks | semantic-only baseline |
+| C | Mask2Former | Depth Anything V2 | global median | depth cue | depth-only test |
+| D | Mask2Former | Depth Anything V2 | boundary graph | local ordering graph | graph-ordering test |
+| E | Grounded-SAM2 | Depth Anything V2 | boundary graph | promptable masks + soft alpha | promptable decomposition |
+| F | Grounded-SAM2 | Depth Pro / MoGe | boundary graph | heuristic amodal + OpenCV completion | amodal plus completion |
+
+### B.6.2 Full-system extensions
+
+| Variant | Backbone | Ordering | Completion | Intrinsics | Purpose |
+|---|---|---|---|---|---|
+| G | Grounded-SAM2 + ensemble depth | learned edge ranker | LaMa | no | strongest non-intrinsic native system |
+| H | full native stack | learned edge ranker | LaMa | Retinex / Marigold-IID | full LayerForge-X |
+| I | full native stack + peel | graph-guided peeling | iterative completion | Retinex / Marigold-IID | recursive peeling variant |
 
 ## B.7 Literature comparison
 
-| Method family | Semantic layers | Depth order | Amodal hidden parts | Soft alpha | Inpainting | Intrinsics | Single image | Notes |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| LDI | no | yes | partial | no | no | no | yes/varies | rendering representation |
-| 3D photo inpainting | no/limited | yes | yes | no | yes | no | RGB-D/depth | parallax focus |
-| Panoptic segmentation | yes | no | no | no | no | no | yes | visible masks only |
-| Grounded-SAM | yes/open vocab | no | no | no | no | no | yes | promptable visible masks |
-| Matting | foreground only | no | no | yes | no | no | yes | strong alpha boundaries |
-| Amodal segmentation | object masks | limited | yes | no | sometimes | no | yes | hidden shape, not full layer stack |
-| LayerDecomp-style | foreground/background | partial | yes | yes | yes | no | yes | strong generative editing baseline |
-| Qwen-Image-Layered-style | yes | implicit | yes | yes | yes | no/limited | yes | end-to-end generative RGBA layers |
-| LayerForge-X | yes | explicit graph | yes | yes | yes | optional | yes | modular and benchmarkable |
+### B.7.1 Representation-oriented baselines
+
+| Method family | Semantic layers | Explicit ordering | Hidden support | Notes |
+|---|---:|---:|---:|---|
+| LDI | no | yes | partial | rendering representation |
+| 3D photo inpainting | limited | yes | yes | parallax-oriented RGB-D editing |
+| Panoptic segmentation | yes | no | no | visible masks only |
+| Grounded-SAM | yes | no | no | promptable visible masks |
+| Amodal segmentation | object masks | limited | yes | hidden shape without full editable stack |
+
+### B.7.2 Layered editing baselines
+
+| Method family | Soft alpha | Completion | Intrinsics | Single image | Notes |
+|---|---:|---:|---:|---:|---|
+| Matting | yes | no | no | yes | strong alpha boundaries, no scene graph |
+| LayerDecomp-style | yes | yes | no | yes | generative editing baseline |
+| Qwen-Image-Layered-style | yes | yes | limited | yes | end-to-end generative RGBA layers |
+| LayerForge-X | yes | yes | optional | yes | modular and benchmarkable graph representation |
 
 ## B.8 Dataset coverage
 
@@ -1393,9 +1439,9 @@ Interpretation:
 
 The optional intrinsic path is implemented as an approximate appearance-factor export rather than as a standalone intrinsic-image benchmark. The measured truck winner currently provides both global and per-layer albedo/shading artifacts.
 
-| Run | Intrinsic method | Global albedo | Global shading | Per-layer albedo exports | Per-layer shading exports | Representative layer |
-|---|---|---|---|---:|---:|---|
-| `truck_candidate_search_v2/best` | `retinex` | yes | yes | 20 | 20 | `007_vehicle_car` |
+| Run | Method | Global factors | Per-layer exports | Representative layer |
+|---|---|---|---|---|
+| `truck_candidate_search_v2/best` | `retinex` | albedo + shading | `20` albedo and `20` shading layers | `007_vehicle_car` |
 
 Interpretation:
 
@@ -1406,9 +1452,27 @@ Interpretation:
 
 # Appendix C: Command Log
 
-- [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md)
+The full command log is shipped in [../../report_artifacts/command_log.md](../../report_artifacts/command_log.md). The final archive refresh used the following command families:
+
+```bash
+./.venv/bin/pytest -q
+python scripts/export_report_artifacts.py
+python scripts/generate_report_figures.py
+python scripts/build_report_docx.py
+python scripts/build_site_data.py
+python scripts/make_submission_zip.py
+```
+
+Those commands connect the final report outputs to the compact JSON summaries and generated figures that are shipped in the evidence pack.
 
 # Appendix D: Extra Literature Notes
 
-- [../LITERATURE_REVIEW.md](../LITERATURE_REVIEW.md)
-- [../REFERENCES.md](../REFERENCES.md)
+The literature used in this report clusters into five recurring themes:
+
+- layered rendering and depth-aware image representations;
+- panoptic, amodal, and promptable segmentation;
+- single-image intrinsic decomposition and matting;
+- generative layered decomposition systems such as Qwen-Image-Layered and LayerDecomp-style methods;
+- editing-oriented scene representations that prioritize reusable structure rather than one-off reconstruction.
+
+Extended repository notes remain available in `docs/LITERATURE_REVIEW.md` and `docs/REFERENCES.md`, but the report body and the references section are the intended citation surface for submission.

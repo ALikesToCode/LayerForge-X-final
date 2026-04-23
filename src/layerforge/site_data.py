@@ -150,8 +150,10 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
         figures.append({"key": key, "path": rel, **meta})
 
     docs_links = [
+        {"label": "Final report (PDF)", "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf"},
         {"label": "Final report (DOCX)", "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"},
         {"label": "Final report (Markdown)", "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md"},
+        {"label": "Final report pack guide", "href": "final_report_pack/README.md"},
         {"label": "Figure index", "href": "FIGURES.md"},
         {"label": "Current results summary", "href": "RESULTS_SUMMARY_CURRENT.md"},
         {"label": "Project specification", "href": "FINAL_PROJECT_SPEC.md"},

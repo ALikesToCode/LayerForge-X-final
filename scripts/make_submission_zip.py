@@ -40,6 +40,7 @@ EXCLUDED_DIR_NAMES = {
 
 EXCLUDED_PATH_PREFIXES = (
     "docs/internal/",
+    "docs/final_report_pack/sources/",
 )
 
 EXCLUDED_SUFFIXES = {

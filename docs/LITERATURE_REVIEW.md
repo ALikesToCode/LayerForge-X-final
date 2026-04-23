@@ -1,6 +1,6 @@
 # Literature Review Structure
 
-This is the compact version of the related-work review. The long-form version lives in `final_report_pack/01_LITERATURE_REVIEW_ADVANCED.md`.
+This is the compact version of the related-work review. The long-form version lives in `final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md`.
 
 ## Layered representations
 

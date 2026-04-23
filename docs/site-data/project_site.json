@@ -87,12 +87,20 @@
   ],
   "docs_links": [
     {
+      "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf",
+      "label": "Final report (PDF)"
+    },
+    {
       "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx",
       "label": "Final report (DOCX)"
     },
     {
       "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
       "label": "Final report (Markdown)"
+    },
+    {
+      "href": "final_report_pack/README.md",
+      "label": "Final report pack guide"
     },
     {
       "href": "FIGURES.md",

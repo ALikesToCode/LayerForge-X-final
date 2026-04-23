@@ -6,6 +6,7 @@ This directory contains the public documentation surface for the repository.
 
 - [Submission index](SUBMISSION_INDEX.md)
 - [Final report pack](final_report_pack/)
+- [Final report pack guide](final_report_pack/README.md)
 - [Figure index](FIGURES.md)
 - [Current results summary](RESULTS_SUMMARY_CURRENT.md)
 - [Qwen comparison](QWEN_IMAGE_LAYERED_COMPARISON.md)
@@ -37,6 +38,7 @@ This directory contains the public documentation surface for the repository.
 
 - [Figures](figures/)
 - [Site data payload](site-data/project_site.json)
+- [Final report build manifest](final_report_pack/build_manifest.json)
 
 ## Notes on omitted heavyweight artifacts
 

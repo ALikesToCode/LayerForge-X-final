@@ -6,6 +6,7 @@
 
 - Submission index: `docs/SUBMISSION_INDEX.md`
 - Final report DOCX: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx`
+- Final report PDF: `docs/final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf`
 - Final report Markdown: `docs/final_report_pack/LayerForge_X_Final_Report_FULL.md`
 - Canonical manifest: `PROJECT_MANIFEST.json`
 - Submission evidence pack: `report_artifacts/README.md`
@@ -366,7 +367,7 @@ runs/frontier_review/
 
 The current self-evaluation score is deliberately explicit rather than pretending to be a black-box learned selector. In the archived evidence pack it combines measured recomposition fidelity with anti-trivial editability signals, semantic separation, alpha quality, and graph confidence so that easy copy-like decompositions are penalized instead of rewarded. Runtime is currently reserved for future selector tuning because the shipped five-image summary was rescored from cached runs rather than from a fresh timed sweep. Details and caveats are in [docs/FRONTIER_WORKFLOW.md](docs/FRONTIER_WORKFLOW.md).
 
-Measured five-image frontier review (`runs/frontier_review/frontier_summary.json`):
+Measured five-image frontier review, summarized in `report_artifacts/metrics_snapshots/frontier_review_summary.json`:
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
@@ -405,7 +406,7 @@ That writes a standard run plus:
 - `target_extract/edit_preview_move.png`
 - `target_extract/target_metadata.json`
 
-Measured prompt benchmark (`runs/extract_benchmark_prompted_grounded/extract_benchmark_summary.json`) on `10` synthetic LayerBench++ scenes:
+Measured prompt benchmark, summarized in `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`, on `10` synthetic LayerBench++ scenes:
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
@@ -443,7 +444,7 @@ That writes:
 - `transparent_extract/recomposition.png`
 - `transparent_extract/transparent_metrics.json`
 
-Measured transparent benchmark (`runs/transparent_benchmark/transparent_benchmark_summary.json`) on `12` synthetic scenes:
+Measured transparent benchmark, summarized in `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`, on `12` synthetic scenes:
 
 | Metric | Mean |
 |---|---:|
