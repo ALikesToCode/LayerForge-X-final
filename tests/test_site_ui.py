@@ -1,0 +1,29 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_webui_static_surface_is_pages_safe() -> None:
+    script_text = (ROOT / "docs" / "assets" / "webui.js").read_text(encoding="utf-8")
+    assert "window.__LAYERFORGE_RUNTIME__ === true" in script_text
+    assert 'fetchJson("site-data/project_site.json")' in script_text
+    assert "Static Pages mode" in script_text
+    assert "Local launch" in script_text
+
+    html_text = (ROOT / "docs" / "webui.html").read_text(encoding="utf-8")
+    assert 'class="workflow-strip"' in html_text
+    assert 'class="form-stack"' in html_text
+    assert 'class="form-cluster"' in html_text
+
+    css_text = (ROOT / "docs" / "assets" / "site.css").read_text(encoding="utf-8")
+    assert "overflow-x: clip;" in css_text
+    assert "flex-wrap: wrap;" in css_text
+    assert ".workflow-step__index" in css_text
+    assert ".form-cluster__head" in css_text
+
+    webui_server_text = (ROOT / "src" / "layerforge" / "webui.py").read_text(encoding="utf-8")
+    assert "window.__LAYERFORGE_RUNTIME__ = true" in webui_server_text
+    assert "_inject_runtime_marker" in webui_server_text

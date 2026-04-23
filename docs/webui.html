@@ -80,123 +80,204 @@
                 <div class="section-head">
                     <p class="eyebrow">Interactive workflow</p>
                     <h2>Run LayerForge without the CLI</h2>
+                    <p class="section-copy">
+                        The local interface is organized around three tasks:
+                        select the operating mode, provide targeting hints only
+                        when they matter, and choose execution overrides when
+                        the default configuration is not enough.
+                    </p>
+                </div>
+                <div class="workflow-strip" aria-label="LayerForge local workflow steps">
+                    <article class="workflow-step">
+                        <span class="workflow-step__index">01</span>
+                        <h3>Choose the run mode</h3>
+                        <p>
+                            Start with the native decomposition, then move to
+                            extraction, transparent recovery, or recursive
+                            peeling when the task is narrower.
+                        </p>
+                    </article>
+                    <article class="workflow-step">
+                        <span class="workflow-step__index">02</span>
+                        <h3>Add only the hints you need</h3>
+                        <p>
+                            Prompts, points, and boxes are optional. Leave them
+                            blank for a general decomposition and add them only
+                            for targeted edits.
+                        </p>
+                    </article>
+                    <article class="workflow-step">
+                        <span class="workflow-step__index">03</span>
+                        <h3>Review artifacts in-place</h3>
+                        <p>
+                            The browser keeps the manifest, metrics, DALG
+                            export, and preview images together so editors do
+                            not need to chase CLI output folders.
+                        </p>
+                    </article>
                 </div>
                 <form class="webui-form" id="webui-form">
-                    <div class="form-grid">
-                        <label>
-                            <span>Mode</span>
-                            <select name="mode">
-                                <option value="run">
-                                    Layered decomposition
-                                </option>
-                                <option value="extract">
-                                    Prompt extraction
-                                </option>
-                                <option value="transparent">
-                                    Transparent target recovery
-                                </option>
-                                <option value="peel">Recursive peeling</option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Image</span>
-                            <input
-                                type="file"
-                                name="image"
-                                accept="image/png,image/jpeg,image/webp"
-                                required
-                            />
-                        </label>
-                        <label>
-                            <span>Config</span>
-                            <select name="config">
-                                <option value="configs/fast.yaml">
-                                    configs/fast.yaml
-                                </option>
-                                <option value="configs/best_score.yaml">
-                                    configs/best_score.yaml
-                                </option>
-                                <option value="configs/frontier.yaml">
-                                    configs/frontier.yaml
-                                </option>
-                                <option value="configs/recursive_peeling.yaml">
-                                    configs/recursive_peeling.yaml
-                                </option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Segmenter</span>
-                            <input
-                                type="text"
-                                name="segmenter"
-                                placeholder="classical, grounded_sam2, mask2former"
-                            />
-                        </label>
-                        <label>
-                            <span>Depth</span>
-                            <input
-                                type="text"
-                                name="depth"
-                                placeholder="geometric_luminance, depth_pro, ensemble"
-                            />
-                        </label>
-                        <label>
-                            <span>Prompt</span>
-                            <input
-                                type="text"
-                                name="prompt"
-                                placeholder="the truck in the foreground"
-                            />
-                        </label>
-                        <label>
-                            <span>Point hint</span>
-                            <input type="text" name="point" placeholder="x,y" />
-                        </label>
-                        <label>
-                            <span>Box hint</span>
-                            <input
-                                type="text"
-                                name="box"
-                                placeholder="x1,y1,x2,y2"
-                            />
-                        </label>
-                        <label>
-                            <span>Prompt source</span>
-                            <select name="prompt_source">
-                                <option value="">Default from config</option>
-                                <option value="augment">augment</option>
-                                <option value="manual">manual</option>
-                                <option value="gemini">gemini</option>
-                                <option value="hybrid">hybrid</option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Ordering</span>
-                            <select name="ordering">
-                                <option value="">Default from config</option>
-                                <option value="boundary">boundary</option>
-                                <option value="learned">learned</option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Device</span>
-                            <input type="text" name="device" value="auto" />
-                        </label>
-                        <label>
-                            <span>Max layers (peel)</span>
-                            <input
-                                type="number"
-                                name="max_layers"
-                                min="1"
-                                step="1"
-                                placeholder="6"
-                            />
-                        </label>
+                    <div class="form-stack">
+                        <section class="form-cluster">
+                            <div class="form-cluster__head">
+                                <div>
+                                    <p class="eyebrow">Core inputs</p>
+                                    <h3>Image and pipeline mode</h3>
+                                </div>
+                                <p class="form-cluster__copy">
+                                    These controls define the main run. For most
+                                    cases, choose the mode, upload the image,
+                                    and keep the configuration defaults.
+                                </p>
+                            </div>
+                            <div class="form-grid form-grid--wide">
+                                <label>
+                                    <span>Mode</span>
+                                    <select name="mode">
+                                        <option value="run">
+                                            Layered decomposition
+                                        </option>
+                                        <option value="extract">
+                                            Prompt extraction
+                                        </option>
+                                        <option value="transparent">
+                                            Transparent target recovery
+                                        </option>
+                                        <option value="peel">Recursive peeling</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Image</span>
+                                    <input
+                                        type="file"
+                                        name="image"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        required
+                                    />
+                                </label>
+                                <label>
+                                    <span>Config</span>
+                                    <select name="config">
+                                        <option value="configs/fast.yaml">
+                                            configs/fast.yaml
+                                        </option>
+                                        <option value="configs/best_score.yaml">
+                                            configs/best_score.yaml
+                                        </option>
+                                        <option value="configs/frontier.yaml">
+                                            configs/frontier.yaml
+                                        </option>
+                                        <option value="configs/recursive_peeling.yaml">
+                                            configs/recursive_peeling.yaml
+                                        </option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Segmenter override</span>
+                                    <input
+                                        type="text"
+                                        name="segmenter"
+                                        placeholder="classical, grounded_sam2, mask2former"
+                                    />
+                                </label>
+                                <label>
+                                    <span>Depth override</span>
+                                    <input
+                                        type="text"
+                                        name="depth"
+                                        placeholder="geometric_luminance, depth_pro, ensemble"
+                                    />
+                                </label>
+                                <label>
+                                    <span>Device</span>
+                                    <input type="text" name="device" value="auto" />
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="form-cluster">
+                            <div class="form-cluster__head">
+                                <div>
+                                    <p class="eyebrow">Targeting hints</p>
+                                    <h3>Prompt, point, or box guidance</h3>
+                                </div>
+                                <p class="form-cluster__copy">
+                                    Use these only when the task is targeted.
+                                    They are optional for a general layered
+                                    decomposition.
+                                </p>
+                            </div>
+                            <div class="form-grid form-grid--dense">
+                                <label>
+                                    <span>Prompt</span>
+                                    <input
+                                        type="text"
+                                        name="prompt"
+                                        placeholder="the truck in the foreground"
+                                    />
+                                </label>
+                                <label>
+                                    <span>Point hint</span>
+                                    <input type="text" name="point" placeholder="x,y" />
+                                </label>
+                                <label>
+                                    <span>Box hint</span>
+                                    <input
+                                        type="text"
+                                        name="box"
+                                        placeholder="x1,y1,x2,y2"
+                                    />
+                                </label>
+                                <label>
+                                    <span>Prompt source</span>
+                                    <select name="prompt_source">
+                                        <option value="">Default from config</option>
+                                        <option value="augment">augment</option>
+                                        <option value="manual">manual</option>
+                                        <option value="gemini">gemini</option>
+                                        <option value="hybrid">hybrid</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="form-cluster">
+                            <div class="form-cluster__head">
+                                <div>
+                                    <p class="eyebrow">Execution controls</p>
+                                    <h3>Ordering and runtime overrides</h3>
+                                </div>
+                                <p class="form-cluster__copy">
+                                    Use these controls when comparing ordering
+                                    behavior or constraining a peeling run.
+                                </p>
+                            </div>
+                            <div class="form-grid form-grid--dense">
+                                <label>
+                                    <span>Ordering</span>
+                                    <select name="ordering">
+                                        <option value="">Default from config</option>
+                                        <option value="boundary">boundary</option>
+                                        <option value="learned">learned</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Max layers (peel)</span>
+                                    <input
+                                        type="number"
+                                        name="max_layers"
+                                        min="1"
+                                        step="1"
+                                        placeholder="6"
+                                    />
+                                </label>
+                            </div>
+                            <label class="checkbox-row checkbox-row--cluster">
+                                <input type="checkbox" name="no_parallax" checked />
+                                <span>Skip parallax export for faster local runs</span>
+                            </label>
+                        </section>
                     </div>
-                    <label class="checkbox-row">
-                        <input type="checkbox" name="no_parallax" checked />
-                        <span>Skip parallax export for faster local runs</span>
-                    </label>
                     <div class="cta-row">
                         <button
                             class="button-primary"

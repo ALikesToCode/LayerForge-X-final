@@ -70,6 +70,13 @@ def _display_path(path: Path) -> str:
     return str(resolved)
 
 
+def _inject_runtime_marker(html: str) -> str:
+    marker = '<script>window.__LAYERFORGE_RUNTIME__ = true;</script>'
+    if marker in html:
+        return html
+    return html.replace("</head>", f"    {marker}\n    </head>", 1)
+
+
 def _resolve_workspace_path(url_path: str) -> Path:
     decoded = unquote(url_path.removeprefix("/workspace/"))
     candidate = (REPO_ROOT / decoded).resolve()
@@ -345,6 +352,14 @@ class LayerForgeWebUIHandler(BaseHTTPRequestHandler):
             file_path = file_path / "index.html"
         if not file_path.exists():
             self._send_json({"error": f"Missing file: {rel_path}"}, status=HTTPStatus.NOT_FOUND)
+            return
+        if file_path.name == "webui.html":
+            html = _inject_runtime_marker(file_path.read_text(encoding="utf-8")).encode("utf-8")
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(html)))
+            self.end_headers()
+            self.wfile.write(html)
             return
         self._send_file(file_path)
 

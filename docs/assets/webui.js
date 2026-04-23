@@ -1,6 +1,8 @@
 (async function boot() {
-  const runtime = await fetchJson("/api/runtime");
-  const project = runtime && runtime.available ? await fetchJson("/api/project-summary") : await fetchJson("site-data/project_site.json");
+  const runtime = window.__LAYERFORGE_RUNTIME__ === true ? await fetchJson("/api/runtime") : null;
+  const project = runtime && runtime.available
+    ? await fetchJson("/api/project-summary")
+    : await fetchJson("site-data/project_site.json");
   if (project) renderRuntimeStatus(runtime, project);
   wireForm(runtime);
 })();
@@ -18,6 +20,11 @@ async function fetchJson(path) {
 
 function renderRuntimeStatus(runtime, project) {
   const target = document.getElementById("runtime-status");
+  const runButton = document.getElementById("run-button");
+  const runHint = document.getElementById("run-hint");
+  const entrypoint = project && project.local_lab && project.local_lab.entrypoint
+    ? project.local_lab.entrypoint
+    : "layerforge webui --open-browser";
   if (!target) return;
   if (runtime && runtime.available) {
     target.innerHTML = `
@@ -28,11 +35,13 @@ function renderRuntimeStatus(runtime, project) {
       </article>
       <article class="status-card">
         <span class="metric-card__label">Recommended command</span>
-        <strong class="metric-card__value"><code>${escapeHtml(project.local_lab.entrypoint)}</code></strong>
+        <strong class="metric-card__value"><code>${escapeHtml(entrypoint)}</code></strong>
       </article>
     `;
-    document.getElementById("run-button").disabled = false;
-    document.getElementById("run-hint").textContent = "Local runtime is active. Upload an image and select a mode.";
+    if (runButton) runButton.disabled = false;
+    if (runHint) {
+      runHint.textContent = "Local runtime is active. Upload an image and select a mode.";
+    }
     return;
   }
   target.innerHTML = `
@@ -41,7 +50,15 @@ function renderRuntimeStatus(runtime, project) {
       <strong class="metric-card__value">Static Pages mode</strong>
       <div class="benchmark-card__body">The public site can browse the evidence pack, but local runs require the Python web UI server.</div>
     </article>
+    <article class="status-card">
+      <span class="metric-card__label">Local launch</span>
+      <strong class="metric-card__value"><code>${escapeHtml(entrypoint)}</code></strong>
+      <div class="benchmark-card__body">Use the local runtime to upload images, dispatch runs, and inspect generated artifacts from the browser.</div>
+    </article>
   `;
+  if (runHint) {
+    runHint.textContent = `Static overview only. Start the local server with ${entrypoint}.`;
+  }
 }
 
 function wireForm(runtime) {
