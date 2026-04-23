@@ -1,5 +1,3 @@
-# Appendix B. Extended Tables and Ablations
-
 This appendix collects the extended quantitative tables, measured ablations, and failure-taxonomy material that support the main report.
 
 ## B.1 Completed runs snapshot
@@ -20,15 +18,15 @@ Interpretation:
 
 ## B.2 Frontier candidate-bank review
 
-The repository contains a measured five-image frontier comparison in `runs/frontier_review/frontier_summary.json`.
+The local working tree contains a measured five-image frontier comparison in `runs/frontier_review/frontier_summary.json`, and the submission archive ships the copied summary in `report_artifacts/metrics_snapshots/frontier_review_summary.json`.
 
 | Method | Images | Mean PSNR | Mean SSIM | Mean self-eval score | Best-image wins |
 |---|---:|---:|---:|---:|---:|
-| LF native | 5 | 37.6688 | 0.9708 | 0.6283 | 4 |
-| LF peel | 5 | 27.0988 | 0.9096 | 0.4783 | 0 |
-| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2541 | 0 |
-| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5259 | 0 |
-| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5251 | 1 |
+| LF native | 5 | 37.6688 | 0.9708 | 0.6981 | 4 |
+| LF peel | 5 | 27.0988 | 0.9096 | 0.5314 | 0 |
+| Qwen raw 4 | 5 | 29.0757 | 0.8850 | 0.2824 | 0 |
+| Q+G preserve 4 | 5 | 28.5539 | 0.8638 | 0.5843 | 0 |
+| Q+G reorder 4 | 5 | 28.5397 | 0.8637 | 0.5834 | 1 |
 
 Interpretation:
 

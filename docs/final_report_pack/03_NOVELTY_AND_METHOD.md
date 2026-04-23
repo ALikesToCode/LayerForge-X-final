@@ -171,10 +171,9 @@ edit-preservation and anti-trivial copy penalties
 semantic separation
 alpha quality
 graph confidence
-runtime
 ```
 
-The current weighted score is
+In the archived five-image evidence pack, the active weighted score is
 
 ```text
 score = 0.20 * recomposition_fidelity
@@ -182,10 +181,9 @@ score = 0.20 * recomposition_fidelity
       + 0.20 * semantic_separation
       + 0.10 * alpha_quality
       + 0.15 * graph_confidence
-      + 0.10 * runtime
 ```
 
-This formulation turns the repository into a self-evaluating layer-representation system rather than a single fixed pipeline.
+The implementation still supports an optional runtime term for future reruns with fresh timings, but the shipped frontier summary was rescored from cached runs and therefore keeps runtime inactive. This formulation still turns the repository into a self-evaluating layer-representation system rather than a single fixed pipeline.
 
 ## 4.7 Recursive peeling
 

@@ -1,5 +1,6 @@
 {
   "generated_by": "scripts/generate_report_figures.py",
+  "raw_dependencies_omitted_from_submission_zip": true,
   "figures": {
     "truck_recomposition_comparison": "docs/figures/truck_recomposition_comparison.png",
     "truck_layer_stack_comparison": "docs/figures/truck_layer_stack_comparison.png",

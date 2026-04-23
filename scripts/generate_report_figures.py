@@ -845,8 +845,8 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
             image_path=f"{base}/input_rgb.png",
             footer_lines=["Synthetic LayerBench++ scene used for the controlled effect-layer demo."],
             accent=BLUE,
-            size=(420, 430),
-            image_box=(376, 228),
+            size=(420, 400),
+            image_box=(376, 210),
         ),
         card_with_image(
             title="Clean Reference",
@@ -854,8 +854,8 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
             image_path=f"{base}/reference_without_object.png",
             footer_lines=["Used as the clean background target for residual/effect estimation."],
             accent=GREEN,
-            size=(420, 430),
-            image_box=(376, 228),
+            size=(420, 400),
+            image_box=(376, 210),
         ),
         card_with_image(
             title="Ground-Truth Effect",
@@ -863,8 +863,8 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
             image_path=f"{base}/ground_truth_effect_rgba.png",
             footer_lines=["Checkerboard preview of the transparent ground-truth effect layer."],
             accent=ORANGE,
-            size=(420, 430),
-            image_box=(376, 228),
+            size=(420, 400),
+            image_box=(376, 210),
             use_checkerboard=True,
         ),
         card_with_image(
@@ -873,13 +873,13 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
             image_path=f"{base}/predicted_effect_rgba.png",
             footer_lines=["Prototype result; evaluated separately from the main decomposition metrics."],
             accent=CLAY,
-            size=(420, 430),
-            image_box=(376, 228),
+            size=(420, 400),
+            image_box=(376, 210),
             use_checkerboard=True,
         ),
     ]
     metrics = load_json(f"{base}/metrics.json")
-    canvas = Image.new("RGB", (1820, 980), BG)
+    canvas = Image.new("RGB", (1820, 860), BG)
     y = make_title_block(
         canvas,
         "Associated-Effect Prototype",
@@ -888,18 +888,30 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
     )
     place_grid(canvas, cards, origin=(36, y), cols=4, gap=18)
     draw = ImageDraw.Draw(canvas)
-    callout_y = y + 460
-    draw.rounded_rectangle((36, callout_y, 1784, 910), radius=22, fill=(251, 248, 240), outline=DIVIDER, width=2)
+    callout_y = y + 430
+    draw.rounded_rectangle((36, callout_y, 1784, 812), radius=22, fill=(251, 248, 240), outline=DIVIDER, width=2)
     draw.text((60, callout_y + 22), "Measured Readout", font=FONT_H3, fill=TEXT)
     draw_wrapped_text(
         draw,
         (60, callout_y + 62),
-        f"Effect IoU = {float(metrics['effect_iou']):.4f}; predicted effect pixels = {int(metrics['predicted_effect_pixels'])}; "
-        f"ground-truth effect pixels = {int(metrics['ground_truth_effect_pixels'])}. "
-        "Use this as a prototype associated-effect result inspired by visual-effect layer decomposition.",
+        "The exported effect layer is evaluated against the clean-reference residual rather than folded into the main decomposition score. "
+        "This keeps the effect path honest: it is a measured prototype associated-effect module, not a solved generative shadow/reflection decomposer.",
         FONT_BODY,
         TEXT,
-        1660,
+        1080,
+    )
+    badge_x0 = 1260
+    badge_x1 = 1748
+    badge_y0 = callout_y + 36
+    badge_y1 = callout_y + 188
+    draw.rounded_rectangle((badge_x0, badge_y0, badge_x1, badge_y1), radius=20, fill=CARD, outline=DIVIDER, width=2)
+    draw.text((badge_x0 + 28, badge_y0 + 22), "Effect IoU", font=FONT_H3, fill=TEXT)
+    draw.text((badge_x0 + 28, badge_y0 + 62), f"{float(metrics['effect_iou']):.4f}", font=FONT_H1, fill=CLAY)
+    draw.text(
+        (badge_x0 + 28, badge_y0 + 116),
+        f"Pred px: {int(metrics['predicted_effect_pixels'])} | GT px: {int(metrics['ground_truth_effect_pixels'])}",
+        font=FONT_SMALL,
+        fill=MUTED,
     )
     return save(canvas, output_dir / "effects_layer_demo.png")
 
@@ -1065,20 +1077,33 @@ def generate_frontier_review(output_dir: Path) -> str:
     win_counts: dict[str, int] = {}
     for row in summary.get("best_by_image", []):
         win_counts[str(row["label"])] = win_counts.get(str(row["label"]), 0) + 1
+    layer_counts: dict[str, list[float]] = {}
+    for row in summary.get("rows", []):
+        if row.get("status") != "ok":
+            continue
+        num_layers = row.get("num_layers")
+        if num_layers is None:
+            continue
+        layer_counts.setdefault(str(row["label"]), []).append(float(num_layers))
+    mean_layer_counts = {
+        label: (sum(values) / len(values)) if values else None
+        for label, values in layer_counts.items()
+    }
 
-    canvas = Image.new("RGB", (1820, 1080), BG)
+    canvas = Image.new("RGB", (1820, 900), BG)
     y = make_title_block(
         canvas,
         "Frontier Review: Self-Evaluating Candidate Bank",
         "This panel compares the native LayerForge path, recursive peeling, raw Qwen, and both fair hybrid modes on the same five-image review set. "
-        "The current evaluator now combines fidelity with anti-trivial editability signals, semantic separation, alpha quality, graph confidence, and runtime.",
+        "The current archived evaluator combines fidelity with anti-trivial editability signals, semantic separation, alpha quality, and graph confidence. "
+        "Runtime is reserved for future selector tuning because this shipped summary was rescored from cached runs.",
     )
     panels = [
         bar_panel(
             title="Mean PSNR",
             subtitle="Recomposition fidelity",
             rows=psnr_rows,
-            size=(570, 360),
+            size=(570, 330),
             scale_max=panel_scale_max(psnr_rows, floor=10.0),
             better_note="Higher is better, but not sufficient on its own. Full-image/background copies can score well here without being truly editable.",
         ),
@@ -1086,7 +1111,7 @@ def generate_frontier_review(output_dir: Path) -> str:
             title="Mean SSIM",
             subtitle="Structural recomposition fidelity",
             rows=ssim_rows,
-            size=(570, 360),
+            size=(570, 330),
             scale_max=1.0,
             better_note="Higher is better. SSIM is shown for completeness, but the frontier selector no longer lets fidelity dominate the full decision.",
         ),
@@ -1094,7 +1119,7 @@ def generate_frontier_review(output_dir: Path) -> str:
             title="Mean Self-Eval",
             subtitle="Editability-aware frontier score",
             rows=score_rows,
-            size=(570, 360),
+            size=(570, 330),
             scale_max=1.0,
             better_note="Higher is better. This score now rewards edits that change the target layer while preserving non-edited regions.",
         ),
@@ -1102,18 +1127,34 @@ def generate_frontier_review(output_dir: Path) -> str:
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=22)
 
     draw = ImageDraw.Draw(canvas)
-    callout_y = y + 390
-    draw.rounded_rectangle((36, callout_y, 1784, 1018), radius=28, fill=CARD, outline=DIVIDER, width=2)
+    callout_y = y + 360
+    draw.rounded_rectangle((36, callout_y, 1784, 844), radius=28, fill=CARD, outline=DIVIDER, width=2)
     draw.text((60, callout_y + 24), "Measured Selection Summary", font=FONT_H2, fill=TEXT)
-    lines = [
-        f"Inputs: {len(summary.get('inputs', []))} images",
-        "Best-image wins: " + ", ".join(f"{label}={win_counts.get(label, 0)}" for label in labels if label in aggregates),
-        "Measured interpretation: LayerForge native remains the strongest overall editable representation, Qwen + graph reorder wins the cat scene, and the hybrid preserve row remains the fairest metadata-first comparison.",
+    card_specs = [
+        ("Winner counts", 60, 560),
+        ("Mean layer count", 640, 560),
+        ("Selection takeaway", 1220, 500),
     ]
-    line_y = callout_y + 78
-    for line in lines:
-        line_y += draw_wrapped_text(draw, (60, line_y), line, FONT_BODY, TEXT, 1660)
-        line_y += 8
+    for title, x, width in card_specs:
+        draw.rounded_rectangle((x, callout_y + 78, x + width, 812), radius=20, fill=(251, 248, 240), outline=DIVIDER, width=2)
+        draw.text((x + 24, callout_y + 102), title, font=FONT_H3, fill=TEXT)
+
+    row_y = callout_y + 150
+    for label in labels:
+        if label not in aggregates:
+            continue
+        draw.text((84, row_y), f"{label}: {win_counts.get(label, 0)}", font=FONT_BODY, fill=TEXT)
+        mean_layers = mean_layer_counts.get(label)
+        layer_text = "n/a" if mean_layers is None else format_metric(mean_layers, 1)
+        draw.text((664, row_y), f"{label}: {layer_text}", font=FONT_BODY, fill=TEXT)
+        row_y += 52
+
+    takeaway = (
+        f"Inputs: {len(summary.get('inputs', []))} images. "
+        "LayerForge native remains the strongest overall editable representation on the archived bank. "
+        "Qwen + graph reorder wins the cat scene, while Q+G preserve remains the fair metadata-first hybrid because it keeps the best external visual stack."
+    )
+    draw_wrapped_text(draw, (1244, callout_y + 148), takeaway, FONT_BODY, TEXT, 452)
     return save(canvas, output_dir / "frontier_review.png")
 
 
@@ -1140,7 +1181,7 @@ def generate_prompt_extract_benchmark(output_dir: Path) -> str:
     iou_rows = [(label_map[key], float(by_type[key]["mean_target_iou"]), accent_map[key]) for key in order]
     mae_rows = [(label_map[key], float(by_type[key]["mean_alpha_mae"]), accent_map[key]) for key in order]
 
-    canvas = Image.new("RGB", (1820, 760), BG)
+    canvas = Image.new("RGB", (1820, 640), BG)
     y = make_title_block(
         canvas,
         "Promptable Extraction Benchmark",
@@ -1149,29 +1190,29 @@ def generate_prompt_extract_benchmark(output_dir: Path) -> str:
     )
     panels = [
         bar_panel(
-            title="Target Hit Rate",
-            subtitle="Higher is better",
-            rows=hit_rows,
-            size=(560, 500),
-            scale_max=1.0,
-            better_note="Text-bearing prompts hit the intended target on the measured synthetic set; point-only and box-only prompts do not.",
-        ),
+                title="Target Hit Rate",
+                subtitle="Higher is better",
+                rows=hit_rows,
+                size=(560, 380),
+                scale_max=1.0,
+                better_note="Text-bearing prompts hit the intended target on the measured synthetic set; point-only and box-only prompts do not.",
+            ),
         bar_panel(
-            title="Mean Target IoU",
-            subtitle="Higher is better",
-            rows=iou_rows,
-            size=(560, 500),
-            scale_max=1.0,
-            better_note="Point-only and box-only prompts still overlap strongly with a neighboring region, which is why IoU remains high despite the semantic miss.",
-        ),
+                title="Mean Target IoU",
+                subtitle="Higher is better",
+                rows=iou_rows,
+                size=(560, 380),
+                scale_max=1.0,
+                better_note="Point-only and box-only prompts still overlap strongly with a neighboring region, which is why IoU remains high despite the semantic miss.",
+            ),
         bar_panel(
-            title="Mean Alpha MAE",
-            subtitle="Lower is better",
-            rows=mae_rows,
-            size=(560, 500),
-            scale_max=max(0.2, panel_scale_max(mae_rows, floor=0.05)),
-            better_note="Alpha quality stays strong once the target is selected; the current weakness is prompt routing, not matte stability.",
-        ),
+                title="Mean Alpha MAE",
+                subtitle="Lower is better",
+                rows=mae_rows,
+                size=(560, 380),
+                scale_max=max(0.2, panel_scale_max(mae_rows, floor=0.05)),
+                better_note="Alpha quality stays strong once the target is selected; the current weakness is prompt routing, not matte stability.",
+            ),
     ]
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=24)
     return save(canvas, output_dir / "prompt_extract_benchmark.png")
@@ -1204,7 +1245,7 @@ def generate_transparent_benchmark(output_dir: Path) -> str:
     bg_rows = [(label_map[key], mean(key, "background_psnr"), accent_map[key]) for key in order]
     recon_rows = [(label_map[key], mean(key, "recompose_psnr"), accent_map[key]) for key in order]
 
-    canvas = Image.new("RGB", (1820, 760), BG)
+    canvas = Image.new("RGB", (1820, 640), BG)
     y = make_title_block(
         canvas,
         "Transparent Decomposition Benchmark",
@@ -1213,29 +1254,29 @@ def generate_transparent_benchmark(output_dir: Path) -> str:
     )
     panels = [
         bar_panel(
-            title="Transparent Alpha MAE",
-            subtitle="Lower is better",
-            rows=alpha_rows,
-            size=(560, 500),
-            scale_max=max(0.25, panel_scale_max(alpha_rows, floor=0.1)),
-            better_note="Alpha recovery is strongest on flare-like overlays and weakest on the semi-transparent panel variant.",
-        ),
+                title="Transparent Alpha MAE",
+                subtitle="Lower is better",
+                rows=alpha_rows,
+                size=(560, 380),
+                scale_max=max(0.25, panel_scale_max(alpha_rows, floor=0.1)),
+                better_note="Alpha recovery is strongest on flare-like overlays and weakest on the semi-transparent panel variant.",
+            ),
         bar_panel(
-            title="Background PSNR",
-            subtitle="Higher is better",
-            rows=bg_rows,
-            size=(560, 500),
-            scale_max=40.0,
-            better_note="The recovered clean background is strongest on flare-like scenes and weakest when the transparent region behaves like a large sticker/panel.",
-        ),
+                title="Background PSNR",
+                subtitle="Higher is better",
+                rows=bg_rows,
+                size=(560, 380),
+                scale_max=40.0,
+                better_note="The recovered clean background is strongest on flare-like scenes and weakest when the transparent region behaves like a large sticker/panel.",
+            ),
         bar_panel(
-            title="Recompose PSNR",
-            subtitle="Higher is better",
-            rows=recon_rows,
-            size=(560, 500),
-            scale_max=60.0,
-            better_note="Transparent recomposition is reported as a sanity check. Alpha error and clean-background quality are the primary transparent-layer metrics.",
-        ),
+                title="Recompose PSNR",
+                subtitle="Higher is better",
+                rows=recon_rows,
+                size=(560, 380),
+                scale_max=60.0,
+                better_note="Transparent recomposition is reported as a sanity check. Alpha error and clean-background quality are the primary transparent-layer metrics.",
+            ),
     ]
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=24)
     return save(canvas, output_dir / "transparent_benchmark.png")
@@ -1244,6 +1285,7 @@ def generate_transparent_benchmark(output_dir: Path) -> str:
 def write_manifest(output_dir: Path, figures: dict[str, str]) -> str:
     manifest = {
         "generated_by": "scripts/generate_report_figures.py",
+        "raw_dependencies_omitted_from_submission_zip": True,
         "figures": figures,
     }
     path = output_dir / "figure_manifest.json"

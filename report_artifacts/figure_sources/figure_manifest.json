@@ -14,6 +14,7 @@
     "truck_prompt_ablation": "docs/figures/truck_prompt_ablation.png",
     "truck_recomposition_comparison": "docs/figures/truck_recomposition_comparison.png"
   },
+  "raw_dependencies_omitted_from_submission_zip": true,
   "source_dependencies": {
     "effects_layer_demo": [
       "runs/effects_demo_source/scene_000",

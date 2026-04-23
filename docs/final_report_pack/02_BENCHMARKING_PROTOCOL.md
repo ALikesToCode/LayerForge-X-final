@@ -18,7 +18,7 @@ For the present repository state, treat `PROJECT_MANIFEST.json`, `report_artifac
 
 ---
 
-# Track A: Modal semantic / panoptic segmentation
+## 5.1 Modal semantic and panoptic segmentation
 
 ## Datasets
 
@@ -78,7 +78,7 @@ For the present repository state, note the distinction clearly:
 
 ---
 
-# Track B: Depth-order and occlusion-graph quality
+## 5.2 Depth-order and occlusion-graph quality
 
 ## Why this matters
 
@@ -163,7 +163,7 @@ For images with a total ground-truth layer order, also report Kendall tau or the
 
 ---
 
-# Track C: RGBA recomposition fidelity
+## 5.3 RGBA recomposition fidelity
 
 ## Why this matters
 
@@ -216,7 +216,7 @@ coverage_error = mean(|clip(sum_k alpha_k, 0, 1) - 1|)
 
 ---
 
-# Track D: Amodal mask and hidden-region completion
+## 5.4 Amodal masks and hidden-region completion
 
 ## Datasets
 
@@ -269,7 +269,7 @@ These are computed only inside the removed or hidden region.
 
 ---
 
-# Track E: Intrinsic albedo/shading split
+## 5.5 Intrinsic albedo and shading split
 
 ## Datasets
 
@@ -318,7 +318,7 @@ intrinsic_recompose_error = mean(|I_layer - A_layer * S_layer| inside alpha > 0)
 
 ---
 
-# Track F: Editability evaluation
+## 5.6 Editability evaluation
 
 ## Why this matters
 
@@ -373,7 +373,7 @@ Even a dozen people can surface systematic differences.
 
 ---
 
-# Synthetic-LayerBench design
+## 5.7 Synthetic-LayerBench design
 
 This is the easiest path to strong, defensible numbers, precisely because ground truth is known by construction.
 
@@ -461,7 +461,7 @@ That format is the right one to use for recursive-peeling and effect-layer evalu
 
 ---
 
-# Ablation protocol
+## 5.8 Ablation protocol
 
 Run a controlled set in which one component changes at a time. Only this type of comparison can attribute gains to a specific component.
 
@@ -489,7 +489,7 @@ Run a controlled set in which one component changes at a time. Only this type of
 
 ---
 
-# Visual evidence set
+## 5.9 Visual evidence set
 
 The report documents the evaluation through the following figure classes:
 
@@ -517,7 +517,7 @@ Primary tables:
 
 ---
 
-# Failure-case taxonomy
+## 5.10 Failure-case taxonomy
 
 Failure analysis is part of the contribution. Classifying errors makes the evaluation more credible and easier to interpret:
 
@@ -535,7 +535,7 @@ Failure analysis is part of the contribution. Classifying errors makes the evalu
 
 ---
 
-# Recommended final benchmark narrative
+## 5.11 Benchmark narrative
 
 If the report needs one paragraph summarising the whole evaluation, this is the one:
 

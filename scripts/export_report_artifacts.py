@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -100,6 +103,16 @@ FIGURE_SOURCES = {
 
 COMMAND_LOG = """# Command Log
 
+## Environment metadata
+
+- Python: `{python_version}`
+- torch: `{torch_version}`
+- transformers: `{transformers_version}`
+- diffusers: `{diffusers_version}`
+- accelerate: `{accelerate_version}`
+- safetensors: `{safetensors_version}`
+- commit: `{git_commit}`
+
 These are the exact command families used to produce the auditable summaries copied into `report_artifacts/metrics_snapshots/`.
 
 ## Validation
@@ -181,6 +194,24 @@ layerforge benchmark-diode --dataset-dir data/diode --output-dir results/diode_g
 """
 
 
+def _package_version(name: str) -> str:
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return "not-installed"
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            text=True,
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
 def copy_snapshots() -> None:
     dst = TARGET / "metrics_snapshots"
     dst.mkdir(parents=True, exist_ok=True)
@@ -232,6 +263,7 @@ def write_figure_sources() -> None:
     dst = TARGET / "figure_sources"
     dst.mkdir(parents=True, exist_ok=True)
     payload = {
+        "raw_dependencies_omitted_from_submission_zip": True,
         "generated_figures": {name: f"docs/figures/{name}.png" for name in FIGURE_SOURCES},
         "source_dependencies": FIGURE_SOURCES,
     }
@@ -243,9 +275,9 @@ def write_readme() -> None:
 
 This folder is the submission-safe evidence pack for the claims made in the README and `PROJECT_MANIFEST.json`.
 
-- `metrics_snapshots/` contains compact JSON summaries copied from the measured `runs/` and `results/` directories.
-- `figure_sources/figure_manifest.json` records which raw runs and datasets were used to build the report figures.
-- `command_log.md` lists the command families used to generate the copied artifacts.
+- `metrics_snapshots/` contains compact JSON summaries copied from the measured local `runs/` and `results/` directories.
+- `figure_sources/figure_manifest.json` records which raw runs and datasets were used to build the report figures and whether those dependencies are omitted from the submission ZIP.
+- `command_log.md` lists the command families used to generate the copied artifacts and the verified package/runtime versions used for the current archive refresh.
 
 The goal is to keep the archive auditable even when heavyweight directories such as `data/`, `runs/`, and `results/` are excluded from a ZIP submission.
 
@@ -254,11 +286,24 @@ Treat `PROJECT_MANIFEST.json`, `metrics_snapshots/`, and `command_log.md` as the
     (TARGET / "README.md").write_text(text, encoding="utf-8")
 
 
+def write_command_log() -> None:
+    rendered = COMMAND_LOG.format(
+        python_version=sys.version.split()[0],
+        torch_version=_package_version("torch"),
+        transformers_version=_package_version("transformers"),
+        diffusers_version=_package_version("diffusers"),
+        accelerate_version=_package_version("accelerate"),
+        safetensors_version=_package_version("safetensors"),
+        git_commit=_git_commit(),
+    )
+    (TARGET / "command_log.md").write_text(rendered, encoding="utf-8")
+
+
 def main() -> int:
     TARGET.mkdir(parents=True, exist_ok=True)
     copy_snapshots()
     write_figure_sources()
-    (TARGET / "command_log.md").write_text(COMMAND_LOG, encoding="utf-8")
+    write_command_log()
     write_readme()
     print(TARGET)
     return 0

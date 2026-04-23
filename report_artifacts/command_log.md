@@ -1,5 +1,15 @@
 # Command Log
 
+## Environment metadata
+
+- Python: `3.14.4`
+- torch: `2.11.0`
+- transformers: `5.5.4`
+- diffusers: `0.37.1`
+- accelerate: `1.13.0`
+- safetensors: `0.7.0`
+- commit: `53dff33ab05ff5c245fb74c54e606f409046fa9c`
+
 These are the exact command families used to produce the auditable summaries copied into `report_artifacts/metrics_snapshots/`.
 
 ## Validation
