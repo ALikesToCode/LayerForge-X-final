@@ -32,7 +32,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "gemini_timeout_sec": 300,
         },
     },
-    "depth": {"method": "geometric_luminance", "near_is_smaller": True, "flip": False, "edge_smooth": True, "ensemble": [], "model": {}},
+    "depth": {"method": "geometric_luminance", "orientation": "config", "near_is_smaller": True, "flip": False, "edge_smooth": True, "ensemble": [], "model": {}},
     "layering": {
         "min_layer_area_ratio": 0.0015,
         "max_layers": 64,

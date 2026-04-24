@@ -24,6 +24,12 @@ class GraphEdge:
     local_depth_gap: float
     near_local_depth: float
     far_local_depth: float
+    relation: str = "in_front_of"
+    overlap_ratio: float | None = None
+    contact_score: float | None = None
+    semantic_prior: float | None = None
+    model_confidence: float | None = None
+    conflict_notes: str | None = None
     reason: str = "boundary_local_depth"
 
 
@@ -33,11 +39,16 @@ class Node:
     depth_median: float
     depth_p10: float
     depth_p90: float
+    depth_trimmed_mean: float
+    depth_boundary_median: float
+    depth_variance: float
+    depth_confidence: float
     border_touch: bool
     occludes: set[int] = field(default_factory=set)
     occluded_by: set[int] = field(default_factory=set)
     outgoing_edges: dict[int, GraphEdge] = field(default_factory=dict)
     incoming_edges: dict[int, GraphEdge] = field(default_factory=dict)
+    removed_edges: list[dict[str, Any]] = field(default_factory=list)
 
 
 def depth_stats(mask: np.ndarray, depth: np.ndarray) -> tuple[float, float, float]:
@@ -45,6 +56,38 @@ def depth_stats(mask: np.ndarray, depth: np.ndarray) -> tuple[float, float, floa
     if vals.size == 0:
         return 1.0, 1.0, 1.0
     return float(np.median(vals)), float(np.percentile(vals, 10)), float(np.percentile(vals, 90))
+
+
+def mask_depth_stats(mask: np.ndarray, depth: np.ndarray, *, boundary_width: int = 3) -> dict[str, float]:
+    m = mask.astype(bool)
+    vals = depth[m]
+    if vals.size == 0:
+        return {
+            "median": 1.0,
+            "p10": 1.0,
+            "p90": 1.0,
+            "trimmed_mean": 1.0,
+            "boundary_median": 1.0,
+            "variance": 0.0,
+            "confidence": 0.0,
+        }
+    lo, hi = np.percentile(vals, [10, 90])
+    trimmed = vals[(vals >= lo) & (vals <= hi)]
+    eroded = ndi.binary_erosion(m, iterations=max(1, int(boundary_width)))
+    boundary = m ^ eroded
+    boundary_vals = depth[boundary]
+    variance = float(np.var(vals))
+    spread = float(max(0.0, hi - lo))
+    confidence = float(np.clip((1.0 - spread) * np.log1p(vals.size) / 8.0, 0.0, 1.0))
+    return {
+        "median": float(np.median(vals)),
+        "p10": float(lo),
+        "p90": float(hi),
+        "trimmed_mean": float(np.mean(trimmed if trimmed.size else vals)),
+        "boundary_median": float(np.median(boundary_vals if boundary_vals.size else vals)),
+        "variance": variance,
+        "confidence": confidence,
+    }
 
 
 def split_stuff_by_depth(segments: list[Segment], depth: np.ndarray, bins: int, min_area: int) -> list[Segment]:
@@ -93,11 +136,32 @@ def _edge_confidence(gap: float, boundary_len: int, alpha_confidence: float = 1.
     return float(max(0.0, gap) * np.log1p(max(1, boundary_len)) * max(0.0, min(1.0, alpha_confidence)))
 
 
+def edge_evidence(edge: GraphEdge) -> dict[str, float | None]:
+    return {
+        "boundary_depth_delta": edge.local_depth_gap,
+        "overlap_ratio": edge.overlap_ratio,
+        "contact_score": edge.contact_score,
+        "semantic_prior": edge.semantic_prior,
+        "model_confidence": edge.model_confidence if edge.model_confidence is not None else edge.confidence,
+    }
+
+
 def build_nodes(segments: list[Segment], depth: np.ndarray, cfg: dict[str, Any]) -> dict[int, Node]:
     nodes: dict[int, Node] = {}
+    stat_boundary_width = max(1, int(cfg.get("depth_stats_boundary_width", 3)))
     for seg in segments:
-        med, p10, p90 = depth_stats(seg.mask, depth)
-        nodes[seg.id] = Node(seg, med, p10, p90, touches_border(seg.mask, 3))
+        stats = mask_depth_stats(seg.mask, depth, boundary_width=stat_boundary_width)
+        nodes[seg.id] = Node(
+            seg,
+            stats["median"],
+            stats["p10"],
+            stats["p90"],
+            stats["trimmed_mean"],
+            stats["boundary_median"],
+            stats["variance"],
+            stats["confidence"],
+            touches_border(seg.mask, 3),
+        )
 
     width = int(cfg.get("occlusion_boundary_width", 5))
     if width <= 0 or len(nodes) <= 1:
@@ -120,7 +184,30 @@ def build_nodes(segments: list[Segment], depth: np.ndarray, cfg: dict[str, Any])
             za = _local_depth(a.segment.mask, dil[b_id], depth, a.depth_median)
             zb = _local_depth(b.segment.mask, dil[a_id], depth, b.depth_median)
             gap = abs(za - zb)
+            overlap_ratio = float((a.segment.mask & b.segment.mask).sum() / max(1, min(a.segment.area, b.segment.area)))
+            contact_score = float(np.clip(shared_boundary_len / max(1, min(a.segment.area, b.segment.area)), 0.0, 1.0))
+            semantic_prior = 1.0 if a.segment.group != b.segment.group else 0.75
             if gap < threshold:
+                same_plane_limit = float(cfg.get("same_plane_depth_threshold", threshold * 0.75))
+                if gap <= same_plane_limit:
+                    first, second = (a, b) if a.segment.id < b.segment.id else (b, a)
+                    edge = GraphEdge(
+                        near_id=first.segment.id,
+                        far_id=second.segment.id,
+                        confidence=_edge_confidence(max(same_plane_limit - gap, 0.0), shared_boundary_len),
+                        shared_boundary_length=shared_boundary_len,
+                        local_depth_gap=float(gap),
+                        near_local_depth=float(min(za, zb)),
+                        far_local_depth=float(max(za, zb)),
+                        relation="same_plane",
+                        overlap_ratio=overlap_ratio,
+                        contact_score=contact_score,
+                        semantic_prior=semantic_prior,
+                        model_confidence=min(a.depth_confidence, b.depth_confidence),
+                        reason="same_plane_depth",
+                    )
+                    first.outgoing_edges[second.segment.id] = edge
+                    second.incoming_edges[first.segment.id] = edge
                 continue
             near, far = (a, b) if za < zb else (b, a)
             near_z, far_z = (za, zb) if za < zb else (zb, za)
@@ -132,6 +219,11 @@ def build_nodes(segments: list[Segment], depth: np.ndarray, cfg: dict[str, Any])
                 local_depth_gap=float(gap),
                 near_local_depth=float(near_z),
                 far_local_depth=float(far_z),
+                relation="in_front_of",
+                overlap_ratio=overlap_ratio,
+                contact_score=contact_score,
+                semantic_prior=semantic_prior,
+                model_confidence=min(near.depth_confidence, far.depth_confidence),
             )
             near.occludes.add(far.segment.id)
             far.occluded_by.add(near.segment.id)
@@ -151,18 +243,29 @@ def _remove_weakest_cycle_edge(nodes: dict[int, Node], graph: dict[int, set[int]
     if weakest is None:
         return False
     _, src, dst = weakest
+    removed = nodes[src].outgoing_edges.get(dst)
     graph[src].discard(dst)
     nodes[src].occludes.discard(dst)
     nodes[src].outgoing_edges.pop(dst, None)
     nodes[dst].occluded_by.discard(src)
     nodes[dst].incoming_edges.pop(src, None)
+    if removed is not None:
+        note = asdict(removed)
+        note["removed_reason"] = "cycle_resolution_weakest_edge"
+        nodes[src].removed_edges.append(note)
     return True
 
 
 def topo_order(nodes: dict[int, Node]) -> list[int]:
     if not nodes:
         return []
-    graph = {sid: set(node.occludes) & set(nodes) for sid, node in nodes.items()}
+    graph = {
+        sid: {
+            dst for dst in set(node.occludes) & set(nodes)
+            if node.outgoing_edges.get(dst) is None or node.outgoing_edges[dst].relation == "in_front_of"
+        }
+        for sid, node in nodes.items()
+    }
     while True:
         indeg = {sid: 0 for sid in nodes}
         for src, dsts in graph.items():
@@ -433,6 +536,15 @@ def build_layers(
                 "ordering_score": ordering_scores.get(sid),
                 "alpha": alpha_meta,
                 "alpha_quality_score": alpha_meta.get("alpha_quality_score"),
+                "depth_stats": {
+                    "median": node.depth_median,
+                    "p10": node.depth_p10,
+                    "p90": node.depth_p90,
+                    "trimmed_mean": node.depth_trimmed_mean,
+                    "boundary_median": node.depth_boundary_median,
+                    "variance": node.depth_variance,
+                    "confidence": node.depth_confidence,
+                },
                 **seg.metadata,
                 **edge_meta,
             },
@@ -488,6 +600,10 @@ def graph_json(layers: list[Layer], nodes: dict[int, Node]) -> dict[str, Any]:
                 "depth_median": l.depth_median,
                 "depth_p10": l.depth_p10,
                 "depth_p90": l.depth_p90,
+                "depth_trimmed_mean": l.metadata.get("depth_stats", {}).get("trimmed_mean"),
+                "depth_boundary_median": l.metadata.get("depth_stats", {}).get("boundary_median"),
+                "depth_variance": l.metadata.get("depth_stats", {}).get("variance"),
+                "depth_confidence": l.metadata.get("depth_stats", {}).get("confidence"),
                 "area": l.area,
                 "bbox": l.bbox,
                 "occludes": l.occludes,
@@ -499,7 +615,19 @@ def graph_json(layers: list[Layer], nodes: dict[int, Node]) -> dict[str, Any]:
         ],
         "occlusion_edges": edges,
         "segment_nodes": [
-            {"segment_id": sid, "label": n.segment.label, "group": n.segment.group, "depth_median": n.depth_median, "occludes": sorted(n.occludes), "occluded_by": sorted(n.occluded_by)}
+            {
+                "segment_id": sid,
+                "label": n.segment.label,
+                "group": n.segment.group,
+                "depth_median": n.depth_median,
+                "depth_trimmed_mean": n.depth_trimmed_mean,
+                "depth_boundary_median": n.depth_boundary_median,
+                "depth_variance": n.depth_variance,
+                "depth_confidence": n.depth_confidence,
+                "occludes": sorted(n.occludes),
+                "occluded_by": sorted(n.occluded_by),
+                "removed_edges": n.removed_edges,
+            }
             for sid, n in sorted(nodes.items())
         ],
     }

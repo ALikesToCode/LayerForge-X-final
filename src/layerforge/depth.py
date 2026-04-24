@@ -59,6 +59,45 @@ def edge_aware_smooth(depth: np.ndarray, rgb: np.ndarray) -> np.ndarray:
         return np.clip(cv2.bilateralFilter(d, d=7, sigmaColor=0.08, sigmaSpace=11), 0, 1).astype(np.float32)
 
 
+def infer_near_is_smaller(depth: np.ndarray) -> tuple[bool, dict[str, float]]:
+    d = normalize01(depth, robust=True)
+    h = int(d.shape[0])
+    band = max(1, h // 4)
+    top = float(np.median(d[:band, :]))
+    bottom = float(np.median(d[-band:, :]))
+    # For ordinary single-image scenes the lower image band is more likely to
+    # contain foreground floor/ground/object pixels, so its value is a useful
+    # weak orientation cue when no calibrated depth convention is supplied.
+    return bottom <= top, {"top_band_median": top, "bottom_band_median": bottom}
+
+
+def orient_depth_near_to_far(depth: np.ndarray, cfg: dict[str, Any]) -> tuple[np.ndarray, dict[str, Any]]:
+    orientation = str(cfg.get("orientation", "config")).lower()
+    inferred: dict[str, float] = {}
+    if orientation in {"auto", "infer", "calibrate"}:
+        near_is_smaller, inferred = infer_near_is_smaller(depth)
+        source = "auto"
+    elif orientation in {"near_is_smaller", "smaller_near", "small_near"}:
+        near_is_smaller = True
+        source = orientation
+    elif orientation in {"near_is_larger", "larger_near", "large_near"}:
+        near_is_smaller = False
+        source = orientation
+    else:
+        near_is_smaller = bool(cfg.get("near_is_smaller", True))
+        source = "config"
+    oriented = normalize01(depth, robust=True)
+    inverted = not near_is_smaller
+    if inverted:
+        oriented = 1.0 - oriented
+    return oriented.astype(np.float32), {
+        "orientation": source,
+        "near_is_smaller": bool(near_is_smaller),
+        "inverted": bool(inverted),
+        **inferred,
+    }
+
+
 def hf_depth_estimation(pil: Image.Image, cfg: dict[str, Any], model_key: str, source: str, device: str) -> DepthPrediction:
     model_name = cfg.get("model", {}).get(model_key)
     dev = transformers_pipeline_device_index(device)
@@ -150,13 +189,15 @@ def estimate_depth(pil: Image.Image, rgb: np.ndarray, cfg: dict[str, Any], devic
     else:
         raise ValueError(f"Unknown depth method: {method}")
     raw_depth = pred.raw_depth.copy() if pred.raw_depth is not None else pred.depth.copy()
-    depth = normalize01(pred.depth, robust=True)
-    if not bool(cfg.get("near_is_smaller", True)):
-        depth = 1.0 - depth
+    depth, orientation_meta = orient_depth_near_to_far(pred.depth, cfg)
     if bool(cfg.get("flip", False)):
         depth = 1.0 - depth
+        orientation_meta["flip_applied"] = True
+    else:
+        orientation_meta["flip_applied"] = False
     if bool(cfg.get("edge_smooth", True)) and method != "ensemble":
         depth = edge_aware_smooth(depth, rgb)
     pred.depth = normalize01(depth, robust=True)
     pred.raw_depth = raw_depth.astype(np.float32, copy=False)
+    pred.metadata["orientation"] = orientation_meta
     return pred
