@@ -107,14 +107,14 @@
       "predicted_effect_pixels": 13612
     },
     "extract_benchmark_prompted_grounded": {
-      "point_mean_alpha_mae": 0.05208039917051792,
-      "point_mean_target_iou": 0.7719186934128844,
-      "point_target_hit_rate": 0.0,
+      "point_mean_alpha_mae": 0.04086666591465473,
+      "point_mean_target_iou": 0.8120572434154438,
+      "point_target_hit_rate": 1.0,
       "queries_per_prompt_type": 10,
       "summary": "report_artifacts/metrics_snapshots/extract_benchmark_summary.json",
       "text_mean_alpha_mae": 0.17516020834445953,
       "text_mean_target_iou": 0.3640106741742833,
-      "text_target_hit_rate": 1.0
+      "text_target_hit_rate": 0.9
     },
     "frontier_review": {
       "best_image_wins": {
@@ -247,9 +247,9 @@
     "transparent_benchmark": {
       "mean_background_psnr": 26.14298864762864,
       "mean_background_ssim": 0.9571943758524061,
-      "mean_recompose_psnr": 56.28361096262517,
-      "mean_recompose_ssim": 0.9995795297618256,
-      "mean_transparent_alpha_mae": 0.11263729228327672,
+      "mean_recompose_psnr": 56.48724418465891,
+      "mean_recompose_ssim": 0.9995922790576947,
+      "mean_transparent_alpha_mae": 0.11020182476689418,
       "scenes_evaluated": 12,
       "summary": "report_artifacts/metrics_snapshots/transparent_benchmark_summary.json"
     },

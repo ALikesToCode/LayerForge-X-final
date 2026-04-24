@@ -122,20 +122,20 @@ Stability metrics:
 
 | Prompt type | Queries | Hit rate | Mean IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3640 | 0.1752 |
+| text | 10 | 0.9000 | 0.3640 | 0.1752 |
 | text + point | 10 | 1.0000 | 0.4011 | 0.1646 |
 | text + box | 10 | 1.0000 | 0.4011 | 0.1646 |
-| point | 10 | 0.0000 | 0.7719 | 0.0521 |
-| box | 10 | 0.0000 | 0.7719 | 0.0521 |
+| point | 10 | 1.0000 | 0.8121 | 0.0409 |
+| box | 10 | 1.0000 | 0.8121 | 0.0409 |
 
 #### Transparent benchmark
 
 | Metric | Mean |
 |---|---:|
-| Transparent alpha MAE | 0.1126 |
+| Transparent alpha MAE | 0.1102 |
 | Background PSNR | 26.1430 |
 | Background SSIM | 0.9572 |
-| Recompose PSNR | 56.2836 |
+| Recompose PSNR | 56.4872 |
 | Recompose SSIM | 0.9996 |
 
 ### Interpretation
@@ -145,7 +145,7 @@ Stability metrics:
 - The measured frontier candidate bank selects `LF native` for `4/5` images, with `Q+G reorder 4` winning the cat scene.
 - The `Q+G preserve 4` row is the most direct metadata-first hybrid comparison because it keeps the selected external visual stack while adding graph structure, amodal masks, ordering metadata, and intrinsic artifacts.
 - The editability suite prevents the selector from favoring copy-like decompositions, which is why raw Qwen's object-removal response remains near zero despite reasonable recomposition scores.
-- Promptable extraction is now a measured component instead of only a CLI feature. Text-bearing prompts currently carry the semantic routing load, while point-only and box-only prompts still need better disambiguation.
+- Promptable extraction is now a measured component instead of only a CLI feature. Geometry-only point and box queries now use semantic fallback only when the initial selected layer misses the cue, while text-only prompting still has one repeated-label ambiguity in the measured synthetic set.
 - Transparent recomposition is reported as a sanity check; alpha error and clean-background quality are the primary transparent-layer metrics.
 - The associated-effect path now has a real exported demo artifact with a materially improved clean-reference rerun, but it must still be framed as an early heuristic rather than a solved component.
 - The intrinsic export path is present as a Retinex-style stretch module. The new intrinsic demo figure should be read as evidence of exported appearance factors for recolouring-style edits, not as a standalone intrinsic benchmark.
@@ -165,7 +165,7 @@ Failure taxonomy and evaluation details are summarized in Appendix B. The main c
 - bad inpainting in large unseen regions;
 - bad amodal continuation under heavy occlusion;
 - intrinsic split errors;
-- point-only and box-only prompt-routing ambiguity;
+- text-only repeated-label ambiguity without a geometric cue;
 - transparent-layer recovery that is still approximate rather than generative.
 
 # 9. Conclusion

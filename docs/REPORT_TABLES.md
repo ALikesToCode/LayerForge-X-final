@@ -118,31 +118,31 @@ Notes:
 
 | Prompt type | Queries | Target hit rate ↑ | Mean target IoU ↑ | Mean alpha MAE ↓ | Notes |
 |---|---:|---:|---:|---:|---|
-| text | 10 | 1.0000 | 0.3640 | 0.1752 | semantic target hit on every measured synthetic query |
-| text + point | 10 | 1.0000 | 0.4011 | 0.1646 | strongest combined-query mode in the current measured stack |
+| text | 10 | 0.9000 | 0.3640 | 0.1752 | one repeated-label scene has semantic match but zero target overlap under the stricter hit definition |
+| text + point | 10 | 1.0000 | 0.4011 | 0.1646 | geometry cue recovers the ambiguous text-only miss |
 | text + box | 10 | 1.0000 | 0.4011 | 0.1646 | same measured behavior as text + point on this synthetic set |
-| point | 10 | 0.0000 | 0.7719 | 0.0521 | high overlap with a neighboring region, but wrong semantic target |
-| box | 10 | 0.0000 | 0.7719 | 0.0521 | same failure mode as point-only prompting |
+| point | 10 | 1.0000 | 0.8121 | 0.0409 | geometry-derived semantic fallback is used only when the first selected layer misses the cue |
+| box | 10 | 1.0000 | 0.8121 | 0.0409 | same fallback behavior as point-only prompting |
 
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/extract_benchmark_summary.json`;
 - this benchmark intentionally separates semantic target hit from overlap and alpha quality;
-- Gemini-assisted reranking is now part of the target-selection path, and its main benefit appears when text is present and point/box cues are used as disambiguating geometry rather than as standalone prompts.
+- Gemini/SigLIP-assisted geometry semantics are now part of target selection, with prompted-base fallback gated by measured point/box coverage instead of forced into every geometry-only run.
 
 ## Table 10 — Transparent benchmark
 
 | Metric | Mean | Notes |
 |---|---:|---|
-| Transparent alpha MAE ↓ | 0.1126 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
+| Transparent alpha MAE ↓ | 0.1102 | prototype alpha-composited foreground recovery on synthetic transparent scenes |
 | Background PSNR ↑ | 26.1430 | clean-background estimate from inpainting plus transparent foreground recovery |
 | Background SSIM ↑ | 0.9572 | background structure remains strong despite approximate separation |
-| Recompose PSNR ↑ | 56.2836 | sanity check only; alpha error and clean-background quality matter more here |
+| Recompose PSNR ↑ | 56.4872 | sanity check only; alpha error and clean-background quality matter more here |
 | Recompose SSIM ↑ | 0.9996 | reconstruction remains near-perfect once foreground and background are recombined |
 
 Notes:
 
 - measured from `report_artifacts/metrics_snapshots/transparent_benchmark_summary.json`;
 - this row is best interpreted as approximate transparent-layer recovery rather than as a generative transparent-decomposition result;
-- the repository now includes an optional BiRefNet-based matting refinement path, but the shipped benchmark configuration keeps the heuristic alpha path because it is currently the stronger measured default on this synthetic set;
+- the repository now includes an optional BiRefNet-based matting refinement path, and the refreshed benchmark confirms the `auto` default improves alpha MAE and recomposition PSNR on this synthetic set;
 - the strongest scene family is `flare_ring`, while `semi_transparent_panel` remains the hardest synthetic variant in the current prototype.

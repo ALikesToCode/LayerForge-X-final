@@ -317,7 +317,7 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
                 "point_hit_rate": float(measured["extract_benchmark_prompted_grounded"]["point_target_hit_rate"]),
                 "text_mean_iou": float(measured["extract_benchmark_prompted_grounded"]["text_mean_target_iou"]),
                 "point_mean_iou": float(measured["extract_benchmark_prompted_grounded"]["point_mean_target_iou"]),
-                "note": "Point-only and box-only prompts localize geometry well but do not satisfy the semantic hit criterion without text guidance.",
+                "note": "Point-only and box-only prompts now use geometry-derived semantic fallback only when the first selected layer misses the cue.",
             },
             "transparent": {
                 "alpha_mae": float(transparent["mean_transparent_alpha_mae"]),

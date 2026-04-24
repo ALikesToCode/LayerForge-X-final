@@ -6,29 +6,51 @@
     {
       "alpha_mae": 0.16391520202159882,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_000",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4199550194234308,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02731986902654171,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_000",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8546306226736483,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02731986902654171,
@@ -38,29 +60,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9571956368754398,
+        "box_iou": 0.8570730938878387,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_000",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8546306226736483,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16391520202159882,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_000",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4199550194234308,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16391520202159882,
@@ -70,73 +114,130 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.43485221674876845,
+        "box_iou": 0.4195081382915528,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_000",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4199550194234308,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16473034024238586,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_001",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4013957138957139,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
-      "alpha_mae": 0.27687668800354004,
+      "alpha_mae": 0.16473935544490814,
       "box": null,
+      "fallback_prompt": "building",
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
-      "prompt": null,
+      "prompt": "building",
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_001",
-      "selected_name": "000_object_food",
-      "target_hit": false,
-      "target_iou": 0.0,
-      "target_name": "mid_building"
+      "selected_name": "002_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
+      "target_hit": true,
+      "target_iou": 0.4013855000255942,
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": true
     },
     {
-      "alpha_mae": 0.27687668800354004,
+      "alpha_mae": 0.16473935544490814,
       "box": [
         332,
         92,
         577,
         324
       ],
+      "fallback_prompt": "building",
+      "geometry_match": {
+        "box_coverage": 0.41493666432090076,
+        "box_iou": 0.4008191427891642,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
-      "prompt": null,
+      "prompt": "building",
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_001",
-      "selected_name": "000_object_food",
-      "target_hit": false,
-      "target_iou": 0.0,
-      "target_name": "mid_building"
+      "selected_name": "002_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
+      "target_hit": true,
+      "target_iou": 0.4013855000255942,
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": true
     },
     {
       "alpha_mae": 0.16473034024238586,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_001",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4013957138957139,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16473034024238586,
@@ -146,41 +247,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.414954257565095,
+        "box_iou": 0.4008293254932617,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_001",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.4013957138957139,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16419395804405212,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_002",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3981784690953745,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.0271005779504776,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_002",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8572876096387069,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.0271005779504776,
@@ -190,29 +324,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9564743138634765,
+        "box_iou": 0.8596774193548387,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_002",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8572876096387069,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16419395804405212,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_002",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3981784690953745,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16419395804405212,
@@ -222,41 +378,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.41187543983110486,
+        "box_iou": 0.39772012979290894,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_002",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3981784690953745,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16353890299797058,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_003",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42169353736849297,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.026990283280611038,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_003",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8594481379813719,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.026990283280611038,
@@ -266,29 +455,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9566854327938071,
+        "box_iou": 0.8616930244350774,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_003",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8594481379813719,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16353890299797058,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_003",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42169353736849297,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16353890299797058,
@@ -298,41 +509,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.4354503870513723,
+        "box_iou": 0.4210212968633054,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_003",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42169353736849297,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.26991599798202515,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_004",
       "selected_name": "000_building_mid_building",
-      "target_hit": true,
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
+      "target_hit": false,
       "target_iou": 0.0,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.026944896206259727,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_004",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8597117734818907,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.026944896206259727,
@@ -342,29 +586,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9565446868402533,
+        "box_iou": 0.8616618329925989,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_004",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8597117734818907,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16384422779083252,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_004",
       "selected_name": "007_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3704313467237405,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16384422779083252,
@@ -374,41 +640,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.37635467980295567,
+        "box_iou": 0.3689420854748025,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_004",
       "selected_name": "007_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3704313467237405,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16602939367294312,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_005",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39516197819819515,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02708582952618599,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_005",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8580844490216272,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02708582952618599,
@@ -418,29 +717,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9566502463054187,
+        "box_iou": 0.8604750526165873,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_005",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8580844490216272,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16602939367294312,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_005",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39516197819819515,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16602939367294312,
@@ -450,41 +771,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.40874384236453204,
+        "box_iou": 0.39481018251028105,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_005",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39516197819819515,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16523490846157074,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_006",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.38965728691149415,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02716819755733013,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_006",
       "selected_name": "002_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8563026671515075,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02716819755733013,
@@ -494,29 +848,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9567382125263899,
+        "box_iou": 0.8587196816574028,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_006",
       "selected_name": "002_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8563026671515075,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16523490846157074,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_006",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.38965728691149415,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16523490846157074,
@@ -526,41 +902,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.40369458128078817,
+        "box_iou": 0.3893507991991041,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_006",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.38965728691149415,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16433921456336975,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_007",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42168100144767096,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.027105025947093964,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_007",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8578037612687549,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.027105025947093964,
@@ -570,29 +979,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9563159746657284,
+        "box_iou": 0.8601063324788759,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_007",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8578037612687549,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16433921456336975,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_007",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42168100144767096,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.16433921456336975,
@@ -602,41 +1033,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.43673469387755104,
+        "box_iou": 0.4211312048315407,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_007",
       "selected_name": "004_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.42168100144767096,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1654084324836731,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_008",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39368022124347024,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.027314936742186546,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_008",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8566162511074548,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.027314936742186546,
@@ -646,29 +1110,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9564215341308937,
+        "box_iou": 0.8590051512182789,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_008",
       "selected_name": "004_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8566162511074548,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1654084324836731,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_008",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39368022124347024,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1654084324836731,
@@ -678,41 +1164,74 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.4069317382125264,
+        "box_iou": 0.39333390017855624,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_008",
       "selected_name": "003_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.39368022124347024,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1642957329750061,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text",
+      "resolved_prompt": "mid building",
       "scene": "scene_009",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3987035141589901,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02689768746495247,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": null,
       "query_type": "point",
+      "resolved_prompt": "building",
       "scene": "scene_009",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8593016618038818,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.02689768746495247,
@@ -722,29 +1241,51 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.9570372976776917,
+        "box_iou": 0.8613684227194274,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": null,
       "query_type": "box",
+      "resolved_prompt": "building",
       "scene": "scene_009",
       "selected_name": "003_object_furniture",
-      "target_hit": false,
+      "selected_semantic_label": "building",
+      "selected_semantic_name": "building",
+      "semantic_hit": true,
+      "target_hit": true,
       "target_iou": 0.8593016618038818,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1642957329750061,
       "box": null,
+      "geometry_match": {
+        "box_coverage": null,
+        "box_iou": null,
+        "matches": true,
+        "point_inside": true
+      },
       "point": [
         454,
         207
       ],
       "prompt": "mid building",
       "query_type": "text_point",
+      "resolved_prompt": "mid building",
       "scene": "scene_009",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3987035141589901,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     },
     {
       "alpha_mae": 0.1642957329750061,
@@ -754,37 +1295,48 @@
         577,
         324
       ],
+      "geometry_match": {
+        "box_coverage": 0.412192118226601,
+        "box_iou": 0.39805297405664386,
+        "matches": true,
+        "point_inside": null
+      },
       "point": null,
       "prompt": "mid building",
       "query_type": "text_box",
+      "resolved_prompt": "mid building",
       "scene": "scene_009",
       "selected_name": "002_building_mid_building",
+      "selected_semantic_label": null,
+      "selected_semantic_name": null,
+      "semantic_hit": true,
       "target_hit": true,
       "target_iou": 0.3987035141589901,
-      "target_name": "mid_building"
+      "target_name": "mid_building",
+      "used_geometry_prompt_fallback": false
     }
   ],
   "summary": [
     {
-      "mean_alpha_mae": 0.05208039917051792,
-      "mean_target_iou": 0.7719186934128844,
+      "mean_alpha_mae": 0.04086666591465473,
+      "mean_target_iou": 0.8120572434154438,
       "queries": 10,
       "query_type": "box",
-      "target_hit_rate": 0.0
+      "target_hit_rate": 1.0
     },
     {
-      "mean_alpha_mae": 0.05208039917051792,
-      "mean_target_iou": 0.7719186934128844,
+      "mean_alpha_mae": 0.04086666591465473,
+      "mean_target_iou": 0.8120572434154438,
       "queries": 10,
       "query_type": "point",
-      "target_hit_rate": 0.0
+      "target_hit_rate": 1.0
     },
     {
       "mean_alpha_mae": 0.17516020834445953,
       "mean_target_iou": 0.3640106741742833,
       "queries": 10,
       "query_type": "text",
-      "target_hit_rate": 1.0
+      "target_hit_rate": 0.9
     },
     {
       "mean_alpha_mae": 0.16455303132534027,

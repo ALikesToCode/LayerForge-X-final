@@ -95,17 +95,17 @@ The prompt-conditioned extraction path is measured rather than treated only as a
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3640 | 0.1752 |
+| text | 10 | 0.9000 | 0.3640 | 0.1752 |
 | text + point | 10 | 1.0000 | 0.4011 | 0.1646 |
 | text + box | 10 | 1.0000 | 0.4011 | 0.1646 |
-| point | 10 | 0.0000 | 0.7719 | 0.0521 |
-| box | 10 | 0.0000 | 0.7719 | 0.0521 |
+| point | 10 | 1.0000 | 0.8121 | 0.0409 |
+| box | 10 | 1.0000 | 0.8121 | 0.0409 |
 
 Interpretation:
 
-- text-bearing prompts identify the intended semantic target on the measured synthetic set;
-- combined text + point and text + box queries improve overlap over text-only prompting while preserving the same semantic hit rate;
-- point-only and box-only prompts still achieve high overlap while missing the semantic target, so the remaining limitation is routing without a text label rather than matte stability.
+- text-bearing prompts identify the intended semantic target in `9/10` measured synthetic queries under the stricter semantic-plus-overlap hit definition;
+- combined text + point and text + box queries recover the repeated-label miss while preserving `1.0000` hit rate;
+- point-only and box-only prompts now use geometry-derived semantic fallback only when the first selected layer misses the cue, so the remaining limitation is repeated text labels without geometry rather than geometry-only routing.
 
 ## B.5 Transparent benchmark
 
@@ -113,17 +113,17 @@ The transparent or alpha-composited recovery path has a measured synthetic bench
 
 | Metric | Mean |
 |---|---:|
-| Transparent alpha MAE | 0.1126 |
+| Transparent alpha MAE | 0.1102 |
 | Background PSNR | 26.1430 |
 | Background SSIM | 0.9572 |
-| Recompose PSNR | 56.2836 |
+| Recompose PSNR | 56.4872 |
 | Recompose SSIM | 0.9996 |
 
 Interpretation:
 
 - transparent recomposition is a sanity check; alpha error and clean-background quality are the primary transparent metrics;
 - the current path is best interpreted as approximate transparent-layer recovery rather than as a generative transparent-decomposition result;
-- an optional BiRefNet-based matting backend is integrated in the codebase, but the shipped benchmark config keeps the heuristic alpha path because it remains the stronger measured default on this synthetic set;
+- an optional BiRefNet-based matting backend is integrated in the codebase, and the refreshed benchmark confirms the `auto` default improves alpha MAE and recomposition PSNR on this synthetic set;
 - the prototype is strongest on flare-like overlays and weakest on the semi-transparent panel variant.
 
 ## B.6 Main ablation matrix

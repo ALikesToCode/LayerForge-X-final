@@ -21,19 +21,19 @@
       "predicted_pixels": 13612
     },
     "prompt_extract": {
-      "note": "Point-only and box-only prompts localize geometry well but do not satisfy the semantic hit criterion without text guidance.",
-      "point_hit_rate": 0.0,
-      "point_mean_iou": 0.7719186934128844,
+      "note": "Point-only and box-only prompts now use geometry-derived semantic fallback only when the first selected layer misses the cue.",
+      "point_hit_rate": 1.0,
+      "point_mean_iou": 0.8120572434154438,
       "queries_per_type": 10,
-      "text_hit_rate": 1.0,
+      "text_hit_rate": 0.9,
       "text_mean_iou": 0.3640106741742833
     },
     "transparent": {
-      "alpha_mae": 0.11263729228327672,
+      "alpha_mae": 0.11020182476689418,
       "background_psnr": 26.14298864762864,
       "background_ssim": 0.9571943758524061,
       "note": "Transparent recomposition is treated as a sanity check. Alpha quality and clean-background quality remain the primary transparent-layer metrics.",
-      "recompose_psnr": 56.28361096262517
+      "recompose_psnr": 56.48724418465891
     }
   },
   "comparisons": [
@@ -222,11 +222,11 @@
     },
     {
       "label": "Prompt text hit rate",
-      "value": "1.00"
+      "value": "0.90"
     },
     {
       "label": "Transparent alpha MAE",
-      "value": "0.1126"
+      "value": "0.1102"
     },
     {
       "label": "Effect IoU",
