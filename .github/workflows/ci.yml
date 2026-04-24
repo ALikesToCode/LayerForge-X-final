@@ -6,6 +6,8 @@ on:
       - main
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  non-slow-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -41,5 +43,63 @@ jobs:
       - name: Verify report build entrypoint
         run: python scripts/build_report_docx.py --help
 
-      - name: Run test suite
-        run: pytest -q
+      - name: Run non-slow test suite
+        run: |
+          mkdir -p artifacts
+          pytest -q -m "not slow" --junitxml=artifacts/pytest-non-slow.xml
+
+      - name: Upload failure debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: non-slow-debug-artifacts
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            artifacts/**
+            runs/**/debug/**
+            runs/**/manifest.json
+            runs/**/metrics.json
+            results/**
+            report_artifacts/metrics_snapshots/**
+            .pytest_cache/**
+
+  slow-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run slow test suite
+        run: |
+          mkdir -p artifacts
+          pytest -q -m "slow" --junitxml=artifacts/pytest-slow.xml
+
+      - name: Upload failure debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slow-debug-artifacts
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            artifacts/**
+            runs/**/debug/**
+            runs/**/manifest.json
+            runs/**/metrics.json
+            results/**
+            report_artifacts/metrics_snapshots/**
+            .pytest_cache/**

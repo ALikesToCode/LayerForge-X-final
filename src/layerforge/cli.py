@@ -480,6 +480,22 @@ def cmd_webui(args: argparse.Namespace) -> int:
     return serve_webui(host=args.host, port=args.port, open_browser=args.open_browser)
 
 
+def cmd_doctor(args: argparse.Namespace) -> int:
+    from .doctor import build_doctor_report, doctor_exit_code, doctor_json, render_doctor_text
+
+    report = build_doctor_report(
+        config_path=args.config,
+        device=args.device,
+        cache_dir=args.cache_dir,
+        output_dir=args.output_dir,
+    )
+    if args.json:
+        print(doctor_json(report))
+    else:
+        print(render_doctor_text(report))
+    return doctor_exit_code(report)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="layerforge", description="LayerForge-X: depth-aware amodal layer graph generator")
     sub = p.add_subparsers(dest="command", required=True)
@@ -666,6 +682,14 @@ def build_parser() -> argparse.ArgumentParser:
     webui.add_argument("--port", type=int, default=8765)
     webui.add_argument("--open-browser", action="store_true")
     webui.set_defaults(func=cmd_webui)
+
+    doctor = sub.add_parser("doctor", help="Report LayerForge runtime, optional backend, GPU, and path readiness")
+    doctor.add_argument("--config", default="configs/fast.yaml")
+    doctor.add_argument("--device", default="auto")
+    doctor.add_argument("--cache-dir", default=None)
+    doctor.add_argument("--output-dir", default=None)
+    doctor.add_argument("--json", action="store_true")
+    doctor.set_defaults(func=cmd_doctor)
     return p
 
 
