@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import warnings
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -460,16 +461,30 @@ def resolve_disjoint_masks(segments: list[Segment], depth: np.ndarray) -> list[S
 
 def segment_image(rgb: np.ndarray, pil: Image.Image, cfg: dict[str, Any], device: str = "auto") -> list[Segment]:
     method = str(cfg.get("method", "classical")).lower()
-    if method in {"classical", "slic", "fast"}:
-        segs = classical_segments(rgb, cfg)
-    elif method in {"mask2former", "panoptic"}:
-        segs = mask2former_segments(pil, cfg, device)
-    elif method in {"grounded_sam2", "grounded-sam2", "open_vocab", "open-vocab-sam2"}:
-        segs = grounded_sam2_segments(pil, cfg, device)
-    elif method in {"gemini", "gemini_segmentation", "gemini-segmentation"}:
-        segs = gemini_segments(pil, cfg)
-    else:
-        raise ValueError(f"Unknown segmentation method: {method}")
+    fallback_on_error = bool(cfg.get("fallback_on_error", True))
+    try:
+        if method in {"classical", "slic", "fast"}:
+            segs = classical_segments(rgb, cfg)
+        elif method in {"mask2former", "panoptic"}:
+            segs = mask2former_segments(pil, cfg, device)
+        elif method in {"grounded_sam2", "grounded-sam2", "open_vocab", "open-vocab-sam2"}:
+            segs = grounded_sam2_segments(pil, cfg, device)
+        elif method in {"gemini", "gemini_segmentation", "gemini-segmentation"}:
+            segs = gemini_segments(pil, cfg)
+        else:
+            raise ValueError(f"Unknown segmentation method: {method}")
+    except Exception as exc:
+        if method in {"classical", "slic", "fast"} or not fallback_on_error:
+            raise
+        warnings.warn(
+            f"Segmentation backend '{method}' failed ({type(exc).__name__}: {exc}); falling back to classical segmentation.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        segs = classical_segments(rgb, {**cfg, "method": "classical"})
+        for seg in segs:
+            seg.metadata["fallback_from"] = method
+            seg.metadata["fallback_error"] = f"{type(exc).__name__}: {exc}"
     fusion_cfg = cfg.get("fusion", {}) if isinstance(cfg.get("fusion", {}), dict) else {}
     if bool(fusion_cfg.get("enabled", False)):
         segs, _ = fuse_proposals(

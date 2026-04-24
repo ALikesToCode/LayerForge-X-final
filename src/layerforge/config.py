@@ -19,6 +19,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "slic_segments": 96,
         "slic_compactness": 12.0,
         "add_background_segment": True,
+        "fallback_on_error": True,
         "fusion": {
             "enabled": False,
             "iou_threshold": 0.82,
