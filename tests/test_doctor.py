@@ -46,5 +46,6 @@ def test_doctor_json_reports_readiness_without_requiring_optional_backends(tmp_p
     assert report["status"] == "ok"
     assert report["paths"]["cache_dir"]["ok"] is True
     assert report["paths"]["output_dir"]["ok"] is True
+    assert report["packages"]["psd-tools"]["required"] is False
     assert report["backend_registry"]["segmentation"][0]["name"] == "classical"
     assert any(item["name"] == "birefnet" for item in report["backend_registry"]["matting"])

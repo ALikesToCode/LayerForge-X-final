@@ -96,6 +96,7 @@ def collect_package_versions() -> dict[str, dict[str, Any]]:
         ("timm", "timm"),
         ("accelerate", "accelerate"),
         ("safetensors", "safetensors"),
+        ("psd_tools", "psd-tools"),
     ):
         rows[package_name] = {
             "module": module_name,
