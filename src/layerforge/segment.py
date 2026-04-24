@@ -372,7 +372,6 @@ def _post_process_grounding_dino(
 
 def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -> list[Segment]:
     torch = optional_import("torch")
-    transformers = optional_import("transformers")
     dev = "cuda" if device == "auto" and torch.cuda.is_available() else ("cpu" if device == "auto" else device)
     model_cfg = cfg.get("model", {})
     dino_name = model_cfg.get("grounding_dino", "IDEA-Research/grounding-dino-base")
