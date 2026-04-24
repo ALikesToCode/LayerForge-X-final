@@ -757,6 +757,49 @@ h3 {
     background: #000;
 }
 
+.inspector-composite {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.inspector-composite__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.inspector-composite__head span {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.inspector-composite__head small {
+    color: var(--text-muted);
+}
+
+.inspector-composite canvas {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.08) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.08) 75%);
+    background-color: #0f172a;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    background-size: 16px 16px;
+}
+
 .inspector-layer-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

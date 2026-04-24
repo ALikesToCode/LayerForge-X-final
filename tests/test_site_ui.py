@@ -12,6 +12,8 @@ def test_webui_static_surface_is_pages_safe() -> None:
     assert 'fetchJson("site-data/project_site.json")' in script_text
     assert "Static Pages mode" in script_text
     assert "Local launch" in script_text
+    assert "inspector-composite-canvas" in script_text
+    assert "drawImage" in script_text
 
     html_text = (ROOT / "docs" / "webui.html").read_text(encoding="utf-8")
     assert 'class="workflow-strip"' in html_text
@@ -29,6 +31,7 @@ def test_webui_static_surface_is_pages_safe() -> None:
     assert ".workflow-step__index" in css_text
     assert ".form-cluster__head" in css_text
     assert ".inspector-layer-card" in css_text
+    assert ".inspector-composite" in css_text
 
     webui_server_text = (ROOT / "src" / "layerforge" / "webui.py").read_text(encoding="utf-8")
     assert "window.__LAYERFORGE_RUNTIME__ = true" in webui_server_text

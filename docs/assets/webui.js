@@ -201,21 +201,86 @@ function renderInspector(inspector) {
           <span>Recomposition error heatmap</span>
         </a>
       ` : ""}
+      <div class="inspector-composite">
+        <div class="inspector-composite__head">
+          <span>Live layer recomposition</span>
+          <small id="inspector-composite-status">loading RGBA layers</small>
+        </div>
+        <canvas id="inspector-composite-canvas" aria-label="Visible layer recomposition preview"></canvas>
+      </div>
       <div class="inspector-layer-grid">
         ${(inspector.layers || []).map(renderInspectorLayer).join("")}
       </div>
       ${renderEdgeEvidence(inspector.edges || [])}
     </section>
   `;
+  wireInspectorToggles(target, inspector.layers || []);
+}
+
+function wireInspectorToggles(target, layers) {
+  const canvas = document.getElementById("inspector-composite-canvas");
+  const status = document.getElementById("inspector-composite-status");
+  const visible = new Map(layers.map((_, index) => [String(index), true]));
   for (const toggle of target.querySelectorAll("[data-layer-toggle]")) {
     toggle.addEventListener("change", () => {
       const card = toggle.closest(".inspector-layer-card");
       if (card) card.classList.toggle("is-muted", !toggle.checked);
+      visible.set(String(toggle.dataset.layerToggle), toggle.checked);
+      redrawComposite(canvas, status, layers, visible);
     });
   }
+  redrawComposite(canvas, status, layers, visible);
 }
 
-function renderInspectorLayer(layer) {
+async function redrawComposite(canvas, status, layers, visible) {
+  if (!canvas) return;
+  const rgbaLayers = layers
+    .map((layer, index) => ({
+      index: String(index),
+      rank: Number(layer.rank ?? index),
+      url: layer.assets && layer.assets.rgba ? layer.assets.rgba : null,
+    }))
+    .filter((layer) => layer.url)
+    .sort((a, b) => b.rank - a.rank);
+  if (!rgbaLayers.length) {
+    if (status) status.textContent = "no RGBA assets";
+    return;
+  }
+  if (status) status.textContent = "loading RGBA layers";
+  const loaded = await Promise.all(
+    rgbaLayers.map(async (layer) => ({ ...layer, image: await loadImage(layer.url) })),
+  );
+  const first = loaded.find((layer) => layer.image);
+  if (!first) {
+    if (status) status.textContent = "RGBA layers unavailable";
+    return;
+  }
+  const width = first.image.naturalWidth || first.image.width;
+  const height = first.image.naturalHeight || first.image.height;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  for (const layer of loaded) {
+    if (!layer.image || visible.get(layer.index) === false) continue;
+    context.drawImage(layer.image, 0, 0, canvas.width, canvas.height);
+  }
+  const enabled = loaded.filter((layer) => layer.image && visible.get(layer.index) !== false).length;
+  if (status) status.textContent = `${enabled}/${loaded.filter((layer) => layer.image).length} visible`;
+}
+
+function loadImage(url) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = url;
+  });
+}
+
+function renderInspectorLayer(layer, index) {
   const assets = layer.assets || {};
   const depthStats = Object.entries(layer.depth_stats || {})
     .map(([key, value]) => `<span><b>${escapeHtml(key.replaceAll("_", " "))}</b>${formatInspectorValue(value)}</span>`)
@@ -230,9 +295,9 @@ function renderInspectorLayer(layer) {
     .map(([key, url]) => `<a href="${url}" target="_blank" rel="noreferrer">${escapeHtml(key)}</a>`)
     .join("");
   return `
-    <article class="inspector-layer-card">
+    <article class="inspector-layer-card" data-layer-index="${escapeHtml(index)}">
       <label class="inspector-toggle">
-        <input type="checkbox" checked data-layer-toggle />
+        <input type="checkbox" checked data-layer-toggle="${escapeHtml(index)}" />
         <span>${escapeHtml(layer.name || "layer")}</span>
       </label>
       <div class="inspector-layer-card__meta">
