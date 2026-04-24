@@ -59,6 +59,9 @@ class LayerForgePipeline:
         dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_alpha", "layers_alpha_confidence", "layers_completed_rgba", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_hidden_masks", "layers_grouped_rgba", "debug"]}
         rgb, pil = load_rgb(input_path, cfg.get("io", {}).get("max_side"))
         save_rgb(dirs["debug"] / "input_rgb.png", rgb)
+        fusion_cfg = cfg.get("segmentation", {}).get("fusion", {})
+        if isinstance(fusion_cfg, dict) and bool(fusion_cfg.get("enabled", False)) and not fusion_cfg.get("diagnostics_path"):
+            fusion_cfg["diagnostics_path"] = str(dirs["debug"] / "proposal_fusion.json")
 
         raw_segments = segment_image(rgb, pil, cfg["segmentation"], self.device)
         depth_pred = estimate_depth(pil, rgb, cfg["depth"], self.device)
@@ -189,6 +192,7 @@ class LayerForgePipeline:
                 "albedo_contact_sheet": str(dirs["debug"] / "albedo_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
                 "shading_contact_sheet": str(dirs["debug"] / "shading_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
                 "depth_crop_contact_sheet": str(dirs["debug"] / "depth_crop_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "proposal_fusion": str(dirs["debug"] / "proposal_fusion.json") if (dirs["debug"] / "proposal_fusion.json").exists() else None,
             }
         }
         manifest_path = write_json(out / "manifest.json", manifest)

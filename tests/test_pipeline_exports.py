@@ -17,6 +17,7 @@ def test_run_exports_unique_ordered_layer_paths_and_stable_manifest(tmp_path) ->
         segmenter="classical",
         depth_method="geometric_luminance",
         save_parallax=False,
+        config_overrides={"segmentation": {"fusion": {"enabled": True}}},
     )
 
     manifest = json.loads(outputs.manifest_path.read_text(encoding="utf-8"))
@@ -37,6 +38,8 @@ def test_run_exports_unique_ordered_layer_paths_and_stable_manifest(tmp_path) ->
     assert ranks == list(range(len(ranks)))
     assert all(item["label"] for item in manifest["ordered_layers_near_to_far"])
     assert all(item["group"] for item in manifest["ordered_layers_near_to_far"])
+    assert manifest["debug"]["proposal_fusion"]
+    assert (tmp_path / "run" / "debug" / "proposal_fusion.json").exists()
     assert len(dalg["graph"]["layers"]) == len(names)
     for layer in dalg["graph"]["layers"]:
         assert layer["paths"]["rgba"]
