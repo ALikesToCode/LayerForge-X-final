@@ -53,6 +53,7 @@ def _layer_support_paths(run_dir: Path, rgba_path: Path) -> dict[str, str | None
     stem = rgba_path.stem
     return {
         "rgba": _rel_path(run_dir, rgba_path),
+        "alpha": _rel_path(run_dir, run_dir / "layers_alpha" / f"{stem}_alpha.png"),
         "albedo_rgba": _rel_path(run_dir, run_dir / "layers_albedo_rgba" / f"{stem}_albedo.png"),
         "shading_rgba": _rel_path(run_dir, run_dir / "layers_shading_rgba" / f"{stem}_shading.png"),
         "amodal_mask": _rel_path(run_dir, run_dir / "layers_amodal_masks" / f"{stem}_amodal.png"),

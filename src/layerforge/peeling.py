@@ -318,7 +318,7 @@ def run_recursive_peeling(image_path: str | Path, output_dir: str | Path, cfg: d
         save_depth16(iteration_dir / "depth_16bit.png", depth)
 
         albedo, shading, iid_method = decompose_intrinsics(current_rgb, cfg["intrinsics"])
-        semantic_layers, nodes = build_layers(current_rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"])
+        semantic_layers, nodes = build_layers(current_rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"], device=device)
         selected = next((layer for layer in semantic_layers if layer.group != "background"), None)
         if selected is None or selected.area < min_remaining_area:
             break

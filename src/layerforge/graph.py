@@ -7,9 +7,9 @@ from typing import Any
 import numpy as np
 from scipy import ndimage as ndi
 
-from .alpha import estimate_alpha
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
 from .intrinsics import intrinsic_rgba
+from .matting import refine_layer_alpha
 from .semantic import BACKGROUND_GROUPS
 from .types import Layer, Segment
 from .utils import bbox_from_mask, image_to_float, safe_name, touches_border
@@ -359,7 +359,17 @@ def merge_compatible_layers(layers: list[Layer], cfg: dict[str, Any]) -> list[La
     return renumber_layers_in_place(merged)
 
 
-def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, albedo: np.ndarray, shading: np.ndarray, cfg: dict[str, Any], matting_cfg: dict[str, Any]) -> tuple[list[Layer], dict[int, Node]]:
+def build_layers(
+    rgb: np.ndarray,
+    segments: list[Segment],
+    depth: np.ndarray,
+    albedo: np.ndarray,
+    shading: np.ndarray,
+    cfg: dict[str, Any],
+    matting_cfg: dict[str, Any],
+    *,
+    device: str = "auto",
+) -> tuple[list[Layer], dict[int, Node]]:
     h, w = depth.shape
     min_area = max(12, int(h * w * float(cfg.get("min_layer_area_ratio", 0.0015))))
     segments = [s for s in segments if s.area >= min_area]
@@ -388,7 +398,7 @@ def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, al
         if int(vis.sum()) < min_area:
             continue
         node = nodes[sid]
-        alpha = estimate_alpha(rgb, vis, depth, matting_cfg)
+        alpha, alpha_meta = refine_layer_alpha(rgb, vis, depth, matting_cfg, device=device)
         rgba = rgba_from_rgb_alpha(rgb, alpha)
         ar, sr = intrinsic_rgba(albedo, shading, alpha)
         amodal = amodal_complete(vis, int(cfg.get("amodal_expand_px", 16))) if bool(cfg.get("amodal_enabled", True)) else None
@@ -416,7 +426,16 @@ def build_layers(rgb: np.ndarray, segments: list[Segment], depth: np.ndarray, al
             [seg.id],
             sorted(node.occludes),
             sorted(node.occluded_by),
-            {"source": seg.source, "score": seg.score, "ordering_method": ordering_method, "ordering_score": ordering_scores.get(sid), **seg.metadata, **edge_meta},
+            {
+                "source": seg.source,
+                "score": seg.score,
+                "ordering_method": ordering_method,
+                "ordering_score": ordering_scores.get(sid),
+                "alpha": alpha_meta,
+                "alpha_quality_score": alpha_meta.get("alpha_quality_score"),
+                **seg.metadata,
+                **edge_meta,
+            },
         ))
     return merge_compatible_layers(layers, cfg), nodes
 
