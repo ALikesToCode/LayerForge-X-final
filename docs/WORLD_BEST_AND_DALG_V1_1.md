@@ -66,7 +66,31 @@ checkpoints fall back gracefully.
 The local Web UI exposes the preset from the config selector and returns a
 layer inspector with visibility toggles, per-layer depth statistics, graph edge
 evidence, mask/completion/albedo/shading asset links, validation status, and a
-recomposition-error heatmap.
+recomposition-error heatmap. The inspector also recomposes the currently visible
+RGBA layers in a browser canvas, so toggles immediately show the editable stack
+that would be sent to downstream tooling.
+
+## Editing Exports
+
+Existing DALG export behavior is preserved:
+
+```bash
+layerforge export-design --run-dir out/
+```
+
+Richer editor handoff artifacts can be requested explicitly:
+
+```bash
+layerforge export-design --run-dir out/ --format all
+```
+
+This writes:
+
+- `dalg_manifest.json`: canonical DALG v1.1
+- `design_manifest.json`: near-to-far design manifest with semantic groups and
+  layer support assets
+- `layers.psd`: optional Photoshop document with semantic groups, ordered RGBA
+  layers, alpha masks, completed hidden layers, albedo, and shading sublayers
 
 ## Benchmarks
 
@@ -82,7 +106,18 @@ The synthetic benchmark writes CSV, JSON, and Markdown summaries for:
 - runtime and peak memory
 
 Public COCO/ADE20K/DIODE scripts remain optional and run only when datasets are
-present.
+present. For local benchmark farms, use:
+
+```bash
+python scripts/run_public_benchmarks_if_present.py \
+  --data-root data \
+  --output-root results/public_benchmarks \
+  --preset world_best \
+  --max-images 512
+```
+
+The runner writes JSON and Markdown reports and skips missing datasets instead
+of producing fake benchmark rows.
 
 ## Model Installation
 
@@ -96,6 +131,12 @@ Optional model stack:
 
 ```bash
 python -m pip install -r requirements-models.txt
+```
+
+Optional editing/export stack:
+
+```bash
+python -m pip install -r requirements-export.txt
 ```
 
 `simple-lama-inpainting` is skipped on Python 3.14 and newer because its

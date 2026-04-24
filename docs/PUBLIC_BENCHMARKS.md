@@ -4,6 +4,24 @@ This document catalogs the public datasets and benchmarking protocols integrated
 
 ## Implemented Benchmarking Tracks
 
+### Optional Dataset Runner
+
+Use the orchestration helper when public datasets are mounted locally:
+
+```bash
+python scripts/run_public_benchmarks_if_present.py \
+  --data-root data \
+  --output-root results/public_benchmarks \
+  --preset world_best \
+  --max-images 512
+```
+
+It checks for the expected COCO Panoptic, ADE20K, and DIODE directories before
+launching any benchmark. Missing datasets are reported as `skipped`; present
+datasets are executed through the existing `layerforge benchmark-*` CLIs. The
+runner writes `public_benchmark_run_report.json` and
+`public_benchmark_run_report.md`.
+
 ### 1. COCO Panoptic (val2017)
 - **Role:** Visible semantic and instance-level grouping benchmark.
 - **Reference:** [COCO Dataset](https://cocodataset.org/)
