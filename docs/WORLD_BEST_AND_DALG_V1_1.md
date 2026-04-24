@@ -43,7 +43,7 @@ DALG v1.1 adds:
 - global `dalg_version`, `alpha_mode`, `color_space`, `input_hash`,
   `model_manifest`, `creation_time`, and `config_hash`
 - per-layer visible/amodal/hidden/completed paths, depth stats, semantic
-  labels, provenance, and quality metrics
+  labels, alpha confidence paths, provenance, and quality metrics
 - edge `relation`, `evidence`, `confidence`, and `conflict_notes`
 
 Existing v1.0 manifests load through `load_dalg_manifest(...)` and receive a
@@ -90,7 +90,8 @@ This writes:
 - `design_manifest.json`: near-to-far design manifest with semantic groups and
   layer support assets
 - `layers.psd`: optional Photoshop document with semantic groups, ordered RGBA
-  layers, alpha masks, completed hidden layers, albedo, and shading sublayers
+  layers, alpha masks, alpha confidence sublayers, completed hidden layers,
+  albedo, and shading sublayers
 
 ## Benchmarks
 
@@ -148,6 +149,17 @@ generation, SameObject-style amodal models, diffusion inpainting, or intrinsic
 models should be installed according to their upstream checkpoint licenses and
 hardware requirements. LayerForge will continue with CPU-safe fallbacks if they
 are absent.
+
+External command backends can be wired without changing Python imports:
+
+- `matting.external_command` receives `{image}`, `{support_mask}`, `{trimap}`,
+  and writes `{alpha}`.
+- `amodal.external_command` receives `{image}`, `{visible_mask}`, and writes
+  `{amodal_mask}`.
+- `inpainting.external_command` receives `{image}`, `{mask}`, `{prompt}`, and
+  writes `{output}`.
+- `intrinsics.external_command` receives `{input}` and writes `{albedo}` and
+  `{shading}`.
 
 ## CPU Fallbacks
 
