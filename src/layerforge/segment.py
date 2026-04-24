@@ -266,15 +266,25 @@ def grounded_sam2_segments(pil: Image.Image, cfg: dict[str, Any], device: str) -
 
 def gemini_segments(pil: Image.Image, cfg: dict[str, Any]) -> list[Segment]:
     items = _gemini_segment_items(pil, cfg)
+    if not items:
+        raise RuntimeError("Gemini segmentation returned no items")
     segs: list[Segment] = []
-    for item in items:
+    decode_errors: list[str] = []
+    for idx, item in enumerate(items):
         try:
             label, mask = _decode_segmentation_item(item, pil.size)
-        except Exception:
+        except Exception as exc:
+            decode_errors.append(f"{idx}: {type(exc).__name__}: {exc}")
             continue
         if mask.any():
             segs.append(make_segment(len(segs), label, mask, 1.0, "gemini-segmentation"))
-    return filter_segments(segs, (pil.height, pil.width), float(cfg.get("min_area_ratio", 0.001)), float(cfg.get("nms_iou", 0.80)))
+    if not segs:
+        detail = "; ".join(decode_errors[:3]) if decode_errors else "all decoded masks were empty"
+        raise RuntimeError(f"Gemini segmentation returned no usable masks ({detail})")
+    filtered = filter_segments(segs, (pil.height, pil.width), float(cfg.get("min_area_ratio", 0.001)), float(cfg.get("nms_iou", 0.80)))
+    if not filtered:
+        raise RuntimeError("Gemini segmentation masks were all removed by filtering")
+    return filtered
 
 
 def resolve_disjoint_masks(segments: list[Segment], depth: np.ndarray) -> list[Segment]:
