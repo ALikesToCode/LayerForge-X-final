@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import base64
 import argparse
+import ipaddress
 import json
 import mimetypes
+import os
 import threading
 import time
 import webbrowser
@@ -30,6 +32,27 @@ DOCS_ROOT = REPO_ROOT / "docs"
 JOB_LOCK = threading.Lock()
 PIPELINE_CACHE: dict[tuple[str, str], LayerForgePipeline] = {}
 PIPELINE_CACHE_LOCK = threading.Lock()
+MAX_POST_BYTES = 25 * 1024 * 1024
+WORKSPACE_ALLOWED_DIRS = ("runs", "docs", "examples", "report_artifacts")
+WORKSPACE_ALLOWED_SUFFIXES = {
+    ".css",
+    ".docx",
+    ".gif",
+    ".html",
+    ".ico",
+    ".jpeg",
+    ".jpg",
+    ".js",
+    ".json",
+    ".md",
+    ".pdf",
+    ".png",
+    ".svg",
+    ".txt",
+    ".webp",
+    ".yaml",
+    ".yml",
+}
 
 
 def _parse_prompts(text: str | None) -> list[str] | None:
@@ -88,6 +111,11 @@ def _resolve_workspace_path(url_path: str) -> Path:
     root = REPO_ROOT.resolve()
     if root not in candidate.parents and candidate != root:
         raise PermissionError("Requested path escapes repository root")
+    allowed_roots = [(root / dirname).resolve() for dirname in WORKSPACE_ALLOWED_DIRS]
+    if not any(allowed_root == candidate or allowed_root in candidate.parents for allowed_root in allowed_roots):
+        raise PermissionError("Workspace access is limited to generated outputs and public project assets")
+    if candidate.suffix.lower() not in WORKSPACE_ALLOWED_SUFFIXES:
+        raise PermissionError("Workspace file type is not served by the local UI")
     return candidate
 
 
@@ -199,6 +227,10 @@ def _resolve_run_path(path_value: str | None) -> Path | None:
     return candidate
 
 
+def _frontier_workspace_for(job_dir: Path) -> Path:
+    return job_dir.parent / f"{job_dir.name}_frontier"
+
+
 def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path | None = None) -> dict[str, Any]:
     mode = str(payload.get("mode", "run"))
     filename = str(payload.get("filename", "image.png"))
@@ -232,7 +264,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
     with JOB_LOCK:
         if mode == "run":
             if use_frontier_base:
-                frontier_root = job_dir / "frontier"
+                frontier_root = _frontier_workspace_for(job_dir)
                 selection = run_single_image_frontier_selection(
                     input_path=input_path,
                     output_root=frontier_root,
@@ -531,6 +563,40 @@ class LayerForgeWebUIHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
+    def _require_loopback_client(self) -> bool:
+        if os.environ.get("LAYERFORGE_WEBUI_ALLOW_REMOTE") == "1":
+            return True
+        host = self.client_address[0]
+        try:
+            if ipaddress.ip_address(host).is_loopback:
+                return True
+        except ValueError:
+            pass
+        self._send_json({"error": "Local UI API is restricted to loopback clients"}, status=HTTPStatus.FORBIDDEN)
+        return False
+
+    def _request_origin_is_trusted(self) -> bool:
+        origin = self.headers.get("Origin") or self.headers.get("Referer")
+        if not origin:
+            return True
+        host = self.headers.get("Host", "")
+        parsed = urlparse(origin)
+        if parsed.netloc and parsed.netloc == host:
+            return True
+        host_name = host.rsplit(":", maxsplit=1)[0].strip("[]")
+        parsed_host = str(parsed.hostname or "")
+        try:
+            parsed_loopback = ipaddress.ip_address(parsed_host).is_loopback
+        except ValueError:
+            parsed_loopback = parsed_host.lower() == "localhost"
+        try:
+            host_loopback = ipaddress.ip_address(host_name).is_loopback
+        except ValueError:
+            host_loopback = host_name.lower() == "localhost"
+        same_loopback_host = parsed_loopback and host_loopback
+        host_port = host.rsplit(":", maxsplit=1)[-1] if ":" in host else None
+        return bool(same_loopback_host and ((parsed.port is None and host_port is None) or (parsed.port is not None and str(parsed.port) == host_port)))
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         if parsed.path == "/api/runtime":
@@ -547,6 +613,8 @@ class LayerForgeWebUIHandler(BaseHTTPRequestHandler):
             self._send_json(build_project_site_payload(REPO_ROOT))
             return
         if parsed.path.startswith("/workspace/"):
+            if not self._require_loopback_client():
+                return
             try:
                 file_path = _resolve_workspace_path(parsed.path)
             except PermissionError as exc:
@@ -583,9 +651,21 @@ class LayerForgeWebUIHandler(BaseHTTPRequestHandler):
         if parsed.path != "/api/run":
             self._send_json({"error": "Unsupported endpoint"}, status=HTTPStatus.NOT_FOUND)
             return
-        length = int(self.headers.get("Content-Length", "0"))
-        payload = json.loads(self.rfile.read(length).decode("utf-8"))
+        if not self._require_loopback_client():
+            return
+        if not self._request_origin_is_trusted():
+            self._send_json({"error": "Untrusted request origin"}, status=HTTPStatus.FORBIDDEN)
+            return
         try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self._send_json({"error": "Invalid Content-Length"}, status=HTTPStatus.BAD_REQUEST)
+            return
+        if length <= 0 or length > MAX_POST_BYTES:
+            self._send_json({"error": "Request body is missing or too large"}, status=HTTPStatus.PAYLOAD_TOO_LARGE)
+            return
+        try:
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
             result = run_webui_job(REPO_ROOT, payload)
         except Exception as exc:  # noqa: BLE001
             self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)

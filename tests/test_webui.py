@@ -4,6 +4,9 @@ import base64
 import json
 from pathlib import Path
 
+import pytest
+
+from layerforge.webui import _resolve_workspace_path
 from layerforge.webui import run_webui_job
 
 
@@ -136,6 +139,8 @@ def test_webui_run_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> No
     assert result["status"] == "ok"
     assert result["mode"] == "run"
     assert captured["target_dir"].parent.name.startswith("jobs")
+    assert captured["frontier_root"].parent == captured["target_dir"].parent
+    assert captured["frontier_root"] != captured["target_dir"] / "frontier"
 
 
 def test_webui_extract_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
@@ -236,3 +241,11 @@ def test_webui_transparent_mode_can_use_frontier_base(tmp_path: Path, monkeypatc
     assert result["mode"] == "transparent"
     assert captured["path_or_dir"] == winner_dir
     assert captured["export_kwargs"]["device"] == "cpu"
+
+
+def test_webui_workspace_paths_are_limited_to_public_assets() -> None:
+    allowed = _resolve_workspace_path("/workspace/docs/assets/site.js")
+    assert allowed == (REPO_ROOT / "docs" / "assets" / "site.js").resolve()
+
+    with pytest.raises(PermissionError, match="limited"):
+        _resolve_workspace_path("/workspace/src/layerforge/webui.py")
