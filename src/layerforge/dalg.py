@@ -1,18 +1,36 @@
 from __future__ import annotations
 
+import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from PIL import Image
 
 
-CANONICAL_DALG_SCHEMA_VERSION = "1.0.0"
+CANONICAL_DALG_SCHEMA_VERSION = "1.1.0"
+CANONICAL_DALG_VERSION = "1.1"
 CANONICAL_DALG_SCHEMA_URL = "https://layerforge.dev/schemas/dalg.schema.json"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _sha256_file(path: Path | None) -> str | None:
+    if path is None or not path.exists() or not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _sha256_json(data: Any) -> str:
+    payload = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _rel_path(base: Path, raw_path: str | Path | None) -> str | None:
@@ -57,6 +75,63 @@ def _layer_support_paths(run_dir: Path, rgba_path: Path) -> dict[str, str | None
         "albedo_rgba": _rel_path(run_dir, run_dir / "layers_albedo_rgba" / f"{stem}_albedo.png"),
         "shading_rgba": _rel_path(run_dir, run_dir / "layers_shading_rgba" / f"{stem}_shading.png"),
         "amodal_mask": _rel_path(run_dir, run_dir / "layers_amodal_masks" / f"{stem}_amodal.png"),
+    }
+
+
+def _layer_v11_fields(
+    *,
+    row: dict[str, Any],
+    graph_row: dict[str, Any],
+    support_paths: dict[str, str],
+) -> dict[str, Any]:
+    metadata = dict(graph_row.get("metadata", {}))
+    alpha_meta = metadata.get("alpha", {}) if isinstance(metadata.get("alpha"), dict) else {}
+    depth_median = row.get("depth_median", graph_row.get("depth_median"))
+    depth_p10 = graph_row.get("depth_p10")
+    depth_p90 = graph_row.get("depth_p90")
+    return {
+        "visible_mask_path": support_paths.get("alpha"),
+        "amodal_mask_path": support_paths.get("amodal_mask"),
+        "hidden_mask_path": support_paths.get("hidden_mask"),
+        "rgba_path": support_paths.get("rgba"),
+        "completed_rgba_path": support_paths.get("rgba") if str(row.get("group")) == "background" else None,
+        "albedo_path": support_paths.get("albedo_rgba"),
+        "shading_path": support_paths.get("shading_rgba"),
+        "alpha_confidence_path": support_paths.get("alpha_confidence"),
+        "depth_stats": {
+            "median": depth_median,
+            "p10": depth_p10,
+            "p90": depth_p90,
+            "confidence": graph_row.get("depth_confidence"),
+        },
+        "semantic_labels": [x for x in [row.get("group"), row.get("label")] if x],
+        "source_backend": metadata.get("source"),
+        "provenance": {
+            "source_segment_ids": metadata.get("source_segment_ids", graph_row.get("source_segment_ids", [])),
+            "segment_source": metadata.get("source"),
+            "ordering_method": metadata.get("ordering_method"),
+            "alpha_backend": alpha_meta.get("backend"),
+        },
+        "quality_metrics": {
+            "alpha_quality_score": row.get("alpha_quality_score", metadata.get("alpha_quality_score")),
+            "area": graph_row.get("area"),
+        },
+    }
+
+
+def _edge_v11_fields(edge: dict[str, Any]) -> dict[str, Any]:
+    evidence = {
+        "boundary_depth_delta": edge.get("local_depth_gap"),
+        "overlap_ratio": edge.get("overlap_ratio"),
+        "contact_score": edge.get("shared_boundary_length"),
+        "semantic_prior": edge.get("semantic_prior"),
+        "model_confidence": edge.get("confidence"),
+    }
+    return {
+        "relation": edge.get("relation", "in_front_of"),
+        "evidence": evidence,
+        "confidence": edge.get("confidence"),
+        "conflict_notes": edge.get("conflict_notes"),
     }
 
 
@@ -111,23 +186,23 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
         graph_row = graph_layers.get(str(row.get("name")), {})
         support_paths = _existing_only(root, _layer_support_paths(root, rgba_path))
         metadata = dict(graph_row.get("metadata", {}))
-        ordered_layers.append(
-            {
-                "id": int(row.get("rank", 0)),
-                "name": row.get("name"),
-                "label": row.get("label"),
-                "group": row.get("group"),
-                "rank": int(row.get("rank", 0)),
-                "editable": str(row.get("group")) != "background",
-                "bbox": graph_row.get("bbox"),
-                "area": graph_row.get("area"),
-                "depth_median": row.get("depth_median", graph_row.get("depth_median")),
-                "occludes": graph_row.get("occludes", []),
-                "occluded_by": graph_row.get("occluded_by", []),
-                "paths": support_paths,
-                "metadata": metadata,
-            }
-        )
+        layer_row = {
+            "id": int(row.get("rank", 0)),
+            "name": row.get("name"),
+            "label": row.get("label"),
+            "group": row.get("group"),
+            "rank": int(row.get("rank", 0)),
+            "editable": str(row.get("group")) != "background",
+            "bbox": graph_row.get("bbox"),
+            "area": graph_row.get("area"),
+            "depth_median": row.get("depth_median", graph_row.get("depth_median")),
+            "occludes": graph_row.get("occludes", []),
+            "occluded_by": graph_row.get("occluded_by", []),
+            "paths": support_paths,
+            "metadata": metadata,
+        }
+        layer_row.update(_layer_v11_fields(row=row, graph_row=graph_row, support_paths=support_paths))
+        ordered_layers.append(layer_row)
 
     debug_paths = {
         key: rel
@@ -153,10 +228,34 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
         for layer in ordered_layers
     ]
 
+    enriched_edges = []
+    for edge in graph_edges:
+        edge_row = dict(edge)
+        edge_row.update(_edge_v11_fields(edge_row))
+        enriched_edges.append(edge_row)
+
+    input_path = _resolve_run_path(root, manifest.get("input"))
+    config = manifest.get("config", {})
+    metrics_model_manifest = {
+        "segmentation": metrics.get("segmentation_method"),
+        "depth": metrics.get("depth_method"),
+        "depth_source": metrics.get("depth_source"),
+        "matting": config.get("matting", {}).get("method") if isinstance(config, dict) else None,
+        "intrinsics": metrics.get("intrinsic_method"),
+        "inpainting": metrics.get("inpaint_method"),
+    }
+
     dalg = {
         "$schema": CANONICAL_DALG_SCHEMA_URL,
         "kind": "layerforge.dalg",
         "schema_version": CANONICAL_DALG_SCHEMA_VERSION,
+        "dalg_version": CANONICAL_DALG_VERSION,
+        "alpha_mode": "straight",
+        "color_space": "sRGB",
+        "input_hash": _sha256_file(input_path),
+        "model_manifest": metrics_model_manifest,
+        "creation_time": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "config_hash": _sha256_json(config),
         "canvas": canvas,
         "asset": {
             "input": _rel_path(root, manifest.get("input")),
@@ -177,9 +276,9 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
             "ordering": "near_to_far",
             "graph_order_available": bool(graph_edges or manifest.get("graph_order_near_to_far")),
             "node_count": len(ordered_layers),
-            "edge_count": len(graph_edges),
+            "edge_count": len(enriched_edges),
             "layers": ordered_layers,
-            "edges": graph_edges,
+            "edges": enriched_edges,
         },
         "layers": design_layers,
         "metrics": metrics,
@@ -194,10 +293,84 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
     return dalg
 
 
+def migrate_dalg_manifest(dalg: dict[str, Any]) -> dict[str, Any]:
+    migrated = dict(dalg)
+    if "dalg_version" not in migrated:
+        schema_version = str(migrated.get("schema_version", "1.0.0"))
+        migrated["dalg_version"] = "1.0" if schema_version.startswith("1.0") else CANONICAL_DALG_VERSION
+    return migrated
+
+
+def load_dalg_manifest(path: str | Path) -> dict[str, Any]:
+    return migrate_dalg_manifest(_read_json(Path(path)))
+
+
+def validate_dalg_manifest(dalg: dict[str, Any], run_dir: str | Path | None = None) -> list[str]:
+    errors: list[str] = []
+    if dalg.get("$schema") != CANONICAL_DALG_SCHEMA_URL:
+        errors.append("invalid or missing $schema")
+    if dalg.get("kind") != "layerforge.dalg":
+        errors.append("invalid or missing kind")
+    if not dalg.get("schema_version"):
+        errors.append("missing schema_version")
+    if not dalg.get("dalg_version"):
+        errors.append("missing dalg_version")
+    graph = dalg.get("graph", {})
+    layers = graph.get("layers", []) if isinstance(graph, dict) else []
+    edges = graph.get("edges", []) if isinstance(graph, dict) else []
+    if graph.get("node_count") != len(layers):
+        errors.append("graph.node_count does not match graph.layers")
+    if graph.get("edge_count") != len(edges):
+        errors.append("graph.edge_count does not match graph.edges")
+    endpoint_ids = {layer.get("id") for layer in layers if isinstance(layer, dict)}
+    for layer in layers:
+        if not isinstance(layer, dict):
+            continue
+        provenance = layer.get("provenance", {})
+        source_ids = provenance.get("source_segment_ids", []) if isinstance(provenance, dict) else []
+        endpoint_ids.update(source_ids)
+    for edge in edges:
+        if not isinstance(edge, dict):
+            errors.append("graph edge is not an object")
+            continue
+        if edge.get("near_id") not in endpoint_ids:
+            errors.append(f"edge near_id is not a known layer/source id: {edge.get('near_id')}")
+        if edge.get("far_id") not in endpoint_ids:
+            errors.append(f"edge far_id is not a known layer/source id: {edge.get('far_id')}")
+        if "evidence" not in edge:
+            errors.append(f"edge missing evidence: {edge.get('near_id')}->{edge.get('far_id')}")
+    if run_dir is not None:
+        root = Path(run_dir)
+        for layer in layers:
+            if not isinstance(layer, dict):
+                continue
+            for key in (
+                "visible_mask_path",
+                "amodal_mask_path",
+                "hidden_mask_path",
+                "rgba_path",
+                "completed_rgba_path",
+                "albedo_path",
+                "shading_path",
+                "alpha_confidence_path",
+            ):
+                rel = layer.get(key)
+                if rel and not (root / rel).exists():
+                    errors.append(f"missing layer file for {layer.get('name')}.{key}: {rel}")
+            for rel in dict(layer.get("paths", {})).values():
+                if rel and not (root / rel).exists():
+                    errors.append(f"missing layer path for {layer.get('name')}: {rel}")
+    return errors
+
+
 def export_dalg_manifest(run_dir: str | Path, output_path: str | Path | None = None) -> Path:
     root = Path(run_dir)
     out_path = Path(output_path) if output_path is not None else root / "dalg_manifest.json"
     dalg = build_dalg_manifest(root)
+    validation_errors = validate_dalg_manifest(dalg, root)
+    if validation_errors:
+        detail = "; ".join(validation_errors[:5])
+        raise RuntimeError(f"DALG manifest validation failed: {detail}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(dalg, indent=2, sort_keys=True), encoding="utf-8")
     return out_path

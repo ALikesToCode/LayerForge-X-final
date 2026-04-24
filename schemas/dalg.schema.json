@@ -7,6 +7,13 @@
     "$schema",
     "kind",
     "schema_version",
+    "dalg_version",
+    "alpha_mode",
+    "color_space",
+    "input_hash",
+    "model_manifest",
+    "creation_time",
+    "config_hash",
     "canvas",
     "asset",
     "recipe",
@@ -23,6 +30,39 @@
       "const": "layerforge.dalg"
     },
     "schema_version": {
+      "type": "string"
+    },
+    "dalg_version": {
+      "type": "string",
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
+    },
+    "alpha_mode": {
+      "type": "string",
+      "enum": [
+        "straight",
+        "premultiplied"
+      ]
+    },
+    "color_space": {
+      "type": "string"
+    },
+    "input_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_manifest": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "creation_time": {
+      "type": "string"
+    },
+    "config_hash": {
       "type": "string"
     },
     "canvas": {
@@ -343,6 +383,78 @@
         "metadata": {
           "type": "object",
           "additionalProperties": true
+        },
+        "visible_mask_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amodal_mask_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hidden_mask_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rgba_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_rgba_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "albedo_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shading_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alpha_confidence_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "depth_stats": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "semantic_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_backend": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "quality_metrics": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "additionalProperties": true
@@ -389,6 +501,58 @@
           ]
         },
         "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relation": {
+          "type": "string",
+          "enum": [
+            "in_front_of",
+            "behind",
+            "same_plane",
+            "uncertain"
+          ]
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "boundary_depth_delta": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "overlap_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "contact_score": {
+              "type": [
+                "number",
+                "integer",
+                "null"
+              ]
+            },
+            "semantic_prior": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "model_confidence": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "conflict_notes": {
           "type": [
             "string",
             "null"

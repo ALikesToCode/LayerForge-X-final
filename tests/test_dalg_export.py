@@ -35,15 +35,21 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     (run_dir / "layers_ordered_rgba").mkdir()
+    (run_dir / "layers_alpha").mkdir()
     (run_dir / "layers_albedo_rgba").mkdir()
     (run_dir / "layers_shading_rgba").mkdir()
     (run_dir / "layers_amodal_masks").mkdir()
     (run_dir / "debug").mkdir()
 
     (run_dir / "layers_ordered_rgba" / "000_foreground_person.png").write_bytes(b"png")
+    (run_dir / "layers_ordered_rgba" / "001_background_completed.png").write_bytes(b"png")
+    (run_dir / "layers_alpha" / "000_foreground_person_alpha.png").write_bytes(b"png")
+    (run_dir / "layers_alpha" / "001_background_completed_alpha.png").write_bytes(b"png")
     (run_dir / "layers_albedo_rgba" / "000_foreground_person_albedo.png").write_bytes(b"png")
     (run_dir / "layers_shading_rgba" / "000_foreground_person_shading.png").write_bytes(b"png")
     (run_dir / "layers_amodal_masks" / "000_foreground_person_amodal.png").write_bytes(b"png")
+    (run_dir / "layers_albedo_rgba" / "001_background_completed_albedo.png").write_bytes(b"png")
+    (run_dir / "layers_shading_rgba" / "001_background_completed_shading.png").write_bytes(b"png")
 
     (run_dir / "metrics.json").write_text(
         json.dumps({"segmentation_method": "classical", "depth_method": "geometric_luminance"}),
@@ -64,6 +70,18 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
                         "occludes": [1],
                         "occluded_by": [],
                         "metadata": {"source": "synthetic"},
+                    },
+                    {
+                        "rank": 1,
+                        "name": "001_background_completed",
+                        "label": "background completed",
+                        "group": "background",
+                        "depth_median": 0.9,
+                        "area": 4096,
+                        "bbox": [0, 0, 64, 64],
+                        "occludes": [],
+                        "occluded_by": [0],
+                        "metadata": {"source": "background"},
                     }
                 ],
                 "occlusion_edges": [{"near_id": 0, "far_id": 1, "confidence": 0.9}],
@@ -85,6 +103,14 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
                         "label": "person",
                         "group": "foreground",
                         "depth_median": 0.1,
+                    },
+                    {
+                        "path": "layers_ordered_rgba/001_background_completed.png",
+                        "name": "001_background_completed",
+                        "rank": 1,
+                        "label": "background completed",
+                        "group": "background",
+                        "depth_median": 0.9,
                     }
                 ],
                 "grouped_layers": [],

@@ -480,7 +480,21 @@ def graph_json(layers: list[Layer], nodes: dict[int, Node]) -> dict[str, Any]:
             edges.append(asdict(edge))
     return {
         "layers_near_to_far": [
-            {"rank": l.rank, "name": l.name, "label": l.label, "group": l.group, "depth_median": l.depth_median, "area": l.area, "bbox": l.bbox, "occludes": l.occludes, "occluded_by": l.occluded_by, "metadata": l.metadata}
+            {
+                "rank": l.rank,
+                "name": l.name,
+                "label": l.label,
+                "group": l.group,
+                "depth_median": l.depth_median,
+                "depth_p10": l.depth_p10,
+                "depth_p90": l.depth_p90,
+                "area": l.area,
+                "bbox": l.bbox,
+                "occludes": l.occludes,
+                "occluded_by": l.occluded_by,
+                "source_segment_ids": l.source_segment_ids,
+                "metadata": l.metadata,
+            }
             for l in sorted(layers, key=lambda x: x.rank)
         ],
         "occlusion_edges": edges,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from layerforge.dalg import CANONICAL_DALG_SCHEMA_URL, build_dalg_manifest, export_dalg_manifest
+from layerforge.dalg import CANONICAL_DALG_SCHEMA_URL, build_dalg_manifest, export_dalg_manifest, load_dalg_manifest, validate_dalg_manifest
 
 
 def _write_png_stub(path: Path) -> None:
@@ -16,6 +16,8 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     _write_png_stub(run_dir / "input.png")
     _write_png_stub(run_dir / "layers_ordered_rgba" / "000_vehicle_car.png")
     _write_png_stub(run_dir / "layers_ordered_rgba" / "001_background_completed.png")
+    _write_png_stub(run_dir / "layers_alpha" / "000_vehicle_car_alpha.png")
+    _write_png_stub(run_dir / "layers_alpha" / "001_background_completed_alpha.png")
     _write_png_stub(run_dir / "layers_albedo_rgba" / "000_vehicle_car_albedo.png")
     _write_png_stub(run_dir / "layers_shading_rgba" / "000_vehicle_car_shading.png")
     _write_png_stub(run_dir / "layers_amodal_masks" / "000_vehicle_car_amodal.png")
@@ -97,8 +99,13 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     assert dalg["$schema"] == CANONICAL_DALG_SCHEMA_URL
     assert dalg["$schema"] == schema["properties"]["$schema"]["const"]
     assert dalg["kind"] == schema["properties"]["kind"]["const"]
+    assert dalg["dalg_version"] == "1.1"
+    assert dalg["alpha_mode"] == "straight"
+    assert dalg["color_space"] == "sRGB"
+    assert dalg["config_hash"]
     assert dalg["graph"]["node_count"] == len(dalg["graph"]["layers"])
     assert dalg["graph"]["edge_count"] == len(dalg["graph"]["edges"])
+    assert validate_dalg_manifest(dalg, run_dir) == []
 
     ids = [layer["id"] for layer in dalg["graph"]["layers"]]
     ranks = [layer["rank"] for layer in dalg["graph"]["layers"]]
@@ -112,7 +119,39 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     for edge in dalg["graph"]["edges"]:
         assert edge["near_id"] in valid_ids
         assert edge["far_id"] in valid_ids
+        assert edge["relation"] == "in_front_of"
+        assert "boundary_depth_delta" in edge["evidence"]
 
     for layer in dalg["graph"]["layers"]:
+        assert "depth_stats" in layer
+        assert "semantic_labels" in layer
+        assert "provenance" in layer
+        assert "quality_metrics" in layer
         for rel_path in layer["paths"].values():
             assert (run_dir / rel_path).exists(), rel_path
+
+
+def test_load_dalg_manifest_migrates_v1_manifest(tmp_path) -> None:
+    path = tmp_path / "dalg_v1.json"
+    path.write_text(
+        json.dumps(
+            {
+                "$schema": CANONICAL_DALG_SCHEMA_URL,
+                "kind": "layerforge.dalg",
+                "schema_version": "1.0.0",
+                "canvas": None,
+                "asset": {"input": None, "run_dir": ".", "mode": "native_layerforge"},
+                "recipe": {},
+                "graph": {"ordering": "near_to_far", "graph_order_available": False, "node_count": 0, "edge_count": 0, "layers": [], "edges": []},
+                "layers": [],
+                "metrics": {},
+                "exports": {"source_manifest": "manifest.json", "metrics": None, "grouped_layers": [], "effect_layers": [], "debug": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    migrated = load_dalg_manifest(path)
+
+    assert migrated["schema_version"] == "1.0.0"
+    assert migrated["dalg_version"] == "1.0"
