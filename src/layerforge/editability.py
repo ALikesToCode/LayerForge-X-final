@@ -62,6 +62,7 @@ SIGLIP2_TARGET_LABELS = [
 VISUAL_LABEL_CANONICAL_MAP = {
     "building facade": "building",
     "office building": "building",
+    "glass panel": "building",
     "wall": "building",
     "window": "building",
     "street": "road",
@@ -203,6 +204,54 @@ def _box_mask(shape: tuple[int, int], box: tuple[int, int, int, int] | None) -> 
         return mask
     mask[y1:y2, x1:x2] = True
     return mask
+
+
+def _geometry_match_for_mask(
+    mask: np.ndarray,
+    *,
+    point: tuple[int, int] | None = None,
+    box: tuple[int, int, int, int] | None = None,
+) -> dict[str, Any]:
+    h, w = mask.shape[:2]
+    point_inside: bool | None = None
+    if point is not None:
+        px, py = [int(v) for v in point]
+        point_inside = bool(0 <= px < w and 0 <= py < h and mask[py, px])
+
+    box_iou: float | None = None
+    box_coverage: float | None = None
+    if box is not None:
+        cue = _box_mask((h, w), box)
+        if np.any(cue):
+            intersection = float(np.logical_and(mask, cue).sum())
+            union = float(np.logical_or(mask, cue).sum())
+            box_area = float(cue.sum())
+            box_iou = float(intersection / union) if union > 0 else 0.0
+            box_coverage = float(intersection / box_area) if box_area > 0 else 0.0
+        else:
+            box_iou = 0.0
+            box_coverage = 0.0
+
+    checks: list[bool] = []
+    if point_inside is not None:
+        checks.append(point_inside)
+    if box_iou is not None and box_coverage is not None:
+        checks.append(bool(box_iou >= 0.05 or box_coverage >= 0.2))
+
+    return {
+        "point_inside": point_inside,
+        "box_iou": box_iou,
+        "box_coverage": box_coverage,
+        "matches": bool(all(checks)) if checks else True,
+    }
+
+
+def target_geometry_is_confident(metadata: dict[str, Any]) -> bool:
+    geometry = metadata.get("geometry_match")
+    if not isinstance(geometry, dict):
+        return True
+    matches = geometry.get("matches")
+    return bool(matches) if matches is not None else True
 
 
 def _tokenize(text: str | None) -> list[str]:
@@ -864,9 +913,10 @@ def export_target_assets(
             "bbox": [int(v) for v in target["bbox"]],
         },
         "prompt": prompt,
-        "resolved_prompt": target.get("resolved_prompt"),
+        "resolved_prompt": target.get("resolved_prompt") or prompt,
         "point": list(point) if point is not None else None,
         "box": list(box) if box is not None else None,
+        "geometry_match": _geometry_match_for_mask(target["mask"], point=point, box=box),
         "exports": {
             "target_rgba": _portable_relpath(output_root, output_root / "target_rgba.png"),
             "target_alpha": _portable_relpath(output_root, output_root / "target_alpha.png"),

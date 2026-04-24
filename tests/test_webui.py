@@ -191,6 +191,63 @@ def test_webui_extract_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -
     assert captured["path_or_dir"] == winner_dir
 
 
+def test_webui_extract_geometry_only_reruns_prompted_base_when_selection_misses_cue(tmp_path: Path, monkeypatch) -> None:
+    image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
+    work_root = tmp_path / "webui"
+    run_calls: list[dict[str, object]] = []
+    export_calls: list[dict[str, object]] = []
+
+    class FakeOutputs:
+        def __init__(self, output_dir: Path) -> None:
+            self.output_dir = output_dir
+
+    class FakePipeline:
+        def run(self, input_path, output_dir, **kwargs):  # type: ignore[no-untyped-def]
+            out = Path(output_dir)
+            (out / "debug").mkdir(parents=True, exist_ok=True)
+            (out / "manifest.json").write_text("{}", encoding="utf-8")
+            (out / "metrics.json").write_text(json.dumps({"num_layers": 2}), encoding="utf-8")
+            (out / "dalg_manifest.json").write_text("{}", encoding="utf-8")
+            run_calls.append({"output_dir": out, "prompts": kwargs.get("prompts"), "prompt_source": kwargs.get("prompt_source")})
+            return FakeOutputs(out)
+
+    def fake_get_pipeline(config_path, device):  # type: ignore[no-untyped-def]
+        return FakePipeline()
+
+    def fake_export(path_or_dir, **kwargs):  # type: ignore[no-untyped-def]
+        export_calls.append({"path_or_dir": Path(path_or_dir), "kwargs": kwargs})
+        target_dir = work_root / "jobs" / Path(path_or_dir).name / "target_extract"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        matched = Path(path_or_dir).name == "geometry_prompted_base"
+        return {
+            "selected_target": {"name": "building" if matched else "wrong_region"},
+            "resolved_prompt": "building",
+            "geometry_match": {"matches": matched},
+        }
+
+    monkeypatch.setattr("layerforge.webui._get_pipeline", fake_get_pipeline)
+    monkeypatch.setattr("layerforge.webui.export_target_assets", fake_export)
+
+    payload = {
+        "mode": "extract",
+        "filename": image_path.name,
+        "image_base64": base64.b64encode(image_path.read_bytes()).decode("utf-8"),
+        "config": "configs/fast.yaml",
+        "device": "cpu",
+        "point": "10,12",
+    }
+    result = run_webui_job(REPO_ROOT, payload, work_root=work_root)
+
+    assert result["status"] == "ok"
+    assert result["mode"] == "extract"
+    assert len(run_calls) == 2
+    assert run_calls[1]["output_dir"].name == "geometry_prompted_base"
+    assert run_calls[1]["prompts"] == ["building"]
+    assert run_calls[1]["prompt_source"] == "manual"
+    assert len(export_calls) == 2
+    assert export_calls[1]["kwargs"]["prompt"] == "building"
+
+
 def test_webui_transparent_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:
     image_path = REPO_ROOT / "examples" / "synth" / "scene_000" / "image.png"
     work_root = tmp_path / "webui"

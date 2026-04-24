@@ -171,3 +171,39 @@ def test_export_target_assets_point_only_records_inferred_semantic_identity(tmp_
     assert exported["selected_target"]["semantic_label"] == "red car"
     assert exported["selected_target"]["semantic_name"] == "red_car"
     assert exported["resolved_prompt"] == "red car"
+    assert exported["geometry_match"]["matches"] is True
+    assert exported["geometry_match"]["point_inside"] is True
+
+
+def test_export_target_assets_records_failed_geometry_match(tmp_path: Path) -> None:
+    run_dir = _make_run(tmp_path, copy_like_background=False)
+
+    exported = export_target_assets(
+        run_dir,
+        output_dir=tmp_path / "extract_point_miss",
+        point=(2, 2),
+        cfg={"infer_prompt_from_geometry": False},
+    )
+
+    assert exported["selected_target"]["name"] == "000_red_car"
+    assert exported["geometry_match"]["matches"] is False
+    assert exported["geometry_match"]["point_inside"] is False
+
+
+def test_geometry_inference_canonicalizes_glass_panel_to_building(tmp_path: Path, monkeypatch) -> None:
+    run_dir = _make_run(tmp_path, copy_like_background=False)
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    manifest["ordered_layers_near_to_far"][0]["name"] = "000_object_region"
+    manifest["ordered_layers_near_to_far"][0]["label"] = "object region"
+    (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "layerforge.editability._gemini_infer_target_prompt",
+        lambda *args, **kwargs: "glass panel",
+    )
+
+    exported = export_target_assets(run_dir, output_dir=tmp_path / "extract_glass", point=(16, 16))
+
+    assert exported["selected_target"]["semantic_label"] == "building"
+    assert exported["selected_target"]["semantic_name"] == "building"
+    assert exported["resolved_prompt"] == "building"

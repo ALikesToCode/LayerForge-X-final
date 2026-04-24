@@ -15,6 +15,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(ROOT / "src"))
 
 from layerforge.editability import export_target_assets
+from layerforge.editability import target_geometry_is_confident
 from layerforge.pipeline import LayerForgePipeline
 from layerforge.utils import mask_iou
 
@@ -69,6 +70,11 @@ def center_from_alpha(alpha: np.ndarray) -> tuple[int, int]:
     return (int(np.median(xs)), int(np.median(ys)))
 
 
+def _safe_run_key(prompt: str) -> str:
+    normalized = "".join(ch if ch.isalnum() else "_" for ch in prompt.lower()).strip("_")
+    return f"geometry_prompted_{normalized or 'target'}"
+
+
 def evaluate_query(run_dir: Path, scene_dir: Path, query_name: str, kwargs: dict, gt_name: str, gt_alpha: np.ndarray, out_root: Path) -> dict:
     query_out = out_root / query_name
     metadata = export_target_assets(run_dir, output_dir=query_out, **kwargs)
@@ -83,11 +89,13 @@ def evaluate_query(run_dir: Path, scene_dir: Path, query_name: str, kwargs: dict
         str(selected_target.get("semantic_name", "")),
         str(selected_target.get("semantic_label", "")),
         str(metadata.get("resolved_prompt", "")),
+        str(metadata.get("prompt", "")),
     ]
     gt_key = gt_name.replace(" ", "_").lower()
     normalized = [item.replace(" ", "_").lower() for item in semantic_candidates if item]
-    hit = any(gt_key in item or item in gt_key for item in normalized)
+    semantic_hit = any(gt_key in item or item in gt_key for item in normalized)
     alpha_mae = float(np.mean(np.abs(pred_alpha - gt_alpha)))
+    target_iou = float(mask_iou(gt_mask, pred_mask))
     row = {
         "scene": scene_dir.name,
         "query_type": query_name,
@@ -95,14 +103,25 @@ def evaluate_query(run_dir: Path, scene_dir: Path, query_name: str, kwargs: dict
         "selected_name": selected_name,
         "selected_semantic_name": selected_target.get("semantic_name"),
         "selected_semantic_label": selected_target.get("semantic_label"),
-        "target_hit": bool(hit),
-        "target_iou": float(mask_iou(gt_mask, pred_mask)),
+        "semantic_hit": bool(semantic_hit),
+        "target_hit": bool(semantic_hit and target_iou > 0.05),
+        "target_iou": target_iou,
         "alpha_mae": alpha_mae,
         "prompt": kwargs.get("prompt"),
+        "resolved_prompt": metadata.get("resolved_prompt"),
+        "geometry_match": metadata.get("geometry_match"),
         "point": list(kwargs["point"]) if kwargs.get("point") is not None else None,
         "box": list(kwargs["box"]) if kwargs.get("box") is not None else None,
     }
     return row
+
+
+def _needs_geometry_prompted_fallback(query_name: str, row: dict) -> bool:
+    return (
+        query_name in {"point", "box"}
+        and bool(row.get("resolved_prompt"))
+        and not target_geometry_is_confident({"geometry_match": row.get("geometry_match")})
+    )
 
 
 def main() -> int:
@@ -151,17 +170,45 @@ def main() -> int:
 
         for query_name, kwargs in queries.items():
             export_kwargs = {key: value for key, value in kwargs.items() if key != "base_run_key"}
-            rows.append(
-                evaluate_query(
-                    base_runs[kwargs["base_run_key"]],
+            row = evaluate_query(
+                base_runs[kwargs["base_run_key"]],
+                scene_dir,
+                query_name,
+                export_kwargs,
+                gt_name,
+                gt_alpha,
+                scene_extract_root,
+            )
+            if _needs_geometry_prompted_fallback(query_name, row):
+                fallback_prompt = str(row["resolved_prompt"])
+                run_key = _safe_run_key(fallback_prompt)
+                if run_key not in base_runs:
+                    outputs = pipe.run(
+                        scene_dir / "image.png",
+                        scene_run_root / run_key,
+                        segmenter=args.segmenter,
+                        depth_method=args.depth,
+                        prompts=[fallback_prompt],
+                        prompt_source="manual",
+                        save_parallax=False,
+                    )
+                    base_runs[run_key] = outputs.output_dir
+                fallback_kwargs = dict(export_kwargs)
+                fallback_kwargs["prompt"] = fallback_prompt
+                row = evaluate_query(
+                    base_runs[run_key],
                     scene_dir,
                     query_name,
-                    export_kwargs,
+                    fallback_kwargs,
                     gt_name,
                     gt_alpha,
                     scene_extract_root,
                 )
-            )
+                row["used_geometry_prompt_fallback"] = True
+                row["fallback_prompt"] = fallback_prompt
+            else:
+                row["used_geometry_prompt_fallback"] = False
+            rows.append(row)
 
     summary_rows = []
     for query_type in sorted({row["query_type"] for row in rows}):

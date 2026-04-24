@@ -162,6 +162,68 @@ def test_extract_frontier_uses_selected_run(tmp_path: Path, monkeypatch) -> None
     assert captured["export_kwargs"]["prompt"] == "wheel"
 
 
+def test_extract_geometry_only_reruns_prompted_base_when_selection_misses_cue(tmp_path: Path, monkeypatch) -> None:
+    image_path = tmp_path / "sample.png"
+    Image.new("RGB", (64, 48), (120, 140, 180)).save(image_path)
+
+    run_calls: list[dict[str, object]] = []
+    export_calls: list[dict[str, object]] = []
+
+    class FakeOutputs:
+        def __init__(self, output_dir: Path) -> None:
+            self.output_dir = output_dir
+            self.manifest_path = output_dir / "manifest.json"
+            self.metrics_path = output_dir / "metrics.json"
+            self.ordered_layer_paths = []
+
+    class FakePipeline:
+        def __init__(self, config, device="auto") -> None:  # type: ignore[no-untyped-def]
+            self.config = config
+            self.device = device
+
+        def run(self, input_path, output_dir, **kwargs):  # type: ignore[no-untyped-def]
+            out = Path(output_dir)
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "manifest.json").write_text("{}", encoding="utf-8")
+            (out / "metrics.json").write_text("{}", encoding="utf-8")
+            run_calls.append({"output_dir": out, "prompts": kwargs.get("prompts"), "prompt_source": kwargs.get("prompt_source")})
+            return FakeOutputs(out)
+
+    def fake_export(path_or_dir, **kwargs):  # type: ignore[no-untyped-def]
+        export_calls.append({"path_or_dir": Path(path_or_dir), "kwargs": kwargs})
+        matched = Path(path_or_dir).name == "geometry_prompted_base"
+        return {
+            "selected_target": {"name": "building" if matched else "wrong_region"},
+            "resolved_prompt": "building",
+            "geometry_match": {"matches": matched},
+        }
+
+    monkeypatch.setattr("layerforge.cli.LayerForgePipeline", FakePipeline)
+    monkeypatch.setattr("layerforge.cli.export_target_assets", fake_export)
+
+    exit_code = main(
+        [
+            "extract",
+            "--input",
+            str(image_path),
+            "--output",
+            str(tmp_path / "extract_output"),
+            "--config",
+            "configs/fast.yaml",
+            "--point",
+            "10,12",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(run_calls) == 2
+    assert run_calls[1]["output_dir"] == tmp_path / "extract_output" / "geometry_prompted_base"
+    assert run_calls[1]["prompts"] == ["building"]
+    assert run_calls[1]["prompt_source"] == "manual"
+    assert len(export_calls) == 2
+    assert export_calls[1]["kwargs"]["prompt"] == "building"
+
+
 def test_transparent_frontier_uses_selected_run(tmp_path: Path, monkeypatch) -> None:
     image_path = tmp_path / "sample.png"
     Image.new("RGB", (64, 48), (120, 140, 180)).save(image_path)

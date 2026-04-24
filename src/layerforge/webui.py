@@ -17,6 +17,7 @@ from urllib.parse import unquote, urlparse
 
 from .config import load_config
 from .editability import export_target_assets
+from .editability import target_geometry_is_confident
 from .frontier import materialize_frontier_selection
 from .frontier import resolve_frontier_native_config
 from .frontier import run_frontier_comparison
@@ -231,6 +232,23 @@ def _frontier_workspace_for(job_dir: Path) -> Path:
     return job_dir.parent / f"{job_dir.name}_frontier"
 
 
+def _should_rerun_with_geometry_prompt(
+    metadata: dict[str, Any],
+    *,
+    prompts: list[str] | None,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    target_name: str | None,
+) -> bool:
+    return (
+        not prompts
+        and not target_name
+        and bool(point or box)
+        and bool(metadata.get("resolved_prompt"))
+        and not target_geometry_is_confident(metadata)
+    )
+
+
 def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path | None = None) -> dict[str, Any]:
     mode = str(payload.get("mode", "run"))
     filename = str(payload.get("filename", "image.png"))
@@ -349,7 +367,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 manifest_path = output_dir / "manifest.json"
                 metrics_path = output_dir / "metrics.json"
                 dalg_path = output_dir / "dalg_manifest.json"
-            export_target_assets(
+            target_metadata = export_target_assets(
                 output_dir,
                 output_dir=job_dir / "target_extract",
                 prompt=prompt_text,
@@ -357,6 +375,38 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 box=box,
                 target_name=target_name,
             )
+            if not use_frontier_base and _should_rerun_with_geometry_prompt(
+                target_metadata,
+                prompts=prompts,
+                point=point,
+                box=box,
+                target_name=target_name,
+            ):
+                fallback_prompt = str(target_metadata["resolved_prompt"])
+                out = pipeline.run(
+                    input_path,
+                    job_dir / "geometry_prompted_base",
+                    segmenter=segmenter,
+                    depth_method=depth_method,
+                    prompts=[fallback_prompt],
+                    prompt_source="manual",
+                    flip_depth=bool(payload.get("flip_depth", False)),
+                    save_parallax=not no_parallax,
+                    ordering_method=ordering,
+                    ranker_model_path=ranker_model,
+                )
+                output_dir = Path(out.output_dir)
+                manifest_path = output_dir / "manifest.json"
+                metrics_path = output_dir / "metrics.json"
+                dalg_path = output_dir / "dalg_manifest.json"
+                export_target_assets(
+                    output_dir,
+                    output_dir=job_dir / "target_extract",
+                    prompt=fallback_prompt,
+                    point=point,
+                    box=box,
+                    target_name=target_name,
+                )
         elif mode == "transparent":
             if use_frontier_base:
                 frontier_root = job_dir / "frontier"
@@ -402,7 +452,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 manifest_path = output_dir / "manifest.json"
                 metrics_path = output_dir / "metrics.json"
                 dalg_path = output_dir / "dalg_manifest.json"
-            export_transparent_assets(
+            transparent_metadata = export_transparent_assets(
                 output_dir,
                 output_dir=job_dir / "transparent_extract",
                 prompt=prompt_text,
@@ -411,6 +461,39 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 target_name=target_name,
                 device=device,
             )
+            if not use_frontier_base and _should_rerun_with_geometry_prompt(
+                transparent_metadata,
+                prompts=prompts,
+                point=point,
+                box=box,
+                target_name=target_name,
+            ):
+                fallback_prompt = str(transparent_metadata["resolved_prompt"])
+                out = pipeline.run(
+                    input_path,
+                    job_dir / "geometry_prompted_base",
+                    segmenter=segmenter,
+                    depth_method=depth_method,
+                    prompts=[fallback_prompt],
+                    prompt_source="manual",
+                    flip_depth=bool(payload.get("flip_depth", False)),
+                    save_parallax=False,
+                    ordering_method=ordering,
+                    ranker_model_path=ranker_model,
+                )
+                output_dir = Path(out.output_dir)
+                manifest_path = output_dir / "manifest.json"
+                metrics_path = output_dir / "metrics.json"
+                dalg_path = output_dir / "dalg_manifest.json"
+                export_transparent_assets(
+                    output_dir,
+                    output_dir=job_dir / "transparent_extract",
+                    prompt=fallback_prompt,
+                    point=point,
+                    box=box,
+                    target_name=target_name,
+                    device=device,
+                )
         elif mode == "peel":
             pipeline = _get_pipeline(config_path, device)
             out = pipeline.peel(

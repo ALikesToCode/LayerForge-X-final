@@ -8,6 +8,7 @@ from typing import Any
 from .config import load_config
 from .dalg import export_dalg_manifest
 from .editability import export_target_assets
+from .editability import target_geometry_is_confident
 from .frontier import materialize_frontier_selection
 from .frontier import resolve_frontier_native_config
 from .frontier import run_single_image_frontier_selection
@@ -65,6 +66,23 @@ def build_frontier_base_kwargs(args: argparse.Namespace, *, output_root: Path) -
         "qwen_merge_external_layers": bool(getattr(args, "frontier_qwen_merge_external_layers", False)),
         "skip_existing": False,
     }
+
+
+def _should_rerun_with_geometry_prompt(
+    metadata: dict[str, Any],
+    *,
+    prompt_values: list[str] | None,
+    point: tuple[int, int] | None,
+    box: tuple[int, int, int, int] | None,
+    target_name: str | None,
+) -> bool:
+    return (
+        not prompt_values
+        and not target_name
+        and bool(point or box)
+        and bool(metadata.get("resolved_prompt"))
+        and not target_geometry_is_confident(metadata)
+    )
 
 
 def add_frontier_base_arguments(parser: argparse.ArgumentParser) -> None:
@@ -214,6 +232,7 @@ def cmd_extract(args: argparse.Namespace) -> int:
     prompt_values = parse_prompts(args.prompt)
     point = parse_point(args.point)
     box = parse_box(args.box)
+    pipe: LayerForgePipeline | None = None
     if args.frontier:
         frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
         selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
@@ -246,6 +265,37 @@ def cmd_extract(args: argparse.Namespace) -> int:
         box=box,
         target_name=args.target_name,
     )
+    if pipe is not None and _should_rerun_with_geometry_prompt(
+        metadata,
+        prompt_values=prompt_values,
+        point=point,
+        box=box,
+        target_name=args.target_name,
+    ):
+        fallback_prompt = str(metadata["resolved_prompt"])
+        out = pipe.run(
+            args.input,
+            Path(args.output) / "geometry_prompted_base",
+            segmenter=args.segmenter,
+            depth_method=args.depth,
+            prompts=[fallback_prompt],
+            prompt_source="manual",
+            flip_depth=args.flip_depth,
+            save_parallax=not args.no_parallax,
+            ordering_method=args.ordering,
+            ranker_model_path=args.ranker_model,
+        )
+        manifest_path = out.manifest_path
+        metrics_path = out.metrics_path
+        base_run_dir = Path(out.output_dir)
+        metadata = export_target_assets(
+            base_run_dir,
+            output_dir=Path(args.output) / "target_extract",
+            prompt=fallback_prompt,
+            point=point,
+            box=box,
+            target_name=args.target_name,
+        )
     if args.frontier:
         print(f"winner:   {selection['selected_label']}")
         print(f"frontier: {selection['summary_path']}")
@@ -266,6 +316,7 @@ def cmd_transparent(args: argparse.Namespace) -> int:
     prompt_values = parse_prompts(args.prompt)
     point = parse_point(args.point)
     box = parse_box(args.box)
+    pipe: LayerForgePipeline | None = None
     if args.frontier:
         frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
         selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
@@ -298,6 +349,37 @@ def cmd_transparent(args: argparse.Namespace) -> int:
         target_name=args.target_name,
         device=args.device,
     )
+    if pipe is not None and _should_rerun_with_geometry_prompt(
+        metadata,
+        prompt_values=prompt_values,
+        point=point,
+        box=box,
+        target_name=args.target_name,
+    ):
+        fallback_prompt = str(metadata["resolved_prompt"])
+        out = pipe.run(
+            args.input,
+            Path(args.output) / "geometry_prompted_base",
+            segmenter=args.segmenter,
+            depth_method=args.depth,
+            prompts=[fallback_prompt],
+            prompt_source="manual",
+            flip_depth=args.flip_depth,
+            save_parallax=False,
+            ordering_method=args.ordering,
+            ranker_model_path=args.ranker_model,
+        )
+        manifest_path = out.manifest_path
+        base_run_dir = Path(out.output_dir)
+        metadata = export_transparent_assets(
+            base_run_dir,
+            output_dir=Path(args.output) / "transparent_extract",
+            prompt=fallback_prompt,
+            point=point,
+            box=box,
+            target_name=args.target_name,
+            device=args.device,
+        )
     if args.frontier:
         print(f"winner:   {selection['selected_label']}")
         print(f"frontier: {selection['summary_path']}")

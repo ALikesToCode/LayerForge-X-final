@@ -9,6 +9,7 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from .editability import (
     _alpha_mask,
     _composite_rgba_layers,
+    _geometry_match_for_mask,
     _load_rgb,
     load_ordered_layers,
     select_editable_layer,
@@ -194,6 +195,8 @@ def export_transparent_assets(
         "selected_target": {
             "name": target["name"],
             "label": target["label"],
+            "semantic_name": target.get("semantic_name"),
+            "semantic_label": target.get("semantic_label"),
             "group": target["group"],
             "rank": int(target["rank"]),
             "bbox": [int(v) for v in target["bbox"]],
@@ -207,8 +210,10 @@ def export_transparent_assets(
         "recompose_psnr": float(peak_signal_noise_ratio(input_rgb, recomposition, data_range=255)),
         "recompose_ssim": float(structural_similarity(input_rgb, recomposition, channel_axis=2, data_range=255)),
         "prompt": prompt,
+        "resolved_prompt": target.get("resolved_prompt") or prompt,
         "point": list(point) if point is not None else None,
         "box": list(box) if box is not None else None,
+        "geometry_match": _geometry_match_for_mask(target_mask, point=point, box=box),
         "exports": {
             "transparent_foreground_rgba": str((output_root / "transparent_foreground_rgba.png").relative_to(output_root)),
             "estimated_clean_background": str((output_root / "estimated_clean_background.png").relative_to(output_root)),
