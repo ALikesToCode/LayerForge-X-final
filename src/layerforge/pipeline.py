@@ -17,7 +17,7 @@ from .metrics import compute_run_metrics
 from .segment import resolve_disjoint_masks, segment_image, summarize_segments
 from .types import PipelineOutputs
 from .utils import ensure_dir, seed_everything, write_json
-from .visualize import depth_to_rgb, draw_segment_labels, save_layer_contact_sheet, segmentation_overlay
+from .visualize import depth_to_rgb, draw_segment_labels, save_layer_contact_sheet, save_layer_surface_contact_sheet, segmentation_overlay
 
 
 class LayerForgePipeline:
@@ -115,6 +115,8 @@ class LayerForgePipeline:
         if cfg["io"].get("save_contact_sheet", True):
             save_layer_contact_sheet(dirs["debug"] / "ordered_layer_contact_sheet.png", ordered_layers)
             save_layer_contact_sheet(dirs["debug"] / "grouped_layer_contact_sheet.png", grouped)
+            for surface in ["alpha", "amodal", "hidden", "completed", "albedo", "shading"]:
+                save_layer_surface_contact_sheet(dirs["debug"] / f"{surface}_contact_sheet.png", ordered_layers, surface)
 
         parallax_path = None
         if cfg["io"].get("save_parallax_gif", True) if save_parallax is None else save_parallax:
@@ -155,7 +157,21 @@ class LayerForgePipeline:
                 for path, alpha_path, completed_path, hidden_path, layer in zip(ordered_paths, alpha_paths, completed_paths, hidden_paths, ordered_layers)
             ],
             "grouped_layers": [str(p) for p in grouped_paths],
-            "debug": {"input_rgb": str(dirs["debug"] / "input_rgb.png"), "depth_gray": str(dirs["debug"] / "depth_gray.png"), "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"), "background_completion": str(dirs["debug"] / "background_completion.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"), "parallax_preview": str(parallax_path) if parallax_path else None}
+            "debug": {
+                "input_rgb": str(dirs["debug"] / "input_rgb.png"),
+                "depth_gray": str(dirs["debug"] / "depth_gray.png"),
+                "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"),
+                "background_completion": str(dirs["debug"] / "background_completion.png"),
+                "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"),
+                "parallax_preview": str(parallax_path) if parallax_path else None,
+                "ordered_layer_contact_sheet": str(dirs["debug"] / "ordered_layer_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "alpha_contact_sheet": str(dirs["debug"] / "alpha_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "amodal_contact_sheet": str(dirs["debug"] / "amodal_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "hidden_contact_sheet": str(dirs["debug"] / "hidden_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "completed_contact_sheet": str(dirs["debug"] / "completed_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "albedo_contact_sheet": str(dirs["debug"] / "albedo_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "shading_contact_sheet": str(dirs["debug"] / "shading_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+            }
         }
         manifest_path = write_json(out / "manifest.json", manifest)
         canonical_dalg_path = export_dalg_manifest(out)

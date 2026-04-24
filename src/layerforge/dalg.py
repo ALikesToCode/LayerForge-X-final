@@ -233,6 +233,12 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
             "bbox": layer["bbox"],
             "depth_median": layer["depth_median"],
             "editable": layer["editable"],
+            "semantic_group": layer["group"],
+            "alpha_mask": layer.get("visible_mask_path"),
+            "completed_path": layer.get("completed_rgba_path"),
+            "albedo_path": layer.get("albedo_path"),
+            "shading_path": layer.get("shading_path"),
+            "hidden_mask": layer.get("hidden_mask_path"),
         }
         for layer in ordered_layers
     ]

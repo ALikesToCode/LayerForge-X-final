@@ -65,3 +65,62 @@ def save_layer_contact_sheet(path: str | Path, layers: list[Layer], thumb: int =
     p.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(p)
     return p
+
+
+def _mask_to_rgba(mask: np.ndarray, rgb: tuple[int, int, int] = (40, 120, 220)) -> np.ndarray:
+    alpha = (np.clip(mask.astype(np.float32), 0.0, 1.0) * 255).astype(np.uint8)
+    out = np.zeros((*mask.shape, 4), dtype=np.uint8)
+    out[..., :3] = np.array(rgb, dtype=np.uint8)
+    out[..., 3] = alpha
+    return out
+
+
+def layer_surface_rgba(layer: Layer, surface: str) -> np.ndarray:
+    key = str(surface).lower()
+    if key in {"rgba", "visible"}:
+        return layer.rgba
+    if key == "completed":
+        return layer.completed_rgba if layer.completed_rgba is not None else layer.rgba
+    if key == "alpha":
+        return _mask_to_rgba(layer.alpha, (30, 30, 30))
+    if key == "amodal":
+        return _mask_to_rgba(layer.amodal_mask.astype(np.float32), (40, 120, 220)) if layer.amodal_mask is not None else _mask_to_rgba(np.zeros_like(layer.alpha), (40, 120, 220))
+    if key == "hidden":
+        return _mask_to_rgba(layer.hidden_mask.astype(np.float32), (220, 90, 40)) if layer.hidden_mask is not None else _mask_to_rgba(np.zeros_like(layer.alpha), (220, 90, 40))
+    if key == "albedo":
+        return layer.albedo_rgba
+    if key == "shading":
+        return layer.shading_rgba
+    raise ValueError(f"Unknown layer contact-sheet surface: {surface}")
+
+
+def save_layer_surface_contact_sheet(path: str | Path, layers: list[Layer], surface: str, thumb: int = 160) -> Path:
+    proxy_layers: list[Layer] = []
+    for layer in layers:
+        proxy_layers.append(
+            Layer(
+                id=layer.id,
+                name=layer.name,
+                label=layer.label,
+                group=layer.group,
+                rank=layer.rank,
+                depth_median=layer.depth_median,
+                depth_p10=layer.depth_p10,
+                depth_p90=layer.depth_p90,
+                area=layer.area,
+                bbox=layer.bbox,
+                alpha=layer.alpha,
+                rgba=layer_surface_rgba(layer, surface),
+                albedo_rgba=layer.albedo_rgba,
+                shading_rgba=layer.shading_rgba,
+                visible_mask=layer.visible_mask,
+                amodal_mask=layer.amodal_mask,
+                source_segment_ids=layer.source_segment_ids,
+                occludes=layer.occludes,
+                occluded_by=layer.occluded_by,
+                metadata=layer.metadata,
+                hidden_mask=layer.hidden_mask,
+                completed_rgba=layer.completed_rgba,
+            )
+        )
+    return save_layer_contact_sheet(path, proxy_layers, thumb=thumb)
