@@ -14,6 +14,23 @@ def depth_to_rgb(depth: np.ndarray) -> np.ndarray:
     return np.repeat(g[..., None], 3, axis=2)
 
 
+def heatmap_rgb(values: np.ndarray) -> np.ndarray:
+    v = normalize01(values.astype(np.float32), robust=True)
+    red = np.clip(v * 255.0, 0, 255)
+    green = np.clip((1.0 - np.abs(v - 0.5) * 2.0) * 180.0, 0, 180)
+    blue = np.clip((1.0 - v) * 255.0, 0, 255)
+    return np.dstack([red, green, blue]).astype(np.uint8)
+
+
+def recomposition_error_heatmap(input_rgb: np.ndarray, recomposed_rgb: np.ndarray) -> np.ndarray:
+    src = input_rgb.astype(np.float32)
+    rec = recomposed_rgb.astype(np.float32)
+    if src.shape != rec.shape:
+        raise ValueError(f"recomposition heatmap shape mismatch: {src.shape} != {rec.shape}")
+    err = np.mean(np.abs(src - rec), axis=2) / 255.0
+    return heatmap_rgb(err)
+
+
 def segmentation_overlay(rgb: np.ndarray, segments: list[Segment]) -> np.ndarray:
     import cv2
     out = rgb.copy()
@@ -91,6 +108,10 @@ def layer_surface_rgba(layer: Layer, surface: str) -> np.ndarray:
         return layer.albedo_rgba
     if key == "shading":
         return layer.shading_rgba
+    if key == "depth":
+        depth_rgba = layer.metadata.get("depth_crop_rgba")
+        if isinstance(depth_rgba, np.ndarray):
+            return depth_rgba
     raise ValueError(f"Unknown layer contact-sheet surface: {surface}")
 
 
@@ -119,6 +140,45 @@ def save_layer_surface_contact_sheet(path: str | Path, layers: list[Layer], surf
                 occludes=layer.occludes,
                 occluded_by=layer.occluded_by,
                 metadata=layer.metadata,
+                hidden_mask=layer.hidden_mask,
+                completed_rgba=layer.completed_rgba,
+            )
+        )
+    return save_layer_contact_sheet(path, proxy_layers, thumb=thumb)
+
+
+def save_depth_crop_contact_sheet(path: str | Path, layers: list[Layer], depth: np.ndarray, thumb: int = 160) -> Path:
+    depth_rgb = heatmap_rgb(depth)
+    proxy_layers: list[Layer] = []
+    for layer in layers:
+        alpha = np.clip(layer.alpha.astype(np.float32), 0.0, 1.0)
+        rgba = np.zeros((*depth.shape, 4), dtype=np.uint8)
+        rgba[..., :3] = depth_rgb
+        rgba[..., 3] = np.clip(alpha * 255.0, 0, 255).astype(np.uint8)
+        metadata = dict(layer.metadata)
+        metadata["depth_crop_rgba"] = rgba
+        proxy_layers.append(
+            Layer(
+                id=layer.id,
+                name=layer.name,
+                label=layer.label,
+                group=layer.group,
+                rank=layer.rank,
+                depth_median=layer.depth_median,
+                depth_p10=layer.depth_p10,
+                depth_p90=layer.depth_p90,
+                area=layer.area,
+                bbox=layer.bbox,
+                alpha=layer.alpha,
+                rgba=rgba,
+                albedo_rgba=layer.albedo_rgba,
+                shading_rgba=layer.shading_rgba,
+                visible_mask=layer.visible_mask,
+                amodal_mask=layer.amodal_mask,
+                source_segment_ids=layer.source_segment_ids,
+                occludes=layer.occludes,
+                occluded_by=layer.occluded_by,
+                metadata=metadata,
                 hidden_mask=layer.hidden_mask,
                 completed_rgba=layer.completed_rgba,
             )

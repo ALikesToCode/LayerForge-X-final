@@ -672,6 +672,185 @@ h3 {
     text-decoration: underline;
 }
 
+.layer-inspector {
+    margin: 2rem 0;
+}
+
+.inspector-panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    min-width: 0;
+}
+
+.inspector-panel__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+
+.inspector-panel__head h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0;
+}
+
+.inspector-diagnostics,
+.inspector-asset-row,
+.inspector-toggle,
+.inspector-layer-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.inspector-diagnostics a,
+.inspector-asset-row a {
+    color: var(--accent-blue);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.inspector-pill {
+    display: inline-flex;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.inspector-pill.is-ok {
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.35);
+    background: var(--success-soft);
+}
+
+.inspector-pill.is-error {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+    background: var(--error-soft);
+}
+
+.inspector-heatmap {
+    display: grid;
+    grid-template-columns: minmax(120px, 220px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-secondary);
+}
+
+.inspector-heatmap img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    background: #000;
+}
+
+.inspector-layer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.inspector-layer-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    min-width: 0;
+}
+
+.inspector-layer-card.is-muted {
+    opacity: 0.45;
+}
+
+.inspector-toggle {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.inspector-toggle input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--text-primary);
+}
+
+.inspector-layer-card__meta {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-bottom: 0.75rem;
+}
+
+.inspector-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.inspector-stat-grid span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    color: var(--text-secondary);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+}
+
+.inspector-stat-grid b {
+    color: var(--text-muted);
+    font-family: "Inter", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+.inspector-edge-table {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+}
+
+.inspector-edge-table__head,
+.inspector-edge-table__row {
+    display: grid;
+    grid-template-columns: 0.5fr 0.5fr 1fr 0.8fr minmax(280px, 2fr);
+    min-width: 760px;
+}
+
+.inspector-edge-table__head span,
+.inspector-edge-table__row span {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+}
+
+.inspector-edge-table__head span {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+}
+
+.inspector-edge-table__row:last-child span {
+    border-bottom: none;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
@@ -700,7 +879,9 @@ h3 {
     }
 
     .workflow-strip,
-    .form-cluster__head {
+    .form-cluster__head,
+    .inspector-panel__head,
+    .inspector-heatmap {
         grid-template-columns: 1fr;
     }
 

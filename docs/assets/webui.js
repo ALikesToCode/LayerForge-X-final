@@ -162,6 +162,125 @@ function renderResult(result) {
       `,
     )
     .join("");
+
+  renderInspector(result.inspector || null);
+}
+
+function renderInspector(inspector) {
+  const target = document.getElementById("result-inspector");
+  if (!target) return;
+  if (!inspector || !(inspector.layers || []).length) {
+    target.innerHTML = "";
+    return;
+  }
+
+  const validation = inspector.diagnostics && inspector.diagnostics.validation
+    ? inspector.diagnostics.validation
+    : {};
+  const heatmap = inspector.diagnostics ? inspector.diagnostics.error_heatmap_url : null;
+  const graphUrl = inspector.diagnostics ? inspector.diagnostics.graph_url : null;
+  const validationUrl = inspector.diagnostics ? inspector.diagnostics.validation_url : null;
+  target.innerHTML = `
+    <section class="inspector-panel">
+      <div class="inspector-panel__head">
+        <div>
+          <p class="eyebrow">Layer inspector</p>
+          <h3>Depth, masks, evidence, and validation</h3>
+        </div>
+        <div class="inspector-diagnostics">
+          <span class="inspector-pill ${validation.ok === false ? "is-error" : "is-ok"}">
+            validation ${validation.ok === false ? "failed" : "ok"}
+          </span>
+          ${graphUrl ? `<a href="${graphUrl}" target="_blank" rel="noreferrer">graph JSON</a>` : ""}
+          ${validationUrl ? `<a href="${validationUrl}" target="_blank" rel="noreferrer">validation JSON</a>` : ""}
+        </div>
+      </div>
+      ${heatmap ? `
+        <a class="inspector-heatmap" href="${heatmap}" target="_blank" rel="noreferrer">
+          <img src="${heatmap}" alt="Recomposition error heatmap" loading="lazy" />
+          <span>Recomposition error heatmap</span>
+        </a>
+      ` : ""}
+      <div class="inspector-layer-grid">
+        ${(inspector.layers || []).map(renderInspectorLayer).join("")}
+      </div>
+      ${renderEdgeEvidence(inspector.edges || [])}
+    </section>
+  `;
+  for (const toggle of target.querySelectorAll("[data-layer-toggle]")) {
+    toggle.addEventListener("change", () => {
+      const card = toggle.closest(".inspector-layer-card");
+      if (card) card.classList.toggle("is-muted", !toggle.checked);
+    });
+  }
+}
+
+function renderInspectorLayer(layer) {
+  const assets = layer.assets || {};
+  const depthStats = Object.entries(layer.depth_stats || {})
+    .map(([key, value]) => `<span><b>${escapeHtml(key.replaceAll("_", " "))}</b>${formatInspectorValue(value)}</span>`)
+    .join("");
+  const quality = Object.entries(layer.quality_metrics || {})
+    .filter(([, value]) => value !== null && value !== undefined && typeof value !== "object")
+    .slice(0, 6)
+    .map(([key, value]) => `<span><b>${escapeHtml(key.replaceAll("_", " "))}</b>${formatInspectorValue(value)}</span>`)
+    .join("");
+  const assetLinks = Object.entries(assets)
+    .filter(([, url]) => url)
+    .map(([key, url]) => `<a href="${url}" target="_blank" rel="noreferrer">${escapeHtml(key)}</a>`)
+    .join("");
+  return `
+    <article class="inspector-layer-card">
+      <label class="inspector-toggle">
+        <input type="checkbox" checked data-layer-toggle />
+        <span>${escapeHtml(layer.name || "layer")}</span>
+      </label>
+      <div class="inspector-layer-card__meta">
+        <span>${escapeHtml(layer.group || "unknown")}</span>
+        <span>rank ${escapeHtml(layer.rank ?? "")}</span>
+        <span>${escapeHtml(layer.label || "")}</span>
+      </div>
+      <div class="inspector-stat-grid">${depthStats}</div>
+      <div class="inspector-stat-grid">${quality}</div>
+      <div class="inspector-asset-row">${assetLinks}</div>
+    </article>
+  `;
+}
+
+function renderEdgeEvidence(edges) {
+  if (!edges.length) return "";
+  return `
+    <div class="inspector-edge-table">
+      <div class="inspector-edge-table__head">
+        <span>near</span>
+        <span>far</span>
+        <span>relation</span>
+        <span>confidence</span>
+        <span>evidence</span>
+      </div>
+      ${edges.slice(0, 80).map((edge) => {
+        const evidence = Object.entries(edge.evidence || {})
+          .filter(([, value]) => value !== null && value !== undefined)
+          .map(([key, value]) => `${key.replaceAll("_", " ")}=${formatInspectorValue(value)}`)
+          .join("; ");
+        return `
+          <div class="inspector-edge-table__row">
+            <span>${escapeHtml(edge.near_id ?? "")}</span>
+            <span>${escapeHtml(edge.far_id ?? "")}</span>
+            <span>${escapeHtml(edge.relation || "uncertain")}</span>
+            <span>${formatInspectorValue(edge.confidence)}</span>
+            <span>${escapeHtml(evidence)}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function formatInspectorValue(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value.toFixed(4) : "";
+  if (value === null || value === undefined) return "";
+  return escapeHtml(String(value));
 }
 
 function fileToBase64(file) {

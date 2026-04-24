@@ -149,6 +149,14 @@ def _collect_previews(output_dir: Path, mode: str, *, asset_root: Path | None = 
         ("Ordered layer stack", output_dir / "debug" / "ordered_layer_contact_sheet.png"),
         ("Grouped layer stack", output_dir / "debug" / "grouped_layer_contact_sheet.png"),
         ("Recomposition", output_dir / "debug" / "recomposed_rgb.png"),
+        ("Recomposition error", output_dir / "debug" / "recomposition_error_heatmap.png"),
+        ("Alpha masks", output_dir / "debug" / "alpha_contact_sheet.png"),
+        ("Amodal masks", output_dir / "debug" / "amodal_contact_sheet.png"),
+        ("Hidden masks", output_dir / "debug" / "hidden_contact_sheet.png"),
+        ("Completed layers", output_dir / "debug" / "completed_contact_sheet.png"),
+        ("Albedo layers", output_dir / "debug" / "albedo_contact_sheet.png"),
+        ("Shading layers", output_dir / "debug" / "shading_contact_sheet.png"),
+        ("Depth crops", output_dir / "debug" / "depth_crop_contact_sheet.png"),
         ("Edit remove", output_dir / "debug" / "edit_remove.png"),
         ("Edit move", output_dir / "debug" / "edit_move.png"),
         ("Edit recolor", output_dir / "debug" / "edit_recolor.png"),
@@ -216,6 +224,107 @@ def _collect_summary_metrics(
         summary["selected_label"] = frontier_selection.get("label")
         summary["selected_self_eval_score"] = frontier_selection.get("self_eval_score")
     return {key: value for key, value in summary.items() if value is not None}
+
+
+def _url_if_exists(path: Path | None) -> str | None:
+    if path is None or not path.exists():
+        return None
+    return _workspace_url(path)
+
+
+def _resolve_output_path(output_dir: Path, raw_path: str | Path | None) -> Path | None:
+    if not raw_path:
+        return None
+    path = Path(raw_path)
+    return path if path.is_absolute() else output_dir / path
+
+
+def _derive_layer_asset_paths(output_dir: Path, row: dict[str, Any]) -> dict[str, str | None]:
+    rgba_path = _resolve_output_path(output_dir, row.get("path"))
+    stem = rgba_path.stem if rgba_path is not None else str(row.get("name") or "")
+    candidates = {
+        "rgba": rgba_path,
+        "alpha": _resolve_output_path(output_dir, row.get("alpha_path")) or output_dir / "layers_alpha" / f"{stem}_alpha.png",
+        "amodal": output_dir / "layers_amodal_masks" / f"{stem}_amodal.png",
+        "hidden": _resolve_output_path(output_dir, row.get("hidden_mask_path")) or output_dir / "layers_hidden_masks" / f"{stem}_hidden.png",
+        "completed": _resolve_output_path(output_dir, row.get("completed_path")) or output_dir / "layers_completed_rgba" / f"{stem}_completed.png",
+        "albedo": output_dir / "layers_albedo_rgba" / f"{stem}_albedo.png",
+        "shading": output_dir / "layers_shading_rgba" / f"{stem}_shading.png",
+    }
+    return {key: _url_if_exists(path) for key, path in candidates.items()}
+
+
+def _collect_layer_inspector(output_dir: Path) -> dict[str, Any]:
+    manifest_path = output_dir / "manifest.json"
+    manifest = _read_json(manifest_path) if manifest_path.exists() else {}
+    graph_path = _resolve_output_path(output_dir, manifest.get("layer_graph"))
+    graph = _read_json(graph_path) if graph_path is not None and graph_path.exists() else {}
+    validation_path = output_dir / "debug" / "validation.json"
+    validation = _read_json(validation_path) if validation_path.exists() else {}
+    graph_layers = {
+        str(row.get("name")): row
+        for row in graph.get("layers_near_to_far", [])
+        if isinstance(row, dict) and row.get("name") is not None
+    }
+    layers: list[dict[str, Any]] = []
+    for row in manifest.get("ordered_layers_near_to_far", []):
+        if not isinstance(row, dict):
+            continue
+        graph_row = graph_layers.get(str(row.get("name")), {})
+        depth_stats = {
+            "median": row.get("depth_median", graph_row.get("depth_median")),
+            "p10": graph_row.get("depth_p10"),
+            "p90": graph_row.get("depth_p90"),
+            "trimmed_mean": graph_row.get("depth_trimmed_mean"),
+            "boundary_median": graph_row.get("depth_boundary_median"),
+            "variance": graph_row.get("depth_variance"),
+            "confidence": graph_row.get("depth_confidence"),
+        }
+        layers.append(
+            {
+                "name": row.get("name"),
+                "label": row.get("label"),
+                "group": row.get("group"),
+                "rank": row.get("rank"),
+                "visible": True,
+                "bbox": graph_row.get("bbox"),
+                "depth_stats": {key: value for key, value in depth_stats.items() if value is not None},
+                "quality_metrics": {
+                    "alpha_quality_score": row.get("alpha_quality_score"),
+                    "area": graph_row.get("area"),
+                    **(graph_row.get("metadata", {}) if isinstance(graph_row.get("metadata"), dict) else {}),
+                },
+                "assets": _derive_layer_asset_paths(output_dir, row),
+            }
+        )
+    edges = [
+        {
+            "near_id": edge.get("near_id"),
+            "far_id": edge.get("far_id"),
+            "relation": edge.get("relation"),
+            "confidence": edge.get("confidence"),
+            "evidence": {
+                "boundary_depth_delta": edge.get("local_depth_gap"),
+                "overlap_ratio": edge.get("overlap_ratio"),
+                "contact_score": edge.get("contact_score", edge.get("shared_boundary_length")),
+                "semantic_prior": edge.get("semantic_prior"),
+                "model_confidence": edge.get("model_confidence", edge.get("confidence")),
+            },
+            "conflict_notes": edge.get("conflict_notes"),
+        }
+        for edge in graph.get("occlusion_edges", [])
+        if isinstance(edge, dict)
+    ]
+    return {
+        "layers": layers,
+        "edges": edges,
+        "diagnostics": {
+            "validation": validation,
+            "validation_url": _url_if_exists(validation_path),
+            "graph_url": _url_if_exists(graph_path),
+            "error_heatmap_url": _url_if_exists(output_dir / "debug" / "recomposition_error_heatmap.png"),
+        },
+    }
 
 
 def _resolve_run_path(path_value: str | None) -> Path | None:
@@ -561,6 +670,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
                 },
                 "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection),
                 "previews": _collect_previews(output_dir, "run"),
+                "inspector": _collect_layer_inspector(output_dir),
             }
         else:
             raise ValueError(f"Unsupported mode: {mode}")
@@ -582,6 +692,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
             "urls": urls,
             "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection, asset_root=asset_root),
             "previews": _collect_previews(output_dir, mode, asset_root=asset_root),
+            "inspector": _collect_layer_inspector(output_dir),
         }
 
     if mode == "run" and use_frontier_base:
@@ -600,6 +711,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
             },
             "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection),
             "previews": _collect_previews(output_dir, mode),
+            "inspector": _collect_layer_inspector(output_dir),
         }
 
     output_dir = Path(out.output_dir)
@@ -619,6 +731,7 @@ def run_webui_job(repo_root: Path, payload: dict[str, Any], *, work_root: Path |
         },
         "summary_metrics": _collect_summary_metrics(output_dir, mode, frontier_selection=frontier_selection),
         "previews": _collect_previews(output_dir, mode),
+        "inspector": _collect_layer_inspector(output_dir),
     }
 
 

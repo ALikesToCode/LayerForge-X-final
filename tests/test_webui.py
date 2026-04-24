@@ -33,6 +33,9 @@ def test_webui_run_job_creates_accessible_outputs(tmp_path: Path) -> None:
     assert result["urls"]["metrics"]
     assert result["urls"]["dalg"]
     assert result["previews"]
+    assert result["inspector"]["layers"]
+    assert result["inspector"]["diagnostics"]["error_heatmap_url"]
+    assert any(item["label"] == "Depth crops" for item in result["previews"])
 
 
 def test_webui_frontier_mode_returns_selected_best_run(tmp_path: Path, monkeypatch) -> None:
@@ -80,6 +83,7 @@ def test_webui_frontier_mode_returns_selected_best_run(tmp_path: Path, monkeypat
     assert result["urls"]["selected_best"]
     assert result["urls"]["manifest"]
     assert result["urls"]["metrics"]
+    assert "inspector" in result
 
 
 def test_webui_run_mode_can_use_frontier_base(tmp_path: Path, monkeypatch) -> None:

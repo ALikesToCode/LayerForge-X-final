@@ -18,7 +18,15 @@ from .segment import resolve_disjoint_masks, segment_image, summarize_segments
 from .types import PipelineOutputs
 from .utils import ensure_dir, seed_everything, write_json
 from .validation import validate_run_outputs
-from .visualize import depth_to_rgb, draw_segment_labels, save_layer_contact_sheet, save_layer_surface_contact_sheet, segmentation_overlay
+from .visualize import (
+    depth_to_rgb,
+    draw_segment_labels,
+    recomposition_error_heatmap,
+    save_depth_crop_contact_sheet,
+    save_layer_contact_sheet,
+    save_layer_surface_contact_sheet,
+    segmentation_overlay,
+)
 
 
 class LayerForgePipeline:
@@ -79,9 +87,9 @@ class LayerForgePipeline:
         )
         premerge_semantic_layer_count = len(nodes)
         remove_mask = np.zeros(depth.shape, dtype=bool)
-        for l in semantic_layers:
-            if l.group not in {"sky", "road", "ground", "building", "water", "stuff", "background"}:
-                remove_mask |= l.alpha > 0.05
+        for layer in semantic_layers:
+            if layer.group not in {"sky", "road", "ground", "building", "water", "stuff", "background"}:
+                remove_mask |= layer.alpha > 0.05
         bg_rgb, bg_mask, inpaint_method = inpaint_background(rgb, remove_mask, cfg["inpainting"], self.device)
         bg_albedo, bg_shading, _ = decompose_intrinsics(bg_rgb, cfg["intrinsics"])
         background = build_completed_background_layer(bg_rgb, bg_albedo, bg_shading, len(semantic_layers), inpaint_method)
@@ -92,17 +100,17 @@ class LayerForgePipeline:
         alpha_paths = []
         completed_paths = []
         hidden_paths: list[str | None] = []
-        for l in ordered_layers:
-            ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{l.name}.png", l.rgba))
-            alpha_paths.append(save_gray(dirs["layers_alpha"] / f"{l.name}_alpha.png", l.alpha))
-            completed_paths.append(save_rgba(dirs["layers_completed_rgba"] / f"{l.name}_completed.png", l.completed_rgba if l.completed_rgba is not None else l.rgba))
-            save_rgba(dirs["layers_albedo_rgba"] / f"{l.name}_albedo.png", l.albedo_rgba)
-            save_rgba(dirs["layers_shading_rgba"] / f"{l.name}_shading.png", l.shading_rgba)
-            save_gray(dirs["debug"] / f"{l.name}_alpha.png", l.alpha)
-            if l.amodal_mask is not None:
-                save_gray(dirs["layers_amodal_masks"] / f"{l.name}_amodal.png", l.amodal_mask.astype(np.float32))
-            if l.hidden_mask is not None:
-                hidden_paths.append(str(save_gray(dirs["layers_hidden_masks"] / f"{l.name}_hidden.png", l.hidden_mask.astype(np.float32))))
+        for layer in ordered_layers:
+            ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{layer.name}.png", layer.rgba))
+            alpha_paths.append(save_gray(dirs["layers_alpha"] / f"{layer.name}_alpha.png", layer.alpha))
+            completed_paths.append(save_rgba(dirs["layers_completed_rgba"] / f"{layer.name}_completed.png", layer.completed_rgba if layer.completed_rgba is not None else layer.rgba))
+            save_rgba(dirs["layers_albedo_rgba"] / f"{layer.name}_albedo.png", layer.albedo_rgba)
+            save_rgba(dirs["layers_shading_rgba"] / f"{layer.name}_shading.png", layer.shading_rgba)
+            save_gray(dirs["debug"] / f"{layer.name}_alpha.png", layer.alpha)
+            if layer.amodal_mask is not None:
+                save_gray(dirs["layers_amodal_masks"] / f"{layer.name}_amodal.png", layer.amodal_mask.astype(np.float32))
+            if layer.hidden_mask is not None:
+                hidden_paths.append(str(save_gray(dirs["layers_hidden_masks"] / f"{layer.name}_hidden.png", layer.hidden_mask.astype(np.float32))))
             else:
                 hidden_paths.append(None)
 
@@ -111,6 +119,7 @@ class LayerForgePipeline:
         recomposed = composite_layers_near_to_far(ordered_layers)
         save_rgba(dirs["debug"] / "recomposed_rgba.png", recomposed)
         save_rgb(dirs["debug"] / "recomposed_rgb.png", recomposed[..., :3])
+        save_rgb(dirs["debug"] / "recomposition_error_heatmap.png", recomposition_error_heatmap(rgb, recomposed[..., :3]))
         save_rgb(dirs["debug"] / "background_completion.png", bg_rgb)
         save_gray(dirs["debug"] / "background_inpaint_mask.png", bg_mask.astype(np.float32))
         if cfg["io"].get("save_contact_sheet", True):
@@ -118,6 +127,7 @@ class LayerForgePipeline:
             save_layer_contact_sheet(dirs["debug"] / "grouped_layer_contact_sheet.png", grouped)
             for surface in ["alpha", "amodal", "hidden", "completed", "albedo", "shading"]:
                 save_layer_surface_contact_sheet(dirs["debug"] / f"{surface}_contact_sheet.png", ordered_layers, surface)
+            save_depth_crop_contact_sheet(dirs["debug"] / "depth_crop_contact_sheet.png", ordered_layers, depth)
 
         parallax_path = None
         if cfg["io"].get("save_parallax_gif", True) if save_parallax is None else save_parallax:
@@ -164,6 +174,7 @@ class LayerForgePipeline:
                 "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"),
                 "background_completion": str(dirs["debug"] / "background_completion.png"),
                 "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"),
+                "recomposition_error_heatmap": str(dirs["debug"] / "recomposition_error_heatmap.png"),
                 "parallax_preview": str(parallax_path) if parallax_path else None,
                 "ordered_layer_contact_sheet": str(dirs["debug"] / "ordered_layer_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
                 "alpha_contact_sheet": str(dirs["debug"] / "alpha_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
@@ -172,6 +183,7 @@ class LayerForgePipeline:
                 "completed_contact_sheet": str(dirs["debug"] / "completed_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
                 "albedo_contact_sheet": str(dirs["debug"] / "albedo_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
                 "shading_contact_sheet": str(dirs["debug"] / "shading_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
+                "depth_crop_contact_sheet": str(dirs["debug"] / "depth_crop_contact_sheet.png") if cfg["io"].get("save_contact_sheet", True) else None,
             }
         }
         manifest_path = write_json(out / "manifest.json", manifest)

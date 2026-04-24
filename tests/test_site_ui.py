@@ -18,6 +18,8 @@ def test_webui_static_surface_is_pages_safe() -> None:
     assert 'class="form-stack"' in html_text
     assert 'class="form-cluster"' in html_text
     assert "Frontier best-of selection" in html_text
+    assert "configs/world_best.yaml" in html_text
+    assert 'id="result-inspector"' in html_text
     assert "Use frontier candidate-bank selection as the strongest base run" in html_text
     assert "use_frontier_base" in html_text
 
@@ -26,10 +28,12 @@ def test_webui_static_surface_is_pages_safe() -> None:
     assert "flex-wrap: wrap;" in css_text
     assert ".workflow-step__index" in css_text
     assert ".form-cluster__head" in css_text
+    assert ".inspector-layer-card" in css_text
 
     webui_server_text = (ROOT / "src" / "layerforge" / "webui.py").read_text(encoding="utf-8")
     assert "window.__LAYERFORGE_RUNTIME__ = true" in webui_server_text
     assert "_inject_runtime_marker" in webui_server_text
+    assert "_collect_layer_inspector" in webui_server_text
 
 
 def test_documents_page_is_wired_into_static_site() -> None:

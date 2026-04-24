@@ -242,6 +242,10 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
         }
         for layer in ordered_layers
     ]
+    semantic_groups: dict[str, list[str]] = {}
+    for layer in design_layers:
+        group = str(layer.get("semantic_group") or "unknown")
+        semantic_groups.setdefault(group, []).append(str(layer.get("name")))
 
     enriched_edges = []
     for edge in graph_edges:
@@ -296,6 +300,21 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
             "edges": enriched_edges,
         },
         "layers": design_layers,
+        "design_export": {
+            "format": "layerforge_design_manifest",
+            "layer_order": "near_to_far",
+            "semantic_groups": semantic_groups,
+            "includes": [
+                "ordered_rgba",
+                "semantic_groups",
+                "alpha_masks",
+                "albedo_layers",
+                "shading_layers",
+                "hidden_masks",
+                "completed_layers",
+            ],
+            "layers": design_layers,
+        },
         "metrics": metrics,
         "exports": {
             "source_manifest": "manifest.json",

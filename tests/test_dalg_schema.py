@@ -105,6 +105,9 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     assert dalg["config_hash"]
     assert dalg["graph"]["node_count"] == len(dalg["graph"]["layers"])
     assert dalg["graph"]["edge_count"] == len(dalg["graph"]["edges"])
+    assert dalg["design_export"]["layer_order"] == "near_to_far"
+    assert "vehicle" in dalg["design_export"]["semantic_groups"]
+    assert "alpha_masks" in dalg["design_export"]["includes"]
     assert validate_dalg_manifest(dalg, run_dir) == []
 
     ids = [layer["id"] for layer in dalg["graph"]["layers"]]

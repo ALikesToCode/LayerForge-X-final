@@ -63,6 +63,11 @@ matting selection, amodal completion, layer-aware inpainting, intrinsic
 decomposition, DALG v1.1 output, and contact-sheet diagnostics. Missing
 checkpoints fall back gracefully.
 
+The local Web UI exposes the preset from the config selector and returns a
+layer inspector with visibility toggles, per-layer depth statistics, graph edge
+evidence, mask/completion/albedo/shading asset links, validation status, and a
+recomposition-error heatmap.
+
 ## Benchmarks
 
 The synthetic benchmark writes CSV, JSON, and Markdown summaries for:

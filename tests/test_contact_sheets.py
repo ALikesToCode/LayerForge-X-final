@@ -4,7 +4,7 @@ import numpy as np
 
 from layerforge.compose import rgba_from_rgb_alpha
 from layerforge.types import Layer
-from layerforge.visualize import layer_surface_rgba, save_layer_surface_contact_sheet
+from layerforge.visualize import layer_surface_rgba, save_depth_crop_contact_sheet, save_layer_surface_contact_sheet
 
 
 def _layer() -> Layer:
@@ -44,3 +44,5 @@ def test_layer_surface_contact_sheets_cover_expected_surfaces(tmp_path) -> None:
         out = save_layer_surface_contact_sheet(tmp_path / f"{surface}.png", [layer], surface)
         assert rgba.shape == layer.rgba.shape
         assert out.exists()
+    depth_out = save_depth_crop_contact_sheet(tmp_path / "depth.png", [layer], np.linspace(0, 1, 144, dtype=np.float32).reshape(12, 12))
+    assert depth_out.exists()
