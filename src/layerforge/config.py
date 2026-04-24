@@ -62,6 +62,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "respect_support_mask": True,
         "prefer_half": True,
         "backend_blend_weight": 0.75,
+        "external_command": "",
     },
     "transparent": {
         "backend": "heuristic",

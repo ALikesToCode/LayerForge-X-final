@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 
 from layerforge.inpaint import complete_hidden_layer, inpaint_background, inpainting_quality_metrics
@@ -36,6 +38,35 @@ def test_auto_and_diffusion_inpainting_use_cpu_safe_fallback() -> None:
     assert diffusion_out.shape == rgb.shape
     assert auto_method == "opencv_telea_auto"
     assert diffusion_method == "opencv_telea_fallback"
+
+
+def test_external_inpainting_uses_configured_command(tmp_path) -> None:
+    script = tmp_path / "inpaint_backend.py"
+    script.write_text(
+        """
+import sys
+import numpy as np
+from PIL import Image
+
+image = np.array(Image.open(sys.argv[1]).convert("RGB"))
+mask = np.asarray(Image.open(sys.argv[2]).convert("L")) > 127
+image[mask] = [10, 20, 30]
+Image.fromarray(image, mode="RGB").save(sys.argv[3])
+""",
+        encoding="utf-8",
+    )
+    rgb = np.zeros((8, 8, 3), dtype=np.uint8)
+    mask = np.zeros((8, 8), dtype=bool)
+    mask[2:6, 2:6] = True
+
+    out, _, method = inpaint_background(
+        rgb,
+        mask,
+        {"method": "external", "external_command": f"{sys.executable} {script} {{image}} {{mask}} {{output}}"},
+    )
+
+    assert method == "external"
+    assert np.array_equal(out[mask][0], np.array([10, 20, 30], dtype=np.uint8))
 
 
 def test_complete_hidden_layer_preserves_visible_pixels_and_reports_metrics() -> None:

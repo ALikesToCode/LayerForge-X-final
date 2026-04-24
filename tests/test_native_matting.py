@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 
 from layerforge.compose import rgba_from_rgb_alpha
@@ -62,3 +64,38 @@ def test_missing_matting_backend_falls_back_without_recomposition_regression() -
     assert metadata["fallback_used"] is True
     assert metadata["backend_used"] is False
     assert float(np.mean(np.abs(fallback_rgba.astype(np.float32) - heuristic_rgba.astype(np.float32)))) == 0.0
+
+
+def test_external_matting_backend_uses_configured_command(tmp_path) -> None:
+    script = tmp_path / "matting_backend.py"
+    script.write_text(
+        """
+import sys
+import numpy as np
+from PIL import Image
+
+mask = np.asarray(Image.open(sys.argv[1]).convert("L"))
+alpha = (mask // 2).astype(np.uint8)
+Image.fromarray(alpha, mode="L").save(sys.argv[2])
+""",
+        encoding="utf-8",
+    )
+    rgb, mask, depth = _antialiased_circle()
+
+    alpha, metadata = refine_layer_alpha(
+        rgb,
+        mask,
+        depth,
+        {
+            "method": "external",
+            "alpha_band_px": 5,
+            "preserve_depth_edges": False,
+            "backend_blend_weight": 1.0,
+            "external_command": f"{sys.executable} {script} {{support_mask}} {{alpha}}",
+        },
+        device="cpu",
+    )
+
+    assert metadata["backend_used"] is True
+    assert metadata["backend"] == "external"
+    assert 0.45 < float(alpha[mask].mean()) < 0.55

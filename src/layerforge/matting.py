@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import shlex
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -85,7 +89,6 @@ def alpha_quality_score(alpha: np.ndarray, support_mask: np.ndarray) -> float:
 
 @lru_cache(maxsize=4)
 def _load_birefnet_model(model_name: str, device_name: str, prefer_half: bool):
-    torch = optional_import("torch")
     transformers = optional_import("transformers")
     model = transformers.AutoModelForImageSegmentation.from_pretrained(model_name, trust_remote_code=True)
     model = model.to(device_name).eval()
@@ -151,6 +154,42 @@ def _predict_birefnet_alpha(
     return np.clip(full_alpha, 0.0, 1.0), metadata
 
 
+def _predict_external_alpha(
+    image_rgb: np.ndarray,
+    support_mask: np.ndarray,
+    *,
+    trimap: np.ndarray,
+    command: str,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    if not command.strip():
+        raise RuntimeError("external matting requires matting.external_command")
+    with tempfile.TemporaryDirectory(prefix="layerforge_matting_") as tmp:
+        tmp_dir = Path(tmp)
+        image_path = tmp_dir / "image.png"
+        mask_path = tmp_dir / "support_mask.png"
+        trimap_path = tmp_dir / "trimap.png"
+        alpha_path = tmp_dir / "alpha.png"
+        Image.fromarray(image_rgb).save(image_path)
+        Image.fromarray(support_mask.astype(np.uint8) * 255, mode="L").save(mask_path)
+        Image.fromarray(trimap.astype(np.uint8), mode="L").save(trimap_path)
+        formatted = command.format(
+            image=image_path,
+            support_mask=mask_path,
+            mask=mask_path,
+            trimap=trimap_path,
+            alpha=alpha_path,
+            output=alpha_path,
+            output_dir=tmp_dir,
+        )
+        subprocess.run(shlex.split(formatted), check=True)
+        if not alpha_path.exists():
+            raise RuntimeError("external matting command did not write alpha output")
+        alpha = np.asarray(Image.open(alpha_path).convert("L"), dtype=np.float32) / 255.0
+        if alpha.shape != support_mask.shape:
+            alpha = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).resize(support_mask.shape[::-1], Image.Resampling.BILINEAR), dtype=np.float32) / 255.0
+        return np.clip(alpha, 0.0, 1.0), {"backend": "external", "command": command}
+
+
 def predict_alpha_matte(
     image_rgb: np.ndarray,
     support_mask: np.ndarray,
@@ -166,6 +205,7 @@ def predict_alpha_matte(
         "support_expand_px": 12,
         "respect_support_mask": True,
         "prefer_half": True,
+        "external_command": "",
     }
     if cfg:
         config.update(cfg)
@@ -173,6 +213,23 @@ def predict_alpha_matte(
     backend = str(config.get("method", config.get("backend", "auto"))).lower()
     if backend in {"heuristic", "none", "off", "disabled"}:
         return None, {"backend": backend, "used": False}
+    if backend == "external" and str(config.get("external_command", "")).strip():
+        try:
+            alpha, metadata = _predict_external_alpha(
+                image_rgb,
+                support_mask,
+                trimap=make_trimap(support_mask, band_px=int(config.get("alpha_band_px", 9))),
+                command=str(config.get("external_command", "")),
+            )
+            metadata["used"] = True
+            return alpha, metadata
+        except Exception as exc:
+            return None, {
+                "backend": "heuristic_fallback",
+                "requested_backend": backend,
+                "used": False,
+                "error": str(exc),
+            }
     if backend in {"external", "matting_anything"}:
         return None, {
             "backend": "heuristic_fallback",
@@ -255,6 +312,8 @@ def refine_layer_alpha(
             "support_expand_px": int(config.get("support_expand_px", 12)),
             "respect_support_mask": bool(config.get("respect_support_mask", True)),
             "prefer_half": bool(config.get("prefer_half", True)),
+            "external_command": str(config.get("external_command", "")),
+            "alpha_band_px": int(config.get("alpha_band_px", 9)),
         },
         device=device,
     )

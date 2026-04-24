@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import shlex
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -21,6 +25,32 @@ def _load_simple_lama():
     return SimpleLama
 
 
+def _external_inpaint(rgb: np.ndarray, mask: np.ndarray, command: str, prompt: str = "") -> np.ndarray:
+    if not command.strip():
+        raise RuntimeError("external inpainting requires inpainting.external_command")
+    with tempfile.TemporaryDirectory(prefix="layerforge_inpaint_") as tmp:
+        tmp_dir = Path(tmp)
+        image_path = tmp_dir / "image.png"
+        mask_path = tmp_dir / "mask.png"
+        output_path = tmp_dir / "output.png"
+        Image.fromarray(rgb).save(image_path)
+        Image.fromarray(mask.astype(np.uint8) * 255, mode="L").save(mask_path)
+        formatted = command.format(
+            image=image_path,
+            mask=mask_path,
+            output=output_path,
+            output_dir=tmp_dir,
+            prompt=prompt,
+        )
+        subprocess.run(shlex.split(formatted), check=True)
+        if not output_path.exists():
+            raise RuntimeError("external inpainting command did not write output image")
+        output = np.asarray(Image.open(output_path).convert("RGB"), dtype=np.uint8)
+        if output.shape[:2] != rgb.shape[:2]:
+            output = np.asarray(Image.fromarray(output).resize((rgb.shape[1], rgb.shape[0]), Image.Resampling.BILINEAR), dtype=np.uint8)
+        return output
+
+
 def inpaint_background(rgb: np.ndarray, mask: np.ndarray, cfg: dict[str, Any], device: str = "auto") -> tuple[np.ndarray, np.ndarray, str]:
     method = str(cfg.get("method", "opencv_telea")).lower()
     m = mask.astype(bool)
@@ -32,13 +62,20 @@ def inpaint_background(rgb: np.ndarray, mask: np.ndarray, cfg: dict[str, Any], d
     if method in {"lama", "simple_lama"}:
         try:
             SimpleLama = _load_simple_lama()
-        except Exception as exc:
+        except Exception:
             out = _opencv_inpaint(rgb, m, float(cfg.get("radius", 5)))
             return out, m, "opencv_telea_fallback"
         lama = SimpleLama()
         out = lama(Image.fromarray(rgb), Image.fromarray((m.astype(np.uint8) * 255), mode="L"))
         return np.asarray(out.convert("RGB"), dtype=np.uint8), m, "lama"
-    if method in {"diffusion", "external"}:
+    if method == "external":
+        try:
+            out = _external_inpaint(rgb, m, str(cfg.get("external_command", "")), str(cfg.get("prompt", "")))
+            return out, m, "external"
+        except Exception:
+            out = _opencv_inpaint(rgb, m, float(cfg.get("radius", 5)))
+            return out, m, "opencv_telea_fallback"
+    if method == "diffusion":
         out = _opencv_inpaint(rgb, m, float(cfg.get("radius", 5)))
         return out, m, "opencv_telea_fallback"
     raise ValueError(f"Unknown inpainting method: {method}")
