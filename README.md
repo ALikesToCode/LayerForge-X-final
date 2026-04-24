@@ -15,6 +15,7 @@
 - **Canonical Project Manifest:** `PROJECT_MANIFEST.json`
 - **Report Artifacts and Metric Snapshots:** `report_artifacts/README.md`
 - **Current Results Summary:** `docs/RESULTS_SUMMARY_CURRENT.md`
+- **World-Best Runtime and DALG v1.1 Notes:** `docs/WORLD_BEST_AND_DALG_V1_1.md`
 - **Figure Index:** `docs/FIGURES.md`
 - **Public Project Site:** [https://alikestocode.github.io/LayerForge-X-final/](https://alikestocode.github.io/LayerForge-X-final/)
 - **Local Browser Interface:** `layerforge webui --open-browser`
