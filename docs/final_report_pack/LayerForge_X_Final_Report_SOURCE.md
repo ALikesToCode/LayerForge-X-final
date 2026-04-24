@@ -61,6 +61,42 @@ This report makes six concrete claims:
 
 ![Intrinsic layer demo](../figures/intrinsic_layer_demo.png){ width=100% }
 
+### Complete figure pack
+
+The six hero figures above are the primary reading sequence. The supporting diagnostics below complete the `docs/figures/` pack used by this report and are generated from the same measured artifacts.
+
+#### Layer-stack decomposition comparison
+
+![Truck layer stack comparison](../figures/truck_layer_stack_comparison.png){ width=100% }
+
+#### Truck metric comparison
+
+![Truck metric comparison](../figures/truck_metrics_comparison.png){ width=100% }
+
+#### Prompt-conditioning ablation
+
+![Truck prompt ablation](../figures/truck_prompt_ablation.png){ width=100% }
+
+\newpage
+
+#### Synthetic ordering ablation
+
+![Synthetic ordering ablation](../figures/synthetic_ordering_ablation.png){ width=100% }
+
+#### Qualitative gallery
+
+![Qualitative gallery](../figures/qualitative_gallery.png){ width=100% }
+
+\newpage
+
+#### Public segmentation benchmark
+
+![Public benchmark comparison](../figures/public_benchmark_comparison.png){ width=100% }
+
+#### Public depth benchmark
+
+![Public depth comparison](../figures/public_depth_comparison.png){ width=100% }
+
 ### Main measured summary
 
 Abbreviations in the tables below: `LF` = LayerForge, `Q raw4` = four-layer raw Qwen, `Q+G-P4` = four-layer Qwen plus LayerForge graph enrichment with the selected external visual stack preserved, and `Q+G-R4` = the same imported four-layer stack exported in graph order.

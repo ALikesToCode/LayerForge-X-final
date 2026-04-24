@@ -30,7 +30,7 @@ To regenerate the complete figure pack, execute the following command:
 
 ## Recommended placement in the report
 
-The following mapping identifies the recommended placement of these figures within the final research report:
+The final report embeds every catalog entry from `docs/figures/`. The following mapping identifies the intended reading location for each figure within that report:
 
 | Research Section | Recommended Figure |
 |---|---|
