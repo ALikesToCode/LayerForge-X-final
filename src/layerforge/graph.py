@@ -9,7 +9,7 @@ from scipy import ndimage as ndi
 
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
 from .inpaint import complete_hidden_layer
-from .intrinsics import intrinsic_rgba
+from .intrinsics import intrinsic_residual, intrinsic_rgba
 from .matting import refine_layer_alpha
 from .semantic import BACKGROUND_GROUPS
 from .types import Layer, Segment
@@ -553,6 +553,7 @@ def build_layers(
         alpha, alpha_meta = refine_layer_alpha(rgb, vis, depth, matting_cfg, device=device)
         rgba = rgba_from_rgb_alpha(rgb, alpha)
         ar, sr = intrinsic_rgba(albedo, shading, alpha)
+        iid_residual = intrinsic_residual(rgb, albedo, shading, vis)
         amodal_meta: dict[str, Any] = {"method": "none", "backend_used": False}
         if bool(cfg.get("amodal_enabled", True)):
             amodal, amodal_meta = resolve_amodal_mask(vis, amodal_cfg or {"method": "heuristic"}, int(cfg.get("amodal_expand_px", 16)))
@@ -598,6 +599,7 @@ def build_layers(
                 "completion_consistency": completion_meta.get("boundary_consistency", 1.0),
                 "edge_continuity_score": continuity,
                 "hidden_completion": completion_meta,
+                "intrinsic_residual": iid_residual,
                 "depth_stats": {
                     "median": node.depth_median,
                     "p10": node.depth_p10,

@@ -73,7 +73,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "backend_blend_weight": 0.75,
     },
     "inpainting": {"method": "auto", "radius": 5, "external_command": "", "diffusion_model": "", "prompt": ""},
-    "intrinsics": {"method": "retinex", "sigma": 28.0, "external_command": ""},
+    "intrinsics": {"method": "retinex", "sigma": 28.0, "external_command": "", "model": ""},
     "target_selection": {
         "backend": "auto",
         "candidate_limit": 6,

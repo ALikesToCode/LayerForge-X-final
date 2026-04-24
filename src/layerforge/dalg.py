@@ -122,6 +122,7 @@ def _layer_v11_fields(
             "hidden_area_ratio": metadata.get("hidden_area_ratio"),
             "completion_consistency": metadata.get("completion_consistency"),
             "edge_continuity_score": metadata.get("edge_continuity_score"),
+            "intrinsic_residual": metadata.get("intrinsic_residual"),
             "area": graph_row.get("area"),
         },
     }
