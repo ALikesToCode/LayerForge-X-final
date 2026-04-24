@@ -93,6 +93,10 @@ Optional model stack:
 python -m pip install -r requirements-models.txt
 ```
 
+`simple-lama-inpainting` is skipped on Python 3.14 and newer because its
+published package pins `pillow<10`; OpenCV Telea remains the default CPU-safe
+inpainting fallback in that environment.
+
 Optional external backends such as SAM2/Grounding-DINO, BiRefNet, Qwen layered
 generation, SameObject-style amodal models, diffusion inpainting, or intrinsic
 models should be installed according to their upstream checkpoint licenses and
