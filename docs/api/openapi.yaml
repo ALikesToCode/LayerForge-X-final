@@ -218,6 +218,10 @@ components:
       required:
         - kind
         - schema_version
+        - dalg_version
+        - alpha_mode
+        - color_space
+        - model_manifest
         - asset
         - recipe
         - graph
@@ -229,6 +233,21 @@ components:
           const: layerforge.dalg
         schema_version:
           type: string
+        dalg_version:
+          type: string
+          enum:
+            - "1.0"
+            - "1.1"
+        alpha_mode:
+          type: string
+          enum:
+            - straight
+            - premultiplied
+        color_space:
+          type: string
+        model_manifest:
+          type: object
+          additionalProperties: true
         asset:
           type: object
           additionalProperties: true

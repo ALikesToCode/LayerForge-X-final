@@ -99,6 +99,8 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     assert dalg["$schema"] == CANONICAL_DALG_SCHEMA_URL
     assert dalg["$schema"] == schema["properties"]["$schema"]["const"]
     assert dalg["kind"] == schema["properties"]["kind"]["const"]
+    assert "evidence" in schema["$defs"]["edge"]["required"]
+    assert "boundary_depth_delta" in schema["$defs"]["edge"]["properties"]["evidence"]["required"]
     assert dalg["dalg_version"] == "1.1"
     assert dalg["alpha_mode"] == "straight"
     assert dalg["color_space"] == "sRGB"

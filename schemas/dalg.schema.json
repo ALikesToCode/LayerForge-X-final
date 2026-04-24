@@ -519,6 +519,13 @@
         },
         "evidence": {
           "type": "object",
+          "required": [
+            "boundary_depth_delta",
+            "overlap_ratio",
+            "contact_score",
+            "semantic_prior",
+            "model_confidence"
+          ],
           "properties": {
             "boundary_depth_delta": {
               "type": [
