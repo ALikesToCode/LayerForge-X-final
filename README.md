@@ -432,19 +432,19 @@ Measured prompt benchmark, summarized in `report_artifacts/metrics_snapshots/ext
 
 | Prompt type | Queries | Target hit rate | Mean target IoU | Mean alpha MAE |
 |---|---:|---:|---:|---:|
-| text | 10 | 1.0000 | 0.3640 | 0.1752 |
+| text | 10 | 0.9000 | 0.3640 | 0.1752 |
 | text + point | 10 | 1.0000 | 0.4011 | 0.1646 |
 | text + box | 10 | 1.0000 | 0.4011 | 0.1646 |
-| point | 10 | 0.0000 | 0.7719 | 0.0521 |
-| box | 10 | 0.0000 | 0.7719 | 0.0521 |
+| point | 10 | 1.0000 | 0.8121 | 0.0409 |
+| box | 10 | 1.0000 | 0.8121 | 0.0409 |
 
 Interpretation:
 
-- text-bearing prompts still hit the intended semantic target on the full measured synthetic set;
-- combined text + point and text + box queries now improve overlap over text-only prompting while preserving the same `1.0` semantic hit rate;
-- point-only and box-only prompts still snap to a highly overlapping neighboring object region, so the IoU is high but the semantic hit rate remains correctly `0.0`.
+- text-only prompting now hits `9/10` targets under the stricter semantic-plus-overlap definition;
+- combined text + point and text + box queries recover the repeated-label miss while preserving `1.0000` hit rate;
+- point-only and box-only prompts now use geometry-derived semantic fallback only when the first selected layer misses the cue, giving the strongest measured IoU and alpha MAE on this benchmark.
 
-The selection stack now includes Gemini-assisted reranking over the strongest candidate layers exported by the base run. The current benchmark shows that the reranker is most useful when a semantic text description is present and the geometric cues are used as additional disambiguation rather than as the only query signal.
+The selection stack now includes semantic recovery for geometry-only cues without forcing inferred prompts into the base run. That keeps mask quality high while fixing the previous point/box target-selection miss.
 
 ## Transparent / alpha-composited decomposition
 

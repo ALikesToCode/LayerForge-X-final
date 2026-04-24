@@ -10,16 +10,20 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BG = (244, 241, 235)
+BG = (248, 249, 250)
 CARD = (255, 255, 255)
-TEXT = (28, 32, 39)
-MUTED = (96, 104, 115)
-DIVIDER = (220, 214, 205)
-BLUE = (53, 111, 201)
-GREEN = (53, 146, 113)
-ORANGE = (207, 130, 55)
-CLAY = (152, 96, 70)
-RED = (182, 68, 67)
+TEXT = (32, 33, 36)
+MUTED = (95, 99, 104)
+DIVIDER = (218, 220, 224)
+SUBTLE = (241, 243, 244)
+CALLOUT = (242, 246, 252)
+BLUE = (66, 133, 244)
+GREEN = (52, 168, 83)
+ORANGE = (251, 188, 4)
+CLAY = (161, 66, 244)
+RED = (234, 67, 53)
+CYAN = (18, 181, 203)
+MAGENTA = (245, 0, 87)
 
 
 def parse_args() -> argparse.Namespace:
@@ -90,6 +94,7 @@ def load_image(path: str | Path) -> Image.Image:
 
 def load_font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     candidates = [
+        "/usr/share/fonts/adobe-source-sans/SourceSans3-Bold.otf" if bold else "/usr/share/fonts/adobe-source-sans/SourceSans3-Regular.otf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/dejavu/DejaVuSans.ttf",
     ]
@@ -102,34 +107,33 @@ def load_font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | Imag
     return ImageFont.load_default()
 
 
-FONT_H1 = load_font(38, bold=True)
-FONT_H2 = load_font(28, bold=True)
-FONT_H3 = load_font(22, bold=True)
-FONT_BODY = load_font(18)
-FONT_SMALL = load_font(15)
+FONT_H1 = load_font(44, bold=True)
+FONT_H2 = load_font(30, bold=True)
+FONT_H3 = load_font(20, bold=True)
+FONT_BODY = load_font(16)
+FONT_SMALL = load_font(14)
 FONT_TINY = load_font(13)
 
 
 def rounded_card(size: tuple[int, int], accent: tuple[int, int, int], *, radius: int = 24) -> Image.Image:
     card = Image.new("RGB", size, BG)
     draw = ImageDraw.Draw(card)
-    draw.rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius=radius, fill=CARD, outline=DIVIDER, width=2)
-    draw.rounded_rectangle((0, 0, size[0] - 1, 10), radius=radius, fill=accent)
+    draw.rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius=radius, fill=CARD, outline=DIVIDER, width=1)
     return card
 
 
 def checkerboard(size: tuple[int, int], tile: int = 16) -> Image.Image:
-    board = Image.new("RGB", size, (248, 248, 248))
+    board = Image.new("RGB", size, CARD)
     draw = ImageDraw.Draw(board)
     for y in range(0, size[1], tile):
         for x in range(0, size[0], tile):
             if (x // tile + y // tile) % 2 == 0:
-                draw.rectangle((x, y, x + tile - 1, y + tile - 1), fill=(227, 227, 227))
+                draw.rectangle((x, y, x + tile - 1, y + tile - 1), fill=(241, 243, 244))
     return board
 
 
 def contain_image(image: Image.Image, size: tuple[int, int], *, use_checkerboard: bool = False) -> Image.Image:
-    preview = checkerboard(size) if use_checkerboard else Image.new("RGB", size, (248, 248, 248))
+    preview = checkerboard(size) if use_checkerboard else Image.new("RGB", size, SUBTLE)
     if image.mode != "RGBA":
         image = image.convert("RGBA")
     fitted = image.copy()
@@ -260,7 +264,7 @@ def load_truck_runs() -> dict[str, dict]:
             "manifest": load_json("runs/truck_candidate_search_v2/best/manifest.json"),
             "recomposed": "runs/truck_candidate_search_v2/best/debug/recomposed_rgb.png",
             "sheet": "runs/truck_candidate_search_v2/best/debug/grouped_layer_contact_sheet.png",
-            "accent": (129, 52, 52),
+            "accent": MAGENTA,
         },
         "layerforge_augment": {
             "label": "LayerForge augment",
@@ -269,7 +273,7 @@ def load_truck_runs() -> dict[str, dict]:
             "manifest": load_json("runs/truck_best_score_augment/manifest.json"),
             "recomposed": "runs/truck_best_score_augment/debug/recomposed_rgb.png",
             "sheet": "runs/truck_best_score_augment/debug/grouped_layer_contact_sheet.png",
-            "accent": (124, 105, 180),
+            "accent": CYAN,
         },
     }
 
@@ -306,11 +310,12 @@ def save(image: Image.Image, path: Path) -> str:
 
 def make_title_block(image: Image.Image, title: str, subtitle: str) -> int:
     draw = ImageDraw.Draw(image)
-    y = 28
+    y = 34
     y += draw_text(draw, (36, y), title, FONT_H1, TEXT)
-    y += 10
-    y += draw_wrapped_text(draw, (36, y), subtitle, FONT_BODY, MUTED, image.width - 72)
-    return y + 24
+    y += 12
+    y += draw_wrapped_text(draw, (36, y), subtitle, FONT_BODY, MUTED, image.width - 72, line_gap=5)
+    draw.line((36, y + 18, image.width - 36, y + 18), fill=DIVIDER, width=1)
+    return y + 42
 
 
 def card_with_image(
@@ -324,19 +329,34 @@ def card_with_image(
     image_box: tuple[int, int],
     use_checkerboard: bool = False,
 ) -> Image.Image:
-    card = rounded_card(size, accent)
+    card = rounded_card(size, accent, radius=24)
     draw = ImageDraw.Draw(card)
-    y = 26
-    y += draw_text(draw, (22, y), title, FONT_H3, TEXT)
-    y += 6
-    y += draw_wrapped_text(draw, (22, y), subtitle, FONT_SMALL, MUTED, size[0] - 44)
-    y += 18
+    content_x = 32
+    content_w = size[0] - 64
+    y = 28
+
+    draw.rounded_rectangle((content_x, y + 4, content_x + 6, y + 24), radius=3, fill=accent)
+    y += draw_text(draw, (content_x + 16, y), title, FONT_H3, TEXT)
+    y += 8
+    y += draw_wrapped_text(draw, (content_x, y), subtitle, FONT_SMALL, MUTED, content_w)
+    y += 24
+
     preview = contain_image(load_image(image_path), image_box, use_checkerboard=use_checkerboard)
-    card.paste(preview, (22, y))
-    y += image_box[1] + 18
+    mask = Image.new("L", image_box, 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.rounded_rectangle((0, 0, image_box[0] - 1, image_box[1] - 1), radius=12, fill=255)
+
+    preview = preview.convert("RGBA")
+    preview.putalpha(mask)
+
+    preview_x = (size[0] - image_box[0]) // 2
+    card.paste(preview, (preview_x, y), preview)
+    draw.rounded_rectangle((preview_x, y, preview_x + image_box[0] - 1, y + image_box[1] - 1), radius=12, outline=DIVIDER, width=1)
+
+    y += image_box[1] + 24
     for line in footer_lines:
-        y += draw_wrapped_text(draw, (22, y), line, FONT_SMALL, TEXT, size[0] - 44)
-        y += 6
+        y += draw_wrapped_text(draw, (content_x, y), line, FONT_SMALL, TEXT, content_w)
+        y += 8
     return card
 
 
@@ -357,31 +377,55 @@ def bar_panel(
     scale_max: float,
     better_note: str,
 ) -> Image.Image:
-    panel = rounded_card(size, DIVIDER)
+    panel = rounded_card(size, rows[0][2] if rows else DIVIDER, radius=24)
     draw = ImageDraw.Draw(panel)
-    y = 24
-    y += draw_text(draw, (22, y), title, FONT_H3, TEXT)
-    y += 6
-    y += draw_wrapped_text(draw, (22, y), subtitle, FONT_SMALL, MUTED, size[0] - 44)
-    y += 16
-    chart_left = 22
-    chart_right = size[0] - 24
-    label_w = 170
-    bar_left = chart_left + label_w
-    bar_right = chart_right - 56
-    bar_h = 28
-    gap = 24
-    for label, value, color in rows:
-        draw.text((chart_left, y + 4), label, font=FONT_SMALL, fill=TEXT)
-        draw.rounded_rectangle((bar_left, y, bar_right, y + bar_h), radius=10, fill=(236, 236, 232))
-        frac = 0.0 if scale_max <= 0 else max(0.0, min(1.0, value / scale_max))
-        draw.rounded_rectangle((bar_left, y, bar_left + int((bar_right - bar_left) * frac), y + bar_h), radius=10, fill=color)
+    content_x = 32
+    content_w = size[0] - 64
+    y = 28
+
+    accent = rows[0][2] if rows else DIVIDER
+    draw.rounded_rectangle((content_x, y + 4, content_x + 6, y + 24), radius=3, fill=accent)
+
+    y += draw_text(draw, (content_x + 16, y), title, FONT_H3, TEXT)
+    y += 8
+    y += draw_wrapped_text(draw, (content_x, y), subtitle, FONT_SMALL, MUTED, content_w)
+    y += 32
+
+    chart_left = content_x
+    chart_right = size[0] - 32
+    note_h = 80
+    note_y = size[1] - note_h - 28
+    available = max(80, note_y - y - 12)
+    row_count = max(1, len(rows))
+    label_h = 18
+    bar_h = 10 if row_count >= 5 else 14
+    base_h = row_count * (label_h + bar_h)
+    row_gap = max(4, (available - base_h) // max(1, row_count - 1))
+
+    for row_idx, (label, value, color) in enumerate(rows):
         value_text = format_bar_value(value, scale_max)
         tw = draw.textbbox((0, 0), value_text, font=FONT_SMALL)[2]
-        draw.text((chart_right - tw, y + 4), value_text, font=FONT_SMALL, fill=TEXT)
-        y += bar_h + gap
-    y += 4
-    draw_wrapped_text(draw, (22, y), better_note, FONT_TINY, MUTED, size[0] - 44, line_gap=4)
+        draw.text((chart_left, y), label, font=FONT_SMALL, fill=TEXT)
+        draw.text((chart_right - tw, y), value_text, font=FONT_SMALL, fill=TEXT)
+        y += label_h
+
+        draw.rounded_rectangle((chart_left, y, chart_right, y + bar_h), radius=bar_h // 2, fill=SUBTLE)
+        frac = 0.0 if scale_max <= 0 else max(0.0, min(1.0, value / scale_max))
+        fill_right = chart_left + int((chart_right - chart_left) * frac)
+
+        if fill_right > chart_left + bar_h:
+            draw.rounded_rectangle((chart_left, y, fill_right, y + bar_h), radius=bar_h // 2, fill=color)
+        elif fill_right > chart_left:
+            radius = min(bar_h // 2, (fill_right - chart_left) // 2)
+            draw.rounded_rectangle((chart_left, y, fill_right, y + bar_h), radius=radius, fill=color)
+
+        y += bar_h
+        if row_idx != len(rows) - 1:
+            y += row_gap
+
+    draw.rounded_rectangle((content_x, note_y, chart_right, size[1] - 28), radius=18, fill=CALLOUT)
+    draw.rounded_rectangle((content_x + 16, note_y + 16, content_x + 20, note_y + 28), radius=2, fill=accent)
+    draw_wrapped_text(draw, (content_x + 32, note_y + 14), better_note, FONT_TINY, MUTED, content_w - 48, line_gap=4)
     return panel
 
 
@@ -665,9 +709,10 @@ def generate_synthetic_ablation(output_dir: Path) -> str:
     place_grid(canvas, panels, origin=(36, y), cols=4, gap=18)
     draw = ImageDraw.Draw(canvas)
     callout_y = y + panels[0].height + 34
-    draw.rounded_rectangle((36, callout_y, 1784, 716), radius=20, fill=(251, 248, 240), outline=DIVIDER, width=2)
+    draw.rounded_rectangle((36, callout_y, 1784, 716), radius=24, fill=CALLOUT, outline=DIVIDER, width=1)
     delta_psnr = float(learned["mean_recompose_psnr"]) - float(boundary["mean_recompose_psnr"])
-    draw.text((60, callout_y + 22), "Interpretation", font=FONT_H3, fill=TEXT)
+    draw.rounded_rectangle((60, callout_y + 24, 66, callout_y + 46), radius=3, fill=BLUE)
+    draw.text((78, callout_y + 22), "Interpretation", font=FONT_H3, fill=TEXT)
     draw_wrapped_text(
         draw,
         (60, callout_y + 62),
@@ -704,16 +749,19 @@ def generate_qualitative_gallery(output_dir: Path) -> str:
     cell_size = (470, 300)
     for name, scene_label, accent in scenes:
         metrics = load_json(f"runs/qualitative_pack_cutting_edge/{name}/metrics.json")
-        draw.rounded_rectangle((36, row_y, 1804, row_y + 410), radius=24, fill=CARD, outline=DIVIDER, width=2)
-        draw.rounded_rectangle((36, row_y, 1804, row_y + 12), radius=24, fill=accent)
-        draw.text((60, row_y + 24), name, font=FONT_H2, fill=TEXT)
-        draw.text((60, row_y + 62), scene_label, font=FONT_SMALL, fill=MUTED)
-        draw.text(
-            (60, row_y + 92),
-            f"Layers: {int(metrics['num_layers'])}  |  PSNR: {float(metrics['recompose_psnr']):.2f}  |  SSIM: {float(metrics['recompose_ssim']):.3f}",
-            font=FONT_SMALL,
-            fill=TEXT,
-        )
+        row_card = rounded_card((1768, 420), accent, radius=24)
+        canvas.paste(row_card, (36, row_y))
+        draw = ImageDraw.Draw(canvas)
+        draw.rounded_rectangle((60, row_y + 32, 66, row_y + 54), radius=3, fill=accent)
+        draw.text((82, row_y + 24), name, font=FONT_H2, fill=TEXT)
+        draw.text((82, row_y + 62), scene_label, font=FONT_SMALL, fill=MUTED)
+        metric_labels = [
+            f"Layers {int(metrics['num_layers'])}",
+            f"PSNR {float(metrics['recompose_psnr']):.2f}",
+            f"SSIM {float(metrics['recompose_ssim']):.3f}",
+        ]
+        for metric_idx, metric_text in enumerate(metric_labels):
+            draw.text((82, row_y + 94 + metric_idx * 28), metric_text, font=FONT_SMALL, fill=TEXT)
         images = [
             f"runs/qualitative_pack_cutting_edge/{name}/debug/input_rgb.png",
             f"runs/qualitative_pack_cutting_edge/{name}/debug/segmentation_overlay.png",
@@ -770,8 +818,9 @@ def generate_public_benchmark_comparison(output_dir: Path) -> str:
     place_grid(canvas, panels, origin=(36, y), cols=4, gap=18)
     draw = ImageDraw.Draw(canvas)
     callout_y = y + panels[0].height + 34
-    draw.rounded_rectangle((36, callout_y, 1784, 716), radius=20, fill=(251, 248, 240), outline=DIVIDER, width=2)
-    draw.text((60, callout_y + 22), "Reading the Figure", font=FONT_H3, fill=TEXT)
+    draw.rounded_rectangle((36, callout_y, 1784, 716), radius=24, fill=CALLOUT, outline=DIVIDER, width=1)
+    draw.rounded_rectangle((60, callout_y + 24, 66, callout_y + 46), radius=3, fill=BLUE)
+    draw.text((78, callout_y + 22), "Reading the Figure", font=FONT_H3, fill=TEXT)
     draw_wrapped_text(
         draw,
         (60, callout_y + 62),
@@ -812,7 +861,7 @@ def generate_public_depth_comparison(output_dir: Path) -> str:
         "This figure benchmarks the depth subsystem on a public RGB-D dataset. The geometric fallback is a cheap floor; DepthPro is the current high-quality native option for external-data depth evaluation.",
     )
     panels: list[Image.Image] = []
-    for title, key, source_key, lower_better, note in metric_specs:
+    for title, key, source_key, _lower_better, note in metric_specs:
         rows: list[tuple[str, float, tuple[int, int, int]]] = []
         for label, summary, accent in methods:
             source: dict = summary
@@ -821,7 +870,6 @@ def generate_public_depth_comparison(output_dir: Path) -> str:
             value = float(source[key])
             rows.append((label, value, accent))
         scale_max = panel_scale_max(rows)
-        better_note = ("Lower is better. " if lower_better else "Higher is better. ") + note
         panels.append(
             bar_panel(
                 title=title,
@@ -829,7 +877,7 @@ def generate_public_depth_comparison(output_dir: Path) -> str:
                 rows=rows,
                 size=(570, 360),
                 scale_max=scale_max,
-                better_note=better_note,
+                better_note=note,
             )
         )
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=22)
@@ -889,8 +937,9 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
     place_grid(canvas, cards, origin=(36, y), cols=4, gap=18)
     draw = ImageDraw.Draw(canvas)
     callout_y = y + 430
-    draw.rounded_rectangle((36, callout_y, 1784, 812), radius=22, fill=(251, 248, 240), outline=DIVIDER, width=2)
-    draw.text((60, callout_y + 22), "Measured Readout", font=FONT_H3, fill=TEXT)
+    draw.rounded_rectangle((36, callout_y, 1784, 812), radius=24, fill=CALLOUT, outline=DIVIDER, width=1)
+    draw.rounded_rectangle((60, callout_y + 24, 66, callout_y + 46), radius=3, fill=BLUE)
+    draw.text((78, callout_y + 22), "Measured Readout", font=FONT_H3, fill=TEXT)
     draw_wrapped_text(
         draw,
         (60, callout_y + 62),
@@ -904,7 +953,7 @@ def generate_effects_layer_demo(output_dir: Path) -> str:
     badge_x1 = 1748
     badge_y0 = callout_y + 36
     badge_y1 = callout_y + 188
-    draw.rounded_rectangle((badge_x0, badge_y0, badge_x1, badge_y1), radius=20, fill=CARD, outline=DIVIDER, width=2)
+    draw.rounded_rectangle((badge_x0, badge_y0, badge_x1, badge_y1), radius=24, fill=CARD, outline=DIVIDER, width=1)
     draw.text((badge_x0 + 28, badge_y0 + 22), "Effect IoU", font=FONT_H3, fill=TEXT)
     draw.text((badge_x0 + 28, badge_y0 + 62), f"{float(metrics['effect_iou']):.4f}", font=FONT_H1, fill=CLAY)
     draw.text(
@@ -957,7 +1006,7 @@ def generate_intrinsic_layer_demo(output_dir: Path) -> str:
     canvas = Image.new("RGB", (1520, 1060), BG)
     y = make_title_block(
         canvas,
-        "Intrinsic layer demo",
+        "Intrinsic Layer Demo",
         "This figure documents the optional intrinsic export path: approximate albedo and shading factors, exported globally and per layer from the native LayerForge winner.",
     )
 
@@ -1032,7 +1081,7 @@ def generate_intrinsic_layer_demo(output_dir: Path) -> str:
                 metric_line("Export", Path(str(layer["shading"])).name),
                 metric_line("Caveat", "approximate, not physically exact"),
             ],
-            accent=(124, 105, 180),
+            accent=CYAN,
             size=(470, 410),
             image_box=(426, 220),
             use_checkerboard=True,
@@ -1090,7 +1139,7 @@ def generate_frontier_review(output_dir: Path) -> str:
         for label, values in layer_counts.items()
     }
 
-    canvas = Image.new("RGB", (1820, 900), BG)
+    canvas = Image.new("RGB", (1820, 1040), BG)
     y = make_title_block(
         canvas,
         "Frontier Review: Self-Evaluating Candidate Bank",
@@ -1103,7 +1152,7 @@ def generate_frontier_review(output_dir: Path) -> str:
             title="Mean PSNR",
             subtitle="Recomposition fidelity",
             rows=psnr_rows,
-            size=(570, 330),
+            size=(570, 390),
             scale_max=panel_scale_max(psnr_rows, floor=10.0),
             better_note="Higher is better, but not sufficient on its own. Full-image/background copies can score well here without being truly editable.",
         ),
@@ -1111,7 +1160,7 @@ def generate_frontier_review(output_dir: Path) -> str:
             title="Mean SSIM",
             subtitle="Structural recomposition fidelity",
             rows=ssim_rows,
-            size=(570, 330),
+            size=(570, 390),
             scale_max=1.0,
             better_note="Higher is better. SSIM is shown for completeness, but the frontier selector no longer lets fidelity dominate the full decision.",
         ),
@@ -1119,7 +1168,7 @@ def generate_frontier_review(output_dir: Path) -> str:
             title="Mean Self-Eval",
             subtitle="Editability-aware frontier score",
             rows=score_rows,
-            size=(570, 330),
+            size=(570, 390),
             scale_max=1.0,
             better_note="Higher is better. This score now rewards edits that change the target layer while preserving non-edited regions.",
         ),
@@ -1127,34 +1176,38 @@ def generate_frontier_review(output_dir: Path) -> str:
     place_grid(canvas, panels, origin=(36, y), cols=3, gap=22)
 
     draw = ImageDraw.Draw(canvas)
-    callout_y = y + 360
-    draw.rounded_rectangle((36, callout_y, 1784, 844), radius=28, fill=CARD, outline=DIVIDER, width=2)
-    draw.text((60, callout_y + 24), "Measured Selection Summary", font=FONT_H2, fill=TEXT)
+    callout_y = y + 420
+    callout_bottom = canvas.height - 38
+    inner_bottom = callout_bottom - 34
+    draw.rounded_rectangle((36, callout_y, 1784, callout_bottom), radius=24, fill=CARD, outline=DIVIDER, width=1)
+    draw.rounded_rectangle((60, callout_y + 28, 68, callout_y + 58), radius=4, fill=BLUE)
+    draw.text((84, callout_y + 24), "Measured Selection Summary", font=FONT_H2, fill=TEXT)
     card_specs = [
         ("Winner counts", 60, 560),
         ("Mean layer count", 640, 560),
         ("Selection takeaway", 1220, 500),
     ]
     for title, x, width in card_specs:
-        draw.rounded_rectangle((x, callout_y + 78, x + width, 812), radius=20, fill=(251, 248, 240), outline=DIVIDER, width=2)
-        draw.text((x + 24, callout_y + 102), title, font=FONT_H3, fill=TEXT)
+        draw.rounded_rectangle((x, callout_y + 78, x + width, inner_bottom), radius=24, fill=CALLOUT, outline=DIVIDER, width=1)
+        draw.rounded_rectangle((x + 24, callout_y + 104, x + 30, callout_y + 124), radius=3, fill=BLUE)
+        draw.text((x + 42, callout_y + 102), title, font=FONT_H3, fill=TEXT)
 
     row_y = callout_y + 150
     for label in labels:
         if label not in aggregates:
             continue
-        draw.text((84, row_y), f"{label}: {win_counts.get(label, 0)}", font=FONT_BODY, fill=TEXT)
+        draw.text((108, row_y), f"{label}: {win_counts.get(label, 0)}", font=FONT_BODY, fill=TEXT)
         mean_layers = mean_layer_counts.get(label)
         layer_text = "n/a" if mean_layers is None else format_metric(mean_layers, 1)
-        draw.text((664, row_y), f"{label}: {layer_text}", font=FONT_BODY, fill=TEXT)
-        row_y += 52
+        draw.text((688, row_y), f"{label}: {layer_text}", font=FONT_BODY, fill=TEXT)
+        row_y += 38
 
     takeaway = (
         f"Inputs: {len(summary.get('inputs', []))} images. "
         "LayerForge native remains the strongest overall editable representation on the archived bank. "
         "Qwen + graph reorder wins the cat scene, while Q+G preserve remains the fair metadata-first hybrid because it keeps the best external visual stack."
     )
-    draw_wrapped_text(draw, (1244, callout_y + 148), takeaway, FONT_BODY, TEXT, 452)
+    draw_wrapped_text(draw, (1268, callout_y + 148), takeaway, FONT_BODY, TEXT, 452)
     return save(canvas, output_dir / "frontier_review.png")
 
 
@@ -1186,7 +1239,7 @@ def generate_prompt_extract_benchmark(output_dir: Path) -> str:
         canvas,
         "Promptable Extraction Benchmark",
         "Synthetic LayerBench++ prompt queries scored by semantic target hit, overlap, and alpha quality. "
-        "This benchmark separates true target selection from high-overlap but wrong-semantic picks.",
+        "This benchmark separates semantic target selection, geometric overlap, and alpha quality so geometry-only recovery can be evaluated honestly.",
     )
     panels = [
         bar_panel(
@@ -1195,7 +1248,7 @@ def generate_prompt_extract_benchmark(output_dir: Path) -> str:
                 rows=hit_rows,
                 size=(560, 380),
                 scale_max=1.0,
-                better_note="Text-bearing prompts hit the intended target on the measured synthetic set; point-only and box-only prompts do not.",
+                better_note="Point and box queries now recover every measured target through geometry-derived semantic fallback when the first selected layer misses the cue.",
             ),
         bar_panel(
                 title="Mean Target IoU",
@@ -1203,7 +1256,7 @@ def generate_prompt_extract_benchmark(output_dir: Path) -> str:
                 rows=iou_rows,
                 size=(560, 380),
                 scale_max=1.0,
-                better_note="Point-only and box-only prompts still overlap strongly with a neighboring region, which is why IoU remains high despite the semantic miss.",
+                better_note="Geometry-only point and box queries now provide the strongest measured IoU on this synthetic benchmark.",
             ),
         bar_panel(
                 title="Mean Alpha MAE",
