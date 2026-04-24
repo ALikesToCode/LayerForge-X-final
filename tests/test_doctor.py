@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 
 from layerforge.backends import build_backend_registry
 from layerforge.cli import main
@@ -23,6 +24,14 @@ def test_backend_registry_declares_core_fallbacks() -> None:
     assert matting["birefnet"].fallback == "heuristic"
     assert amodal["heuristic"].available
     assert amodal["sameo"].fallback == "heuristic"
+
+
+def test_backend_registry_accepts_external_command_templates() -> None:
+    registry = build_backend_registry({"amodal": {"external_command": f"{sys.executable} --version"}}, device="cpu")
+    external = {backend.name: backend for backend in registry.amodal}["external"]
+
+    assert external.available is True
+    assert external.warning is None
 
 
 def test_doctor_json_reports_readiness_without_requiring_optional_backends(tmp_path, capsys) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.metadata
 import importlib.util
 import os
+import shlex
 import shutil
 from dataclasses import asdict, dataclass
 from typing import Any, Literal
@@ -154,8 +155,14 @@ def _availability(
     env_key: str | None = None,
 ) -> tuple[bool, str | None]:
     missing = [module for module in modules if not module_available(module)]
-    if external_command and shutil.which(external_command) is None:
-        missing.append(external_command)
+    if external_command:
+        try:
+            parts = shlex.split(external_command)
+        except ValueError:
+            parts = []
+        executable = parts[0] if parts else external_command
+        if shutil.which(executable) is None:
+            missing.append(executable)
     if env_key and not os.environ.get(env_key):
         missing.append(env_key)
     if missing:
@@ -203,7 +210,6 @@ def build_backend_registry(config: dict[str, Any] | None = None, device: str = "
     transparent_cfg = cfg.get("transparent", {})
     inpainting_cfg = cfg.get("inpainting", {})
     intrinsics_cfg = cfg.get("intrinsics", {})
-    target_cfg = cfg.get("target_selection", {})
 
     mask2former_ok, mask2former_warning = _availability("mask2former", ("transformers",), ("transformers",), "classical")
     grounded_ok, grounded_warning = _availability("grounded_sam2", ("torch", "transformers"), ("torch", "transformers"), "classical")

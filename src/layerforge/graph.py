@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass, field, replace
+import shlex
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any
 
 import numpy as np
+from PIL import Image
 from scipy import ndimage as ndi
 
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
@@ -322,16 +327,54 @@ def edge_continuity_score(visible_mask: np.ndarray, hidden_mask: np.ndarray) -> 
     return float(np.clip(contact / max(1, hidden_edge), 0.0, 1.0))
 
 
-def resolve_amodal_mask(mask: np.ndarray, cfg: dict[str, Any], expand_px: int) -> tuple[np.ndarray | None, dict[str, Any]]:
+def external_amodal_complete(rgb: np.ndarray, mask: np.ndarray, command: str) -> np.ndarray:
+    if not command.strip():
+        raise RuntimeError("external amodal completion requires amodal.external_command")
+    with tempfile.TemporaryDirectory(prefix="layerforge_amodal_") as tmp:
+        tmp_dir = Path(tmp)
+        image_path = tmp_dir / "image.png"
+        visible_path = tmp_dir / "visible_mask.png"
+        amodal_path = tmp_dir / "amodal_mask.png"
+        hidden_path = tmp_dir / "hidden_mask.png"
+        Image.fromarray(rgb).save(image_path)
+        Image.fromarray(mask.astype(np.uint8) * 255, mode="L").save(visible_path)
+        formatted = command.format(
+            image=image_path,
+            visible_mask=visible_path,
+            amodal_mask=amodal_path,
+            hidden_mask=hidden_path,
+            output_dir=tmp_dir,
+        )
+        subprocess.run(shlex.split(formatted), check=True)
+        if not amodal_path.exists():
+            raise RuntimeError("external amodal command did not write amodal_mask output")
+        amodal = np.asarray(Image.open(amodal_path).convert("L")) > 127
+        if amodal.shape != mask.shape:
+            amodal = np.asarray(Image.fromarray(amodal.astype(np.uint8) * 255).resize(mask.shape[::-1], Image.Resampling.NEAREST)) > 127
+        return (amodal | mask.astype(bool)).astype(bool)
+
+
+def resolve_amodal_mask(mask: np.ndarray, cfg: dict[str, Any], expand_px: int, rgb: np.ndarray | None = None) -> tuple[np.ndarray | None, dict[str, Any]]:
     method = str(cfg.get("method", "heuristic")).lower()
     if method in {"none", "off", "disabled"}:
         return None, {"method": method, "backend_used": False}
     if method in {"auto", "heuristic"}:
         return amodal_complete(mask, expand_px), {"method": method, "backend": "heuristic", "backend_used": False, "fallback_used": method == "auto"}
+    if method == "external" and str(cfg.get("external_command", "")).strip() and rgb is not None:
+        try:
+            amodal = external_amodal_complete(rgb, mask, str(cfg.get("external_command", "")))
+            return amodal, {"method": method, "backend": "external", "backend_used": True, "fallback_used": False}
+        except Exception as exc:
+            return amodal_complete(mask, expand_px), {
+                "method": method,
+                "backend": "heuristic",
+                "backend_used": False,
+                "fallback_used": True,
+                "warning": f"external amodal backend failed: {type(exc).__name__}: {exc}",
+            }
     if method in {"sameo", "external"}:
-        # Optional model/external amodal completion is registered by doctor; the
-        # native runtime keeps a deterministic CPU fallback unless a backend is
-        # wired through config in a later adapter.
+        # SAMEO remains optional; external falls through here only when it is
+        # not configured, so the native runtime keeps a deterministic fallback.
         return amodal_complete(mask, expand_px), {
             "method": method,
             "backend": "heuristic",
@@ -556,7 +599,7 @@ def build_layers(
         iid_residual = intrinsic_residual(rgb, albedo, shading, vis)
         amodal_meta: dict[str, Any] = {"method": "none", "backend_used": False}
         if bool(cfg.get("amodal_enabled", True)):
-            amodal, amodal_meta = resolve_amodal_mask(vis, amodal_cfg or {"method": "heuristic"}, int(cfg.get("amodal_expand_px", 16)))
+            amodal, amodal_meta = resolve_amodal_mask(vis, amodal_cfg or {"method": "heuristic"}, int(cfg.get("amodal_expand_px", 16)), rgb=rgb)
         else:
             amodal = None
         hidden = (amodal.astype(bool) & ~vis.astype(bool)) if amodal is not None else None
