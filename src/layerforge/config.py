@@ -72,7 +72,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "backend_prefer_half": True,
         "backend_blend_weight": 0.75,
     },
-    "inpainting": {"method": "opencv_telea", "radius": 5},
+    "inpainting": {"method": "auto", "radius": 5, "external_command": "", "diffusion_model": "", "prompt": ""},
     "intrinsics": {"method": "retinex", "sigma": 28.0, "external_command": ""},
     "target_selection": {
         "backend": "auto",

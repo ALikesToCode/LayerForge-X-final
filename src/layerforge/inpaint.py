@@ -26,9 +26,9 @@ def inpaint_background(rgb: np.ndarray, mask: np.ndarray, cfg: dict[str, Any], d
     m = mask.astype(bool)
     if not m.any():
         return rgb.copy(), m, "none"
-    if method in {"opencv", "opencv_telea", "telea"}:
+    if method in {"auto", "opencv", "opencv_telea", "telea"}:
         out = _opencv_inpaint(rgb, m, float(cfg.get("radius", 5)))
-        return out, m, "opencv_telea"
+        return out, m, "opencv_telea" if method != "auto" else "opencv_telea_auto"
     if method in {"lama", "simple_lama"}:
         try:
             SimpleLama = _load_simple_lama()
@@ -38,4 +38,70 @@ def inpaint_background(rgb: np.ndarray, mask: np.ndarray, cfg: dict[str, Any], d
         lama = SimpleLama()
         out = lama(Image.fromarray(rgb), Image.fromarray((m.astype(np.uint8) * 255), mode="L"))
         return np.asarray(out.convert("RGB"), dtype=np.uint8), m, "lama"
+    if method in {"diffusion", "external"}:
+        out = _opencv_inpaint(rgb, m, float(cfg.get("radius", 5)))
+        return out, m, "opencv_telea_fallback"
     raise ValueError(f"Unknown inpainting method: {method}")
+
+
+def inpainting_quality_metrics(original_rgb: np.ndarray, completed_rgb: np.ndarray, mask: np.ndarray) -> dict[str, float]:
+    m = mask.astype(bool)
+    if not m.any():
+        return {
+            "boundary_consistency": 1.0,
+            "masked_region_texture_continuity": 1.0,
+            "recomposition_residual_outside_mask": 0.0,
+        }
+    cv2 = optional_import("cv2")
+    dilated = cv2.dilate(m.astype(np.uint8), np.ones((3, 3), dtype=np.uint8), iterations=1).astype(bool)
+    boundary = dilated & ~m
+    if boundary.any():
+        boundary_delta = np.mean(np.abs(original_rgb[boundary].astype(np.float32) - completed_rgb[boundary].astype(np.float32))) / 255.0
+    else:
+        boundary_delta = 0.0
+    outside = ~m
+    outside_residual = float(np.mean(np.abs(original_rgb[outside].astype(np.float32) - completed_rgb[outside].astype(np.float32))) / 255.0) if outside.any() else 0.0
+    masked_vals = completed_rgb[m].astype(np.float32)
+    boundary_vals = completed_rgb[boundary].astype(np.float32) if boundary.any() else completed_rgb[outside].astype(np.float32)
+    if masked_vals.size and boundary_vals.size:
+        texture_delta = float(np.linalg.norm(masked_vals.mean(axis=0) - boundary_vals.mean(axis=0)) / (255.0 * np.sqrt(3)))
+    else:
+        texture_delta = 0.0
+    return {
+        "boundary_consistency": float(np.clip(1.0 - boundary_delta, 0.0, 1.0)),
+        "masked_region_texture_continuity": float(np.clip(1.0 - texture_delta, 0.0, 1.0)),
+        "recomposition_residual_outside_mask": outside_residual,
+    }
+
+
+def complete_hidden_layer(
+    rgb: np.ndarray,
+    alpha: np.ndarray,
+    visible_mask: np.ndarray,
+    hidden_mask: np.ndarray | None,
+    cfg: dict[str, Any] | None,
+    device: str = "auto",
+) -> tuple[np.ndarray, dict[str, Any]]:
+    hidden = np.zeros(alpha.shape, dtype=bool) if hidden_mask is None else hidden_mask.astype(bool)
+    completed_alpha = np.maximum(alpha.astype(np.float32), hidden.astype(np.float32))
+    if not hidden.any():
+        return np.dstack([rgb, (completed_alpha * 255).clip(0, 255).astype(np.uint8)]), {
+            "method": "none",
+            "hidden_pixels": 0,
+            **inpainting_quality_metrics(rgb, rgb, hidden),
+        }
+
+    layer_rgb = np.zeros_like(rgb)
+    visible = visible_mask.astype(bool)
+    layer_rgb[visible] = rgb[visible]
+    if visible.any():
+        fill_rgb = np.median(rgb[visible], axis=0).clip(0, 255).astype(np.uint8)
+        layer_rgb[hidden] = fill_rgb
+    completed_rgb, _, method = inpaint_background(layer_rgb, hidden, cfg or {"method": "auto"}, device=device)
+    completed_rgb[visible] = rgb[visible]
+    metrics = inpainting_quality_metrics(layer_rgb, completed_rgb, hidden)
+    return np.dstack([completed_rgb, (completed_alpha * 255).clip(0, 255).astype(np.uint8)]), {
+        "method": method,
+        "hidden_pixels": int(hidden.sum()),
+        **metrics,
+    }

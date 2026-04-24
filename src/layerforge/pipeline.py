@@ -64,7 +64,18 @@ class LayerForgePipeline:
         save_rgb(dirs["debug"] / "intrinsic_albedo.png", albedo)
         save_rgb(dirs["debug"] / "intrinsic_shading.png", shading)
 
-        semantic_layers, nodes = build_layers(rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"], device=self.device, amodal_cfg=cfg.get("amodal", {}))
+        semantic_layers, nodes = build_layers(
+            rgb,
+            segments,
+            depth,
+            albedo,
+            shading,
+            cfg["layering"],
+            cfg["matting"],
+            device=self.device,
+            amodal_cfg=cfg.get("amodal", {}),
+            inpainting_cfg=cfg.get("inpainting", {}),
+        )
         premerge_semantic_layer_count = len(nodes)
         remove_mask = np.zeros(depth.shape, dtype=bool)
         for l in semantic_layers:

@@ -8,6 +8,7 @@ import numpy as np
 from scipy import ndimage as ndi
 
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
+from .inpaint import complete_hidden_layer
 from .intrinsics import intrinsic_rgba
 from .matting import refine_layer_alpha
 from .semantic import BACKGROUND_GROUPS
@@ -341,17 +342,6 @@ def resolve_amodal_mask(mask: np.ndarray, cfg: dict[str, Any], expand_px: int) -
     return amodal_complete(mask, expand_px), {"method": method, "backend": "heuristic", "backend_used": False, "fallback_used": True}
 
 
-def completed_rgba_from_hidden(rgb: np.ndarray, alpha: np.ndarray, visible_mask: np.ndarray, hidden_mask: np.ndarray | None) -> np.ndarray:
-    hidden = np.zeros(alpha.shape, dtype=bool) if hidden_mask is None else hidden_mask.astype(bool)
-    completed_alpha = np.maximum(alpha.astype(np.float32), hidden.astype(np.float32))
-    completed_rgb = rgb.copy()
-    visible = visible_mask.astype(bool)
-    if hidden.any() and visible.any():
-        fill_rgb = np.median(rgb[visible], axis=0).clip(0, 255).astype(np.uint8)
-        completed_rgb[hidden] = fill_rgb
-    return rgba_from_rgb_alpha(completed_rgb, completed_alpha)
-
-
 def visible_masks_by_order(segments: list[Segment], order: list[int]) -> dict[int, np.ndarray]:
     by_id = {s.id: s for s in segments}
     occupied = np.zeros_like(segments[0].mask, dtype=bool) if segments else np.zeros((1, 1), dtype=bool)
@@ -530,6 +520,7 @@ def build_layers(
     *,
     device: str = "auto",
     amodal_cfg: dict[str, Any] | None = None,
+    inpainting_cfg: dict[str, Any] | None = None,
 ) -> tuple[list[Layer], dict[int, Node]]:
     h, w = depth.shape
     min_area = max(12, int(h * w * float(cfg.get("min_layer_area_ratio", 0.0015))))
@@ -568,7 +559,7 @@ def build_layers(
         else:
             amodal = None
         hidden = (amodal.astype(bool) & ~vis.astype(bool)) if amodal is not None else None
-        completed_rgba = completed_rgba_from_hidden(rgb, alpha, vis, hidden)
+        completed_rgba, completion_meta = complete_hidden_layer(rgb, alpha, vis, hidden, inpainting_cfg or {"method": "auto"}, device=device)
         hidden_area_ratio = float(hidden.sum() / max(1, int(vis.sum()))) if hidden is not None else 0.0
         continuity = edge_continuity_score(vis, hidden) if hidden is not None else 1.0
         edge_meta = {
@@ -604,8 +595,9 @@ def build_layers(
                 "alpha_quality_score": alpha_meta.get("alpha_quality_score"),
                 "amodal": amodal_meta,
                 "hidden_area_ratio": hidden_area_ratio,
-                "completion_consistency": 1.0,
+                "completion_consistency": completion_meta.get("boundary_consistency", 1.0),
                 "edge_continuity_score": continuity,
+                "hidden_completion": completion_meta,
                 "depth_stats": {
                     "median": node.depth_median,
                     "p10": node.depth_p10,
