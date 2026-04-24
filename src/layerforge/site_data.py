@@ -7,9 +7,6 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from .utils import ensure_dir, write_json
-
-
 FIGURE_META: dict[str, dict[str, str]] = {
     "frontier_review": {
         "title": "Frontier comparison",
@@ -368,6 +365,9 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
 
 
 def write_project_site_payload(repo_root: Path, output_path: Path) -> Path:
-    output_root = ensure_dir(output_path.parent)
+    output_root = output_path.parent
+    output_root.mkdir(parents=True, exist_ok=True)
     payload = build_project_site_payload(repo_root)
-    return write_json(output_root / output_path.name, payload)
+    target = output_root / output_path.name
+    target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return target
