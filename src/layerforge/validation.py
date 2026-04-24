@@ -42,6 +42,36 @@ def _recomposition_residual(root: Path, manifest: dict[str, Any]) -> float | Non
     return float(np.mean(np.abs(src - rec)) / 255.0)
 
 
+def _has_in_front_cycle(edges: list[dict[str, Any]]) -> bool:
+    graph: dict[int, set[int]] = {}
+    for edge in edges:
+        if edge.get("relation", "in_front_of") != "in_front_of":
+            continue
+        near_id = edge.get("near_id")
+        far_id = edge.get("far_id")
+        if not isinstance(near_id, int) or not isinstance(far_id, int):
+            continue
+        graph.setdefault(near_id, set()).add(far_id)
+        graph.setdefault(far_id, set())
+    visiting: set[int] = set()
+    visited: set[int] = set()
+
+    def visit(node: int) -> bool:
+        if node in visiting:
+            return True
+        if node in visited:
+            return False
+        visiting.add(node)
+        for child in graph.get(node, set()):
+            if visit(child):
+                return True
+        visiting.remove(node)
+        visited.add(node)
+        return False
+
+    return any(visit(node) for node in graph)
+
+
 def validate_run_outputs(run_dir: str | Path) -> dict[str, Any]:
     root = Path(run_dir)
     manifest_path = root / "manifest.json"
@@ -70,7 +100,8 @@ def validate_run_outputs(run_dir: str | Path) -> dict[str, Any]:
     graph_path = _resolve(root, manifest.get("layer_graph"))
     if graph_path is not None and graph_path.exists():
         graph = _read_json(graph_path)
-        for edge in graph.get("occlusion_edges", []):
+        graph_edges = [edge for edge in graph.get("occlusion_edges", []) if isinstance(edge, dict)]
+        for edge in graph_edges:
             if "relation" not in edge:
                 errors.append(f"graph edge missing relation: {edge}")
             if "confidence" not in edge:
@@ -80,6 +111,8 @@ def validate_run_outputs(run_dir: str | Path) -> dict[str, Any]:
                 errors.append(f"graph edge missing evidence: {edge}")
             elif not any(evidence.get(key) is not None for key in ("boundary_depth_delta", "overlap_ratio", "contact_score", "semantic_prior", "model_confidence")):
                 errors.append(f"graph edge evidence is empty: {edge}")
+        if _has_in_front_cycle(graph_edges):
+            errors.append("graph contains unresolved in_front_of cycle")
         removed = [edge for node in graph.get("segment_nodes", []) for edge in node.get("removed_edges", [])]
         if removed:
             warnings.append(f"cycle_resolution_removed_edges={len(removed)}")

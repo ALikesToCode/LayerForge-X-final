@@ -110,3 +110,48 @@ def test_validate_run_outputs_requires_graph_edge_evidence(tmp_path) -> None:
 
     assert report["ok"] is False
     assert any("graph edge missing evidence" in error for error in report["errors"])
+
+
+def test_validate_run_outputs_rejects_unresolved_graph_cycle(tmp_path) -> None:
+    run = tmp_path / "run"
+    _rgba(run / "layers_ordered_rgba" / "000_object.png")
+    (run / "debug").mkdir(parents=True, exist_ok=True)
+    (run / "debug" / "layer_graph.json").write_text(
+        json.dumps(
+            {
+                "occlusion_edges": [
+                    {
+                        "near_id": 0,
+                        "far_id": 1,
+                        "confidence": 0.8,
+                        "relation": "in_front_of",
+                        "evidence": {"boundary_depth_delta": 0.2},
+                    },
+                    {
+                        "near_id": 1,
+                        "far_id": 0,
+                        "confidence": 0.7,
+                        "relation": "in_front_of",
+                        "evidence": {"boundary_depth_delta": 0.1},
+                    },
+                ],
+                "segment_nodes": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run / "manifest.json").write_text(
+        json.dumps(
+            {
+                "layer_graph": "debug/layer_graph.json",
+                "ordered_layers_near_to_far": [{"path": "layers_ordered_rgba/000_object.png"}],
+                "debug": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = validate_run_outputs(run)
+
+    assert report["ok"] is False
+    assert "graph contains unresolved in_front_of cycle" in report["errors"]
