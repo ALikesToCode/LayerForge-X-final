@@ -516,7 +516,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     from .doctor import build_doctor_report, doctor_exit_code, doctor_json, render_doctor_text
 
     report = build_doctor_report(
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         device=args.device,
         cache_dir=args.cache_dir,
         output_dir=args.output_dir,
