@@ -17,6 +17,7 @@ from .metrics import compute_run_metrics
 from .segment import resolve_disjoint_masks, segment_image, summarize_segments
 from .types import PipelineOutputs
 from .utils import ensure_dir, seed_everything, write_json
+from .validation import validate_run_outputs
 from .visualize import depth_to_rgb, draw_segment_labels, save_layer_contact_sheet, save_layer_surface_contact_sheet, segmentation_overlay
 
 
@@ -177,6 +178,12 @@ class LayerForgePipeline:
         canonical_dalg_path = export_dalg_manifest(out)
         manifest["canonical_dalg"] = str(canonical_dalg_path)
         manifest_path = write_json(out / "manifest.json", manifest)
+        validation = validate_run_outputs(out)
+        validation_path = write_json(dirs["debug"] / "validation.json", validation)
+        manifest["debug"]["validation"] = str(validation_path)
+        manifest_path = write_json(out / "manifest.json", manifest)
+        if not validation["ok"]:
+            raise RuntimeError("LayerForge output validation failed: " + "; ".join(validation["errors"][:5]))
         return PipelineOutputs(out, manifest_path, metrics_path, ordered_paths, grouped_paths, {k: Path(v) for k, v in manifest["debug"].items() if v})
 
     def enrich_rgba_layers(
