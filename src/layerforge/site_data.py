@@ -5,6 +5,7 @@ import re
 import subprocess
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 from .utils import ensure_dir, write_json
 
@@ -109,6 +110,10 @@ def _blob_url(repo_url: str, path: str) -> str:
     return f"{repo_url}/blob/main/{path}"
 
 
+def _docs_reader_href(path: str) -> str:
+    return f"reader.html?path={quote(path, safe='/')}"
+
+
 def _tracked_markdown_paths(repo_root: Path) -> list[Path]:
     try:
         proc = subprocess.run(
@@ -188,7 +193,7 @@ def _markdown_group(relative_path: Path) -> str:
 
 def _markdown_href(repo_url: str, relative_path: Path) -> tuple[str, bool]:
     if relative_path.parts[0] == "docs":
-        return relative_path.relative_to("docs").as_posix(), True
+        return _docs_reader_href(relative_path.relative_to("docs").as_posix()), True
     return _blob_url(repo_url, relative_path.as_posix()), False
 
 
@@ -196,14 +201,18 @@ def _markdown_catalog(repo_root: Path, repo_url: str) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for relative_path in _tracked_markdown_paths(repo_root):
         href, published = _markdown_href(repo_url, relative_path)
+        docs_relative = relative_path.relative_to("docs").as_posix() if published else None
         entries.append(
             {
                 "label": _markdown_label(repo_root, relative_path),
                 "source_path": relative_path.as_posix(),
+                "docs_path": docs_relative,
                 "href": href,
+                "raw_href": docs_relative if published else href,
+                "source_asset": f"markdown-source/{docs_relative}.txt" if docs_relative else None,
                 "group": _markdown_group(relative_path),
                 "published": published,
-                "surface_label": "Published on GitHub Pages" if published else "Repository markdown on GitHub",
+                "surface_label": "Rendered on GitHub Pages" if published else "Repository markdown on GitHub",
             }
         )
     return sorted(
@@ -269,13 +278,13 @@ def build_project_site_payload(repo_root: Path) -> dict[str, Any]:
     docs_links = [
         {"label": "Final report (PDF)", "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf"},
         {"label": "Final report (DOCX)", "href": "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx"},
-        {"label": "Final report (Markdown)", "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md"},
-        {"label": "Final report pack guide", "href": "final_report_pack/README.md"},
+        {"label": "Final report (Markdown)", "href": _docs_reader_href("final_report_pack/LayerForge_X_Final_Report_FULL.md")},
+        {"label": "Final report pack guide", "href": _docs_reader_href("final_report_pack/README.md")},
         {"label": "Full markdown library", "href": "documents.html"},
-        {"label": "Figure index", "href": "FIGURES.md"},
-        {"label": "Current results summary", "href": "RESULTS_SUMMARY_CURRENT.md"},
-        {"label": "Project specification", "href": "FINAL_PROJECT_SPEC.md"},
-        {"label": "API contract", "href": "api/README.md"},
+        {"label": "Figure index", "href": _docs_reader_href("FIGURES.md")},
+        {"label": "Current results summary", "href": _docs_reader_href("RESULTS_SUMMARY_CURRENT.md")},
+        {"label": "Project specification", "href": _docs_reader_href("FINAL_PROJECT_SPEC.md")},
+        {"label": "API contract", "href": _docs_reader_href("api/README.md")},
         {"label": "Canonical manifest on GitHub", "href": _blob_url(repo_url, "PROJECT_MANIFEST.json")},
         {"label": "Repository artifacts on GitHub", "href": _blob_url(repo_url, "report_artifacts/README.md")},
     ]

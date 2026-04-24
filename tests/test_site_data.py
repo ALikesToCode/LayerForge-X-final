@@ -31,8 +31,10 @@ def test_build_project_site_payload_lists_all_publishable_markdown_files() -> No
 
     assert publishable_docs
     assert publishable_docs.issubset(catalog)
-    assert catalog["docs/FIGURES.md"]["href"] == "FIGURES.md"
-    assert catalog["docs/api/README.md"]["href"] == "api/README.md"
+    assert catalog["docs/FIGURES.md"]["href"] == "reader.html?path=FIGURES.md"
+    assert catalog["docs/FIGURES.md"]["docs_path"] == "FIGURES.md"
+    assert catalog["docs/FIGURES.md"]["source_asset"] == "markdown-source/FIGURES.md.txt"
+    assert catalog["docs/api/README.md"]["href"] == "reader.html?path=api/README.md"
 
 
 def test_build_project_site_payload_lists_repo_markdown_references() -> None:
@@ -42,3 +44,4 @@ def test_build_project_site_payload_lists_repo_markdown_references() -> None:
     assert catalog["README.md"]["href"].startswith(payload["project"]["repo_url"])
     assert catalog["report_artifacts/README.md"]["href"].startswith(payload["project"]["repo_url"])
     assert any(item["href"] == "documents.html" for item in payload["docs_links"])
+    assert any(item["href"] == "reader.html?path=FIGURES.md" for item in payload["docs_links"])

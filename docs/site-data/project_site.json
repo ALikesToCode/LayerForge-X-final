@@ -95,11 +95,11 @@
       "label": "Final report (DOCX)"
     },
     {
-      "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "href": "reader.html?path=final_report_pack/LayerForge_X_Final_Report_FULL.md",
       "label": "Final report (Markdown)"
     },
     {
-      "href": "final_report_pack/README.md",
+      "href": "reader.html?path=final_report_pack/README.md",
       "label": "Final report pack guide"
     },
     {
@@ -107,19 +107,19 @@
       "label": "Full markdown library"
     },
     {
-      "href": "FIGURES.md",
+      "href": "reader.html?path=FIGURES.md",
       "label": "Figure index"
     },
     {
-      "href": "RESULTS_SUMMARY_CURRENT.md",
+      "href": "reader.html?path=RESULTS_SUMMARY_CURRENT.md",
       "label": "Current results summary"
     },
     {
-      "href": "FINAL_PROJECT_SPEC.md",
+      "href": "reader.html?path=FINAL_PROJECT_SPEC.md",
       "label": "Project specification"
     },
     {
-      "href": "api/README.md",
+      "href": "reader.html?path=api/README.md",
       "label": "API contract"
     },
     {
@@ -260,250 +260,351 @@
   },
   "markdown_catalog": [
     {
+      "docs_path": "BENCHMARKING.md",
       "group": "Published docs",
-      "href": "BENCHMARKING.md",
+      "href": "reader.html?path=BENCHMARKING.md",
       "label": "Evaluation Framework and Benchmarking Protocol",
       "published": true,
+      "raw_href": "BENCHMARKING.md",
+      "source_asset": "markdown-source/BENCHMARKING.md.txt",
       "source_path": "docs/BENCHMARKING.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "BENCHMARKING_PROTOCOL_FINAL.md",
       "group": "Published docs",
-      "href": "BENCHMARKING_PROTOCOL_FINAL.md",
+      "href": "reader.html?path=BENCHMARKING_PROTOCOL_FINAL.md",
       "label": "Benchmarking Protocol and Evaluation Metrics",
       "published": true,
+      "raw_href": "BENCHMARKING_PROTOCOL_FINAL.md",
+      "source_asset": "markdown-source/BENCHMARKING_PROTOCOL_FINAL.md.txt",
       "source_path": "docs/BENCHMARKING_PROTOCOL_FINAL.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "FIGURES.md",
       "group": "Published docs",
-      "href": "FIGURES.md",
+      "href": "reader.html?path=FIGURES.md",
       "label": "Diagnostic Visualization and Figure Index",
       "published": true,
+      "raw_href": "FIGURES.md",
+      "source_asset": "markdown-source/FIGURES.md.txt",
       "source_path": "docs/FIGURES.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "FINAL_PROJECT_SPEC.md",
       "group": "Published docs",
-      "href": "FINAL_PROJECT_SPEC.md",
+      "href": "reader.html?path=FINAL_PROJECT_SPEC.md",
       "label": "Final Project Specification",
       "published": true,
+      "raw_href": "FINAL_PROJECT_SPEC.md",
+      "source_asset": "markdown-source/FINAL_PROJECT_SPEC.md.txt",
       "source_path": "docs/FINAL_PROJECT_SPEC.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "FRONTIER_WORKFLOW.md",
       "group": "Published docs",
-      "href": "FRONTIER_WORKFLOW.md",
+      "href": "reader.html?path=FRONTIER_WORKFLOW.md",
       "label": "Frontier Evaluation and Hybrid Workflow",
       "published": true,
+      "raw_href": "FRONTIER_WORKFLOW.md",
+      "source_asset": "markdown-source/FRONTIER_WORKFLOW.md.txt",
       "source_path": "docs/FRONTIER_WORKFLOW.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "LITERATURE_REVIEW.md",
       "group": "Published docs",
-      "href": "LITERATURE_REVIEW.md",
+      "href": "reader.html?path=LITERATURE_REVIEW.md",
       "label": "Literature Review and Theoretical Framework",
       "published": true,
+      "raw_href": "LITERATURE_REVIEW.md",
+      "source_asset": "markdown-source/LITERATURE_REVIEW.md.txt",
       "source_path": "docs/LITERATURE_REVIEW.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "METHOD.md",
       "group": "Published docs",
-      "href": "METHOD.md",
+      "href": "reader.html?path=METHOD.md",
       "label": "Methodology",
       "published": true,
+      "raw_href": "METHOD.md",
+      "source_asset": "markdown-source/METHOD.md.txt",
       "source_path": "docs/METHOD.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "NOVELTY_AND_ABLATIONS_FINAL.md",
       "group": "Published docs",
-      "href": "NOVELTY_AND_ABLATIONS_FINAL.md",
+      "href": "reader.html?path=NOVELTY_AND_ABLATIONS_FINAL.md",
       "label": "Novelty and Ablation Studies",
       "published": true,
+      "raw_href": "NOVELTY_AND_ABLATIONS_FINAL.md",
+      "source_asset": "markdown-source/NOVELTY_AND_ABLATIONS_FINAL.md.txt",
       "source_path": "docs/NOVELTY_AND_ABLATIONS_FINAL.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
       "group": "Published docs",
-      "href": "PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
+      "href": "reader.html?path=PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
       "label": "Product Strategy, Architecture, and Roadmap",
       "published": true,
+      "raw_href": "PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
+      "source_asset": "markdown-source/PRODUCT_ARCHITECTURE_AND_LAUNCH.md.txt",
       "source_path": "docs/PRODUCT_ARCHITECTURE_AND_LAUNCH.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "PUBLIC_BENCHMARKS.md",
       "group": "Published docs",
-      "href": "PUBLIC_BENCHMARKS.md",
+      "href": "reader.html?path=PUBLIC_BENCHMARKS.md",
       "label": "Public Benchmarks and Reference Datasets",
       "published": true,
+      "raw_href": "PUBLIC_BENCHMARKS.md",
+      "source_asset": "markdown-source/PUBLIC_BENCHMARKS.md.txt",
       "source_path": "docs/PUBLIC_BENCHMARKS.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "QWEN_IMAGE_LAYERED_COMPARISON.md",
       "group": "Published docs",
-      "href": "QWEN_IMAGE_LAYERED_COMPARISON.md",
+      "href": "reader.html?path=QWEN_IMAGE_LAYERED_COMPARISON.md",
       "label": "Comparative Analysis: Qwen-Image-Layered Baseline",
       "published": true,
+      "raw_href": "QWEN_IMAGE_LAYERED_COMPARISON.md",
+      "source_asset": "markdown-source/QWEN_IMAGE_LAYERED_COMPARISON.md.txt",
       "source_path": "docs/QWEN_IMAGE_LAYERED_COMPARISON.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "README.md",
       "group": "Published docs",
-      "href": "README.md",
+      "href": "reader.html?path=README.md",
       "label": "Documentation Map",
       "published": true,
+      "raw_href": "README.md",
+      "source_asset": "markdown-source/README.md.txt",
       "source_path": "docs/README.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "REFERENCES.md",
       "group": "Published docs",
-      "href": "REFERENCES.md",
+      "href": "reader.html?path=REFERENCES.md",
       "label": "References to cite",
       "published": true,
+      "raw_href": "REFERENCES.md",
+      "source_asset": "markdown-source/REFERENCES.md.txt",
       "source_path": "docs/REFERENCES.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "REPORT_TABLES.md",
       "group": "Published docs",
-      "href": "REPORT_TABLES.md",
+      "href": "reader.html?path=REPORT_TABLES.md",
       "label": "Report Tables",
       "published": true,
+      "raw_href": "REPORT_TABLES.md",
+      "source_asset": "markdown-source/REPORT_TABLES.md.txt",
       "source_path": "docs/REPORT_TABLES.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "RESULTS_SUMMARY_CURRENT.md",
       "group": "Published docs",
-      "href": "RESULTS_SUMMARY_CURRENT.md",
+      "href": "reader.html?path=RESULTS_SUMMARY_CURRENT.md",
       "label": "Results Summary (Current Submission)",
       "published": true,
+      "raw_href": "RESULTS_SUMMARY_CURRENT.md",
+      "source_asset": "markdown-source/RESULTS_SUMMARY_CURRENT.md.txt",
       "source_path": "docs/RESULTS_SUMMARY_CURRENT.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "SUBMISSION_INDEX.md",
       "group": "Published docs",
-      "href": "SUBMISSION_INDEX.md",
+      "href": "reader.html?path=SUBMISSION_INDEX.md",
       "label": "Submission Index",
       "published": true,
+      "raw_href": "SUBMISSION_INDEX.md",
+      "source_asset": "markdown-source/SUBMISSION_INDEX.md.txt",
       "source_path": "docs/SUBMISSION_INDEX.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "WORLD_BEST_AND_DALG_V1_1.md",
+      "group": "Published docs",
+      "href": "reader.html?path=WORLD_BEST_AND_DALG_V1_1.md",
+      "label": "LayerForge World-Best Runtime Notes",
+      "published": true,
+      "raw_href": "WORLD_BEST_AND_DALG_V1_1.md",
+      "source_asset": "markdown-source/WORLD_BEST_AND_DALG_V1_1.md.txt",
+      "source_path": "docs/WORLD_BEST_AND_DALG_V1_1.md",
+      "surface_label": "Rendered on GitHub Pages"
+    },
+    {
+      "docs_path": "api/README.md",
       "group": "API docs",
-      "href": "api/README.md",
+      "href": "reader.html?path=api/README.md",
       "label": "LayerForge API Notes",
       "published": true,
+      "raw_href": "api/README.md",
+      "source_asset": "markdown-source/api/README.md.txt",
       "source_path": "docs/api/README.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
       "group": "Final report pack",
-      "href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "href": "reader.html?path=final_report_pack/LayerForge_X_Final_Report_FULL.md",
       "label": "LayerForge-X Final Report",
       "published": true,
+      "raw_href": "final_report_pack/LayerForge_X_Final_Report_FULL.md",
+      "source_asset": "markdown-source/final_report_pack/LayerForge_X_Final_Report_FULL.md.txt",
       "source_path": "docs/final_report_pack/LayerForge_X_Final_Report_FULL.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
       "group": "Final report pack",
-      "href": "final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
+      "href": "reader.html?path=final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
       "label": "LayerForge-X Final Report",
       "published": true,
+      "raw_href": "final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
+      "source_asset": "markdown-source/final_report_pack/LayerForge_X_Final_Report_SOURCE.md.txt",
       "source_path": "docs/final_report_pack/LayerForge_X_Final_Report_SOURCE.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/README.md",
       "group": "Final report pack",
-      "href": "final_report_pack/README.md",
+      "href": "reader.html?path=final_report_pack/README.md",
       "label": "Final Report Pack",
       "published": true,
+      "raw_href": "final_report_pack/README.md",
+      "source_asset": "markdown-source/final_report_pack/README.md.txt",
       "source_path": "docs/final_report_pack/README.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
       "group": "Final report sources",
-      "href": "final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
+      "href": "reader.html?path=final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
       "label": "3. Related Work",
       "published": true,
+      "raw_href": "final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
+      "source_asset": "markdown-source/final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md.txt",
       "source_path": "docs/final_report_pack/sources/01_LITERATURE_REVIEW_ADVANCED.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
       "group": "Final report sources",
-      "href": "final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
+      "href": "reader.html?path=final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
       "label": "5. Experiments and Evaluation Protocol",
       "published": true,
+      "raw_href": "final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
+      "source_asset": "markdown-source/final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md.txt",
       "source_path": "docs/final_report_pack/sources/02_BENCHMARKING_PROTOCOL.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
       "group": "Final report sources",
-      "href": "final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
+      "href": "reader.html?path=final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
       "label": "4. Method",
       "published": true,
+      "raw_href": "final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
+      "source_asset": "markdown-source/final_report_pack/sources/03_NOVELTY_AND_METHOD.md.txt",
       "source_path": "docs/final_report_pack/sources/03_NOVELTY_AND_METHOD.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
       "group": "Final report sources",
-      "href": "final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
+      "href": "reader.html?path=final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
       "label": "B.1 Completed runs snapshot",
       "published": true,
+      "raw_href": "final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
+      "source_asset": "markdown-source/final_report_pack/sources/04_ABLATIONS_AND_TABLES.md.txt",
       "source_path": "docs/final_report_pack/sources/04_ABLATIONS_AND_TABLES.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": "final_report_pack/sources/05_REFERENCES.md",
       "group": "Final report sources",
-      "href": "final_report_pack/sources/05_REFERENCES.md",
+      "href": "reader.html?path=final_report_pack/sources/05_REFERENCES.md",
       "label": "10. References",
       "published": true,
+      "raw_href": "final_report_pack/sources/05_REFERENCES.md",
+      "source_asset": "markdown-source/final_report_pack/sources/05_REFERENCES.md.txt",
       "source_path": "docs/final_report_pack/sources/05_REFERENCES.md",
-      "surface_label": "Published on GitHub Pages"
+      "surface_label": "Rendered on GitHub Pages"
     },
     {
+      "docs_path": null,
       "group": "Repository references",
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/README.md",
       "label": "LayerForge-X",
       "published": false,
+      "raw_href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/README.md",
+      "source_asset": null,
       "source_path": "README.md",
       "surface_label": "Repository markdown on GitHub"
     },
     {
+      "docs_path": null,
       "group": "Repository references",
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/examples/README.md",
       "label": "Examples",
       "published": false,
+      "raw_href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/examples/README.md",
+      "source_asset": null,
       "source_path": "examples/README.md",
       "surface_label": "Repository markdown on GitHub"
     },
     {
+      "docs_path": null,
       "group": "Repository references",
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/models/README.md",
       "label": "Models",
       "published": false,
+      "raw_href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/models/README.md",
+      "source_asset": null,
       "source_path": "models/README.md",
       "surface_label": "Repository markdown on GitHub"
     },
     {
+      "docs_path": null,
       "group": "Repository references",
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/README.md",
       "label": "Report Artifacts",
       "published": false,
+      "raw_href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/README.md",
+      "source_asset": null,
       "source_path": "report_artifacts/README.md",
       "surface_label": "Repository markdown on GitHub"
     },
     {
+      "docs_path": null,
       "group": "Repository references",
       "href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/command_log.md",
       "label": "Command Log",
       "published": false,
+      "raw_href": "https://github.com/ALikesToCode/LayerForge-X-final/blob/main/report_artifacts/command_log.md",
+      "source_asset": null,
       "source_path": "report_artifacts/command_log.md",
       "surface_label": "Repository markdown on GitHub"
     }
   ],
   "markdown_stats": {
-    "published": 25,
+    "published": 26,
     "repo_only": 5,
-    "total": 30
+    "total": 31
   },
   "project": {
     "abstract": "LayerForge-X represents a single RGB image as a depth-aware amodal layer graph (DALG) whose nodes are editable RGBA layers and whose edges encode pairwise occlusion evidence. The repository couples a native graph pipeline with Qwen-Image-Layered enrichment, recursive peeling, prompt-conditioned extraction, transparent-layer recovery, and editability-aware evaluation.",

@@ -33,6 +33,10 @@
     ]);
     renderMarkdownCatalog("markdown-library", data.markdown_catalog);
   }
+
+  if (page === "reader") {
+    await renderMarkdownReader(data);
+  }
 })();
 
 async function fetchJson(path) {
@@ -52,7 +56,7 @@ function renderHeroLinks(links, repoUrl) {
   const primary = [
     { label: "Read the final report (PDF)", href: "final_report_pack/LayerForge_X_Final_Report_2026_04_22.pdf", className: "button-link" },
     { label: "Read the final report (DOCX)", href: "final_report_pack/LayerForge_X_Final_Report_2026_04_22.docx", className: "button-link button-link--secondary" },
-    { label: "Inspect the evidence pack", href: "RESULTS_SUMMARY_CURRENT.md", className: "button-link button-link--secondary" },
+    { label: "Inspect the evidence pack", href: "reader.html?path=RESULTS_SUMMARY_CURRENT.md", className: "button-link button-link--secondary" },
     { label: "Open local web UI", href: "webui.html", className: "button-link button-link--secondary" },
     { label: "View source on GitHub", href: repoUrl, className: "button-link button-link--secondary" },
   ];
@@ -250,6 +254,292 @@ function renderMarkdownCatalog(id, items) {
       `;
     })
     .join("");
+}
+
+async function renderMarkdownReader(data) {
+  const titleEl = document.getElementById("reader-title");
+  const metaEl = document.getElementById("reader-meta");
+  const bodyEl = document.getElementById("reader-body");
+  const sourceEl = document.getElementById("reader-source-link");
+  const params = new URLSearchParams(window.location.search);
+  const requestedPath = normalizeDocPath(params.get("path") || "");
+
+  if (!requestedPath || !requestedPath.toLowerCase().endsWith(".md")) {
+    renderReaderError(titleEl, metaEl, bodyEl, "Document not found", "No markdown document was requested.");
+    return;
+  }
+
+  const item = (data.markdown_catalog || []).find((entry) => entry.docs_path === requestedPath);
+  if (!item || !item.source_asset) {
+    renderReaderError(
+      titleEl,
+      metaEl,
+      bodyEl,
+      "Document not published",
+      `${requestedPath} is not in the published markdown catalog.`,
+    );
+    return;
+  }
+
+  try {
+    const response = await fetch(encodePathForUrl(item.source_asset));
+    if (!response.ok) throw new Error(`Failed to load ${item.source_asset}`);
+    const markdown = await response.text();
+    document.title = `${item.label} | LayerForge-X`;
+    if (titleEl) titleEl.textContent = item.label;
+    if (metaEl) metaEl.textContent = `docs/${requestedPath}`;
+    if (sourceEl) {
+      sourceEl.href = `${data.project.repo_url}/blob/main/docs/${requestedPath}`;
+      sourceEl.hidden = false;
+    }
+    if (bodyEl) bodyEl.innerHTML = renderMarkdown(markdown, requestedPath, data.project.repo_url);
+  } catch (error) {
+    console.error(error);
+    renderReaderError(
+      titleEl,
+      metaEl,
+      bodyEl,
+      "Document failed to load",
+      `${requestedPath} could not be loaded from the published markdown source bundle.`,
+    );
+  }
+}
+
+function renderReaderError(titleEl, metaEl, bodyEl, title, message) {
+  if (titleEl) titleEl.textContent = title;
+  if (metaEl) metaEl.textContent = "";
+  if (bodyEl) {
+    bodyEl.innerHTML = `<p>${escapeHtml(message)}</p><p><a href="documents.html">Open the markdown library</a></p>`;
+  }
+}
+
+function renderMarkdown(markdown, currentPath, repoUrl) {
+  const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const html = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+
+    if (!line.trim()) {
+      index += 1;
+      continue;
+    }
+
+    const fence = line.match(/^\s*```(\S+)?\s*$/);
+    if (fence) {
+      const language = fence[1] || "";
+      index += 1;
+      const code = [];
+      while (index < lines.length && !/^\s*```\s*$/.test(lines[index])) {
+        code.push(lines[index]);
+        index += 1;
+      }
+      if (index < lines.length) index += 1;
+      html.push(
+        `<pre><code class="${language ? `language-${escapeHtml(language)}` : ""}">${escapeHtml(code.join("\n"))}</code></pre>`,
+      );
+      continue;
+    }
+
+    const htmlHeading = line.match(/^\s*<h([1-6])[^>]*>(.*?)<\/h\1>\s*$/i);
+    if (htmlHeading) {
+      html.push(`<h${htmlHeading[1]}>${renderInlineMarkdown(stripHtml(htmlHeading[2]), currentPath, repoUrl)}</h${htmlHeading[1]}>`);
+      index += 1;
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (heading) {
+      const level = heading[1].length;
+      html.push(`<h${level}>${renderInlineMarkdown(heading[2], currentPath, repoUrl)}</h${level}>`);
+      index += 1;
+      continue;
+    }
+
+    if (/^\s*(?:---|\*\*\*|___)\s*$/.test(line)) {
+      html.push("<hr />");
+      index += 1;
+      continue;
+    }
+
+    if (isTableStart(lines, index)) {
+      const tableLines = [lines[index], lines[index + 1]];
+      index += 2;
+      while (index < lines.length && /^\s*\|.*\|\s*$/.test(lines[index])) {
+        tableLines.push(lines[index]);
+        index += 1;
+      }
+      html.push(renderTable(tableLines, currentPath, repoUrl));
+      continue;
+    }
+
+    if (/^\s*>\s?/.test(line)) {
+      const quoteLines = [];
+      while (index < lines.length && /^\s*>\s?/.test(lines[index])) {
+        quoteLines.push(lines[index].replace(/^\s*>\s?/, ""));
+        index += 1;
+      }
+      html.push(`<blockquote>${renderMarkdown(quoteLines.join("\n"), currentPath, repoUrl)}</blockquote>`);
+      continue;
+    }
+
+    if (/^\s*[-*+]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\s*[-*+]\s+/.test(lines[index])) {
+        items.push(lines[index].replace(/^\s*[-*+]\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ul>${items.map((item) => `<li>${renderInlineMarkdown(item, currentPath, repoUrl)}</li>`).join("")}</ul>`);
+      continue;
+    }
+
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\s*\d+\.\s+/.test(lines[index])) {
+        items.push(lines[index].replace(/^\s*\d+\.\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ol>${items.map((item) => `<li>${renderInlineMarkdown(item, currentPath, repoUrl)}</li>`).join("")}</ol>`);
+      continue;
+    }
+
+    const paragraph = [];
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !/^\s*```/.test(lines[index]) &&
+      !/^(#{1,6})\s+/.test(lines[index]) &&
+      !/^\s*(?:---|\*\*\*|___)\s*$/.test(lines[index]) &&
+      !/^\s*>\s?/.test(lines[index]) &&
+      !/^\s*[-*+]\s+/.test(lines[index]) &&
+      !/^\s*\d+\.\s+/.test(lines[index]) &&
+      !isTableStart(lines, index)
+    ) {
+      paragraph.push(lines[index]);
+      index += 1;
+    }
+    html.push(`<p>${renderInlineMarkdown(paragraph.join(" "), currentPath, repoUrl)}</p>`);
+  }
+
+  return html.join("\n");
+}
+
+function isTableStart(lines, index) {
+  return (
+    index + 1 < lines.length &&
+    /^\s*\|.*\|\s*$/.test(lines[index]) &&
+    /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index + 1])
+  );
+}
+
+function renderTable(tableLines, currentPath, repoUrl) {
+  const rows = tableLines.map(parseTableRow);
+  const head = rows[0] || [];
+  const body = rows.slice(2);
+  return `
+    <div class="markdown-table-wrap">
+      <table>
+        <thead><tr>${head.map((cell) => `<th>${renderInlineMarkdown(cell, currentPath, repoUrl)}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${body
+            .map((row) => `<tr>${row.map((cell) => `<td>${renderInlineMarkdown(cell, currentPath, repoUrl)}</td>`).join("")}</tr>`)
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function parseTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function renderInlineMarkdown(value, currentPath, repoUrl) {
+  let text = escapeHtml(value);
+
+  text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;[^&]*&quot;)?\)/g, (_, alt, href) => {
+    const resolved = resolveDocumentUrl(unescapeHtml(href), currentPath, repoUrl);
+    return `<img src="${escapeHtml(resolved)}" alt="${alt}" loading="lazy" />`;
+  });
+
+  text = text.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;[^&]*&quot;)?\)/g, (_, label, href) => {
+    const resolved = resolveDocumentUrl(unescapeHtml(href), currentPath, repoUrl);
+    const externalAttrs = /^https?:\/\//i.test(resolved) ? ' target="_blank" rel="noreferrer"' : "";
+    return `<a href="${escapeHtml(resolved)}"${externalAttrs}>${label}</a>`;
+  });
+
+  text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+  text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  return text;
+}
+
+function resolveDocumentUrl(href, currentPath, repoUrl) {
+  const trimmed = href.trim();
+  if (!trimmed || /^(?:https?:|mailto:|tel:|#|data:image\/)/i.test(trimmed)) return trimmed;
+
+  const match = trimmed.match(/^([^?#]*)([?#].*)?$/);
+  const pathPart = match ? match[1] : trimmed;
+  const suffix = match ? match[2] || "" : "";
+
+  if (pathPart.startsWith("/")) return `${pathPart}${suffix}`;
+
+  const currentDir = currentPath.includes("/") ? currentPath.slice(0, currentPath.lastIndexOf("/")) : "";
+  const repoTarget = normalizeDocPath(`docs/${currentDir ? `${currentDir}/` : ""}${pathPart}`);
+
+  if (repoTarget.startsWith("docs/")) {
+    const docsTarget = repoTarget.slice("docs/".length);
+    if (docsTarget.toLowerCase().endsWith(".md")) {
+      return `reader.html?path=${encodeURIComponent(docsTarget)}${suffix}`;
+    }
+    return `${docsTarget}${suffix}`;
+  }
+
+  return `${repoUrl}/blob/main/${repoTarget}${suffix}`;
+}
+
+function normalizeDocPath(path) {
+  const parts = [];
+  for (const rawPart of String(path).split("/")) {
+    const part = rawPart.trim();
+    if (!part || part === ".") continue;
+    if (part === "..") {
+      if (parts.length && parts[parts.length - 1] !== "..") {
+        parts.pop();
+      } else {
+        parts.push("..");
+      }
+    } else {
+      parts.push(part);
+    }
+  }
+  return parts.join("/");
+}
+
+function encodePathForUrl(path) {
+  return String(path)
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function stripHtml(value) {
+  return String(value).replace(/<[^>]+>/g, "");
+}
+
+function unescapeHtml(value) {
+  return String(value)
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">");
 }
 
 function escapeHtml(value) {

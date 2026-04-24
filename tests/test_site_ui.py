@@ -42,9 +42,23 @@ def test_webui_static_surface_is_pages_safe() -> None:
 def test_documents_page_is_wired_into_static_site() -> None:
     script_text = (ROOT / "docs" / "assets" / "site.js").read_text(encoding="utf-8")
     assert 'page === "documents"' in script_text
+    assert 'page === "reader"' in script_text
     assert "renderMarkdownCatalog" in script_text
+    assert "renderMarkdownReader" in script_text
+    assert "renderMarkdown(markdown" in script_text
+    assert "source_asset" in script_text
 
     documents_html = (ROOT / "docs" / "documents.html").read_text(encoding="utf-8")
     assert 'data-page="documents"' in documents_html
     assert 'id="markdown-library"' in documents_html
     assert 'href="documents.html"' in documents_html
+
+    reader_html = (ROOT / "docs" / "reader.html").read_text(encoding="utf-8")
+    assert 'data-page="reader"' in reader_html
+    assert 'id="reader-body"' in reader_html
+    assert 'id="reader-source-link"' in reader_html
+
+    not_found_html = (ROOT / "docs" / "404.html").read_text(encoding="utf-8")
+    assert "redirectMarkdownRequests" in not_found_html
+    assert ".endsWith(\".md\")" in not_found_html
+    assert "reader.html?path=" in not_found_html
