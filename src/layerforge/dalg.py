@@ -257,6 +257,13 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
 
     input_path = _resolve_run_path(root, manifest.get("input"))
     config = manifest.get("config", {})
+    try:
+        from .backends import build_backend_registry
+
+        backend_registry = build_backend_registry(config if isinstance(config, dict) else {}).to_json()
+    except Exception as exc:
+        backend_registry = {"error": f"{type(exc).__name__}: {exc}"}
+
     metrics_model_manifest = {
         "segmentation": metrics.get("segmentation_method"),
         "depth": metrics.get("depth_method"),
@@ -264,6 +271,7 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
         "matting": config.get("matting", {}).get("method") if isinstance(config, dict) else None,
         "intrinsics": metrics.get("intrinsic_method"),
         "inpainting": metrics.get("inpaint_method"),
+        "backend_registry": backend_registry,
     }
 
     dalg = {

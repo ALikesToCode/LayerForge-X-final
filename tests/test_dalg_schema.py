@@ -103,6 +103,8 @@ def test_dalg_manifest_matches_canonical_schema_contract(tmp_path) -> None:
     assert dalg["alpha_mode"] == "straight"
     assert dalg["color_space"] == "sRGB"
     assert dalg["config_hash"]
+    assert "backend_registry" in dalg["model_manifest"]
+    assert any(item["name"] == "classical" for item in dalg["model_manifest"]["backend_registry"]["segmentation"])
     assert dalg["graph"]["node_count"] == len(dalg["graph"]["layers"])
     assert dalg["graph"]["edge_count"] == len(dalg["graph"]["edges"])
     assert dalg["design_export"]["layer_order"] == "near_to_far"
