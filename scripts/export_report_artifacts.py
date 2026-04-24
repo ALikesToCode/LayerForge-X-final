@@ -305,6 +305,13 @@ def refresh_project_manifest(snapshot_payloads: dict[str, object]) -> None:
     transparent["mean_recompose_psnr"] = float(transparent_summary["mean_recompose_psnr"])
     transparent["mean_recompose_ssim"] = float(transparent_summary["mean_recompose_ssim"])
 
+    effects_summary = snapshot_payloads["effects_demo_metrics.json"]
+    effects = measured["effects_groundtruth_demo_cutting_edge"]
+    effects["effect_detected"] = bool(effects_summary["effect_detected"])
+    effects["effect_iou"] = float(effects_summary["effect_iou"])
+    effects["ground_truth_effect_pixels"] = int(effects_summary["ground_truth_effect_pixels"])
+    effects["predicted_effect_pixels"] = int(effects_summary["predicted_effect_pixels"])
+
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 def _sanitize_string(value: str) -> str:
     root_prefix = str(ROOT) + "/"

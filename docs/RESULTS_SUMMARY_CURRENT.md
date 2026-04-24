@@ -53,13 +53,13 @@ The underlying data and run directories (`runs/`, `results/`, `data/`) are used 
 
 ### Associated-Effect Extraction
 - **Configuration:** `effects_groundtruth_demo_cutting_edge`
-  - **Effect Mask IoU:** `0.3529`
+  - **Effect Mask IoU:** `0.9733`
 
 ## Interpretative Analysis
 
 - **Recomposition Fidelity:** The high recomposition PSNR in the transparent benchmark serves as a verification of the alpha-blending logic, while alpha error and background inpainting quality remain the primary performance indicators for transparent-layer recovery.
 - **Semantic Prompting:** Successful text-conditioned extraction confirms the efficacy of the grounded proposal bank, while Gemini-assisted reranking provides the strongest measured combined-query behavior when text and geometric cues are used together.
-- **Effect Extraction:** The current associated-effect extractor represents a heuristic approach; while it successfully identifies shadow and reflection regions, it remains an area for further refinement.
+- **Effect Extraction:** The residual-shape backend now recovers the controlled shadow/effect matte with high overlap, while broader real-world shadows and reflections remain a target for specialized backends and larger benchmarks.
 - **Qwen Layer Count:** The measured `3/4/6/8` sweep indicates that compact raw stacks (`3` or `6` layers) preserve fidelity better than deeper exported stacks on the shipped five-image bank. Preserve-style hybrid enrichment remains the cleanest metadata-first comparison, while deeper reorder rows are now held at usable fidelity by an explicit fallback guardrail instead of being allowed to collapse.
 
 ## Scope of Documentation

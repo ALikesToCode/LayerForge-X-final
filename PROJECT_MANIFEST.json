@@ -102,9 +102,9 @@
     },
     "effects_groundtruth_demo_cutting_edge": {
       "effect_detected": true,
-      "effect_iou": 0.35294545454545456,
+      "effect_iou": 0.973316024808885,
       "ground_truth_effect_pixels": 13750,
-      "predicted_effect_pixels": 4853
+      "predicted_effect_pixels": 13612
     },
     "extract_benchmark_prompted_grounded": {
       "point_mean_alpha_mae": 0.05208039917051792,

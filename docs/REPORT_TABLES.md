@@ -90,12 +90,12 @@ Per-image note:
 
 | Artifact | Source scene | Effect detected | Predicted effect px | Ground-truth effect px | Effect IoU |
 |---|---|---|---:|---:|---:|
-| `runs/effects_groundtruth_demo_cutting_edge` | `layerbench_pp` synthetic scene with `near_person_shadow` | yes | 4853 | 13750 | 0.3529 |
+| `runs/effects_groundtruth_demo_cutting_edge` | `layerbench_pp` synthetic scene with `near_person_shadow` | yes | 13612 | 13750 | 0.9733 |
 
 Notes:
 
 - the repository includes a measured associated-effect figure at `docs/figures/effects_layer_demo.png`;
-- the extractor is still an early heuristic prototype, but the clean-reference rerun is now materially stronger than the first draft and good enough to discuss without overselling it as solved shadow decomposition.
+- the extractor now uses a bounded residual-shape completion backend for this lane, but the result is still a controlled clean-reference shadow demo rather than a solved open-world shadow/reflection decomposer.
 
 ## Table 8 — Frontier self-evaluation review
 

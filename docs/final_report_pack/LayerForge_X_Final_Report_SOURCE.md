@@ -80,9 +80,9 @@ All rows below are five-image means. `Q+G-P4` keeps the selected external Qwen s
 
 | Metric | Value |
 |---|---:|
-| Predicted effect pixels | 4853 |
+| Predicted effect pixels | 13612 |
 | Ground-truth effect pixels | 13750 |
-| Effect IoU | 0.3529 |
+| Effect IoU | 0.9733 |
 
 #### Five-image frontier candidate-bank review
 

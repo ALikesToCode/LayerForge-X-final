@@ -87,6 +87,13 @@ def test_project_manifest_matches_frontier_and_qwen_snapshots() -> None:
     assert transparent_measured["mean_recompose_psnr"] == transparent_summary["mean_recompose_psnr"]
     assert transparent_measured["mean_recompose_ssim"] == transparent_summary["mean_recompose_ssim"]
 
+    effects_summary = _load_json(ROOT / "report_artifacts" / "metrics_snapshots" / "effects_demo_metrics.json")
+    effects_measured = measured["effects_groundtruth_demo_cutting_edge"]
+    assert effects_measured["effect_detected"] == effects_summary["effect_detected"]
+    assert effects_measured["effect_iou"] == effects_summary["effect_iou"]
+    assert effects_measured["ground_truth_effect_pixels"] == effects_summary["ground_truth_effect_pixels"]
+    assert effects_measured["predicted_effect_pixels"] == effects_summary["predicted_effect_pixels"]
+
 
 def test_report_source_shell_links_resolve() -> None:
     source = ROOT / "docs" / "final_report_pack" / "LayerForge_X_Final_Report_SOURCE.md"
