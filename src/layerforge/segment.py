@@ -3,14 +3,16 @@ from __future__ import annotations
 import inspect
 import logging
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage as ndi
 
-from .semantic import label_to_group
+from .semantic import BACKGROUND_GROUPS, label_to_group
 from .types import Segment
-from .utils import bbox_from_mask, mask_iou, normalize01, optional_import, touches_border, transformers_pipeline_device_index
+from .utils import bbox_from_mask, mask_iou, normalize01, optional_import, touches_border, transformers_pipeline_device_index, write_json
 
 
 DEFAULT_GROUNDED_SAM2_PROMPTS = [
@@ -134,6 +136,161 @@ def add_background_segment(segments: list[Segment], shape: tuple[int, int]) -> l
     if bg.mean() > 0.001:
         segments = list(segments) + [make_segment(len(segments), "background visible", bg, 1.0, "background-complement")]
     return segments
+
+
+def _semantic_family(group: str) -> str:
+    if group == "person":
+        return "people"
+    if group == "animal":
+        return "animals"
+    if group == "vehicle":
+        return "vehicles"
+    if group == "furniture":
+        return "furniture"
+    if group in BACKGROUND_GROUPS:
+        return "background/stuff"
+    if group in {"effect", "effects", "transparent"}:
+        return "effects/transparent"
+    return "unknown"
+
+
+def _mask_containment(a: np.ndarray, b: np.ndarray) -> float:
+    aa = a.astype(bool)
+    bb = b.astype(bool)
+    denom = max(1, min(int(aa.sum()), int(bb.sum())))
+    return float((aa & bb).sum() / denom)
+
+
+def _boundary_quality(mask: np.ndarray) -> float:
+    m = mask.astype(bool)
+    if not m.any():
+        return 0.0
+    labels, count = ndi.label(m)
+    if count <= 0:
+        return 0.0
+    largest = max(int((labels == idx).sum()) for idx in range(1, count + 1))
+    component_score = largest / max(1, int(m.sum()))
+    eroded = ndi.binary_erosion(m)
+    boundary = m ^ eroded
+    compactness = float(m.sum() / max(1, int(boundary.sum()) ** 2))
+    return float(np.clip(0.75 * component_score + 0.25 * compactness, 0.0, 1.0))
+
+
+def _semantic_agreement(a: Segment, b: Segment, prompt_labels: set[str]) -> bool:
+    if a.group == b.group:
+        return True
+    labels = {str(a.label).lower(), str(b.label).lower()}
+    if labels & prompt_labels:
+        return True
+    return _semantic_family(a.group) == _semantic_family(b.group) and _semantic_family(a.group) != "unknown"
+
+
+def _merge_segment_pair(base: Segment, other: Segment, *, reason: str) -> Segment:
+    base_quality = float(base.metadata.get("boundary_quality", _boundary_quality(base.mask)))
+    other_quality = float(other.metadata.get("boundary_quality", _boundary_quality(other.mask)))
+    winner = other if (other.score, other_quality, other.area) > (base.score, base_quality, base.area) else base
+    merged_mask = base.mask | other.mask
+    metadata = {
+        **winner.metadata,
+        "fusion": {
+            "reason": reason,
+            "members": [base.label, other.label],
+            "sources": sorted({base.source, other.source}),
+            "semantic_family": _semantic_family(winner.group),
+        },
+        "boundary_quality": max(base_quality, other_quality),
+    }
+    return make_segment(base.id, winner.label, merged_mask, max(base.score, other.score), f"fusion({winner.source})", metadata)
+
+
+def fuse_proposals(
+    proposals: list[Segment],
+    *,
+    shape: tuple[int, int] | None = None,
+    prompts: list[str] | None = None,
+    iou_threshold: float = 0.82,
+    containment_threshold: float = 0.94,
+    stuff_overlap_threshold: float = 0.05,
+    diagnostics_path: str | Path | None = None,
+) -> tuple[list[Segment], dict[str, Any]]:
+    if not proposals:
+        diagnostics = {"input_count": 0, "output_count": 0, "merges": [], "stuff_object_splits": []}
+        if diagnostics_path:
+            write_json(diagnostics_path, diagnostics)
+        return [], diagnostics
+
+    prompt_labels = {str(label).strip().lower() for label in (prompts or []) if str(label).strip()}
+    canvas_shape = shape or proposals[0].mask.shape
+    working: list[Segment] = []
+    diagnostics: dict[str, Any] = {
+        "input_count": len(proposals),
+        "output_count": 0,
+        "merges": [],
+        "stuff_object_splits": [],
+        "semantic_families": {},
+    }
+
+    for proposal in sorted(proposals, key=lambda seg: (seg.score, _boundary_quality(seg.mask), seg.area), reverse=True):
+        candidate = make_segment(
+            proposal.id,
+            proposal.label,
+            proposal.mask,
+            proposal.score,
+            proposal.source,
+            {**proposal.metadata, "boundary_quality": _boundary_quality(proposal.mask), "semantic_family": _semantic_family(proposal.group)},
+        )
+        merged = False
+        for idx, existing in enumerate(working):
+            iou = mask_iou(candidate.mask, existing.mask)
+            containment = _mask_containment(candidate.mask, existing.mask)
+            if _semantic_agreement(candidate, existing, prompt_labels) and (iou >= iou_threshold or containment >= containment_threshold):
+                reason = "iou" if iou >= iou_threshold else "containment"
+                diagnostics["merges"].append(
+                    {
+                        "kept": existing.label,
+                        "merged": candidate.label,
+                        "reason": reason,
+                        "iou": iou,
+                        "containment": containment,
+                    }
+                )
+                working[idx] = _merge_segment_pair(existing, candidate, reason=reason)
+                merged = True
+                break
+        if not merged:
+            working.append(candidate)
+
+    thing_union = np.zeros(canvas_shape, dtype=bool)
+    for seg in working:
+        if seg.group not in BACKGROUND_GROUPS:
+            thing_union |= seg.mask
+
+    resolved: list[Segment] = []
+    for seg in working:
+        mask = seg.mask
+        if seg.group in BACKGROUND_GROUPS and thing_union.any():
+            overlap = mask & thing_union
+            overlap_ratio = float(overlap.sum() / max(1, int(mask.sum())))
+            if overlap_ratio > stuff_overlap_threshold:
+                mask = mask & ~thing_union
+                diagnostics["stuff_object_splits"].append(
+                    {
+                        "label": seg.label,
+                        "overlap_ratio": overlap_ratio,
+                        "remaining_area": int(mask.sum()),
+                    }
+                )
+        if mask.any():
+            resolved.append(make_segment(len(resolved), seg.label, mask, seg.score, seg.source, seg.metadata))
+
+    diagnostics["output_count"] = len(resolved)
+    diagnostics["semantic_families"] = {
+        family: sum(1 for seg in resolved if _semantic_family(seg.group) == family)
+        for family in ["people", "animals", "vehicles", "furniture", "background/stuff", "effects/transparent", "unknown"]
+    }
+    if diagnostics_path:
+        write_json(diagnostics_path, diagnostics)
+    return resolved, diagnostics
 
 
 def classical_segments(rgb: np.ndarray, cfg: dict[str, Any]) -> list[Segment]:
@@ -313,6 +470,17 @@ def segment_image(rgb: np.ndarray, pil: Image.Image, cfg: dict[str, Any], device
         segs = gemini_segments(pil, cfg)
     else:
         raise ValueError(f"Unknown segmentation method: {method}")
+    fusion_cfg = cfg.get("fusion", {}) if isinstance(cfg.get("fusion", {}), dict) else {}
+    if bool(fusion_cfg.get("enabled", False)):
+        segs, _ = fuse_proposals(
+            segs,
+            shape=rgb.shape[:2],
+            prompts=_normalize_prompt_list(cfg.get("prompts")),
+            iou_threshold=float(fusion_cfg.get("iou_threshold", 0.82)),
+            containment_threshold=float(fusion_cfg.get("containment_threshold", 0.94)),
+            stuff_overlap_threshold=float(fusion_cfg.get("stuff_overlap_threshold", 0.05)),
+            diagnostics_path=fusion_cfg.get("diagnostics_path"),
+        )
     if bool(cfg.get("add_background_segment", True)):
         segs = add_background_segment(segs, rgb.shape[:2])
     return segs

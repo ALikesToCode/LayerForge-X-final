@@ -19,6 +19,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "slic_segments": 96,
         "slic_compactness": 12.0,
         "add_background_segment": True,
+        "fusion": {
+            "enabled": False,
+            "iou_threshold": 0.82,
+            "containment_threshold": 0.94,
+            "stuff_overlap_threshold": 0.05,
+        },
         "model": {
             "gemini": "gemini-3-flash-preview",
             "gemini_max_layers": 12,
