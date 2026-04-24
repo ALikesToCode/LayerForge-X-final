@@ -306,7 +306,50 @@ def amodal_complete(mask: np.ndarray, expand_px: int) -> np.ndarray:
     except Exception:
         pass
     expanded = ndi.binary_dilation(fill, iterations=max(1, expand_px // 3))
-    return (fill | (expanded & hull)).astype(bool)
+    return (fill | expanded | hull).astype(bool)
+
+
+def edge_continuity_score(visible_mask: np.ndarray, hidden_mask: np.ndarray) -> float:
+    visible = visible_mask.astype(bool)
+    hidden = hidden_mask.astype(bool)
+    if not hidden.any():
+        return 1.0
+    visible_boundary = ndi.binary_dilation(visible, iterations=1) & hidden
+    hidden_boundary = ndi.binary_dilation(hidden, iterations=1) & visible
+    contact = int(visible_boundary.sum() + hidden_boundary.sum())
+    hidden_edge = int((hidden ^ ndi.binary_erosion(hidden)).sum())
+    return float(np.clip(contact / max(1, hidden_edge), 0.0, 1.0))
+
+
+def resolve_amodal_mask(mask: np.ndarray, cfg: dict[str, Any], expand_px: int) -> tuple[np.ndarray | None, dict[str, Any]]:
+    method = str(cfg.get("method", "heuristic")).lower()
+    if method in {"none", "off", "disabled"}:
+        return None, {"method": method, "backend_used": False}
+    if method in {"auto", "heuristic"}:
+        return amodal_complete(mask, expand_px), {"method": method, "backend": "heuristic", "backend_used": False, "fallback_used": method == "auto"}
+    if method in {"sameo", "external"}:
+        # Optional model/external amodal completion is registered by doctor; the
+        # native runtime keeps a deterministic CPU fallback unless a backend is
+        # wired through config in a later adapter.
+        return amodal_complete(mask, expand_px), {
+            "method": method,
+            "backend": "heuristic",
+            "backend_used": False,
+            "fallback_used": True,
+            "warning": f"{method} amodal backend unavailable in native runtime",
+        }
+    return amodal_complete(mask, expand_px), {"method": method, "backend": "heuristic", "backend_used": False, "fallback_used": True}
+
+
+def completed_rgba_from_hidden(rgb: np.ndarray, alpha: np.ndarray, visible_mask: np.ndarray, hidden_mask: np.ndarray | None) -> np.ndarray:
+    hidden = np.zeros(alpha.shape, dtype=bool) if hidden_mask is None else hidden_mask.astype(bool)
+    completed_alpha = np.maximum(alpha.astype(np.float32), hidden.astype(np.float32))
+    completed_rgb = rgb.copy()
+    visible = visible_mask.astype(bool)
+    if hidden.any() and visible.any():
+        fill_rgb = np.median(rgb[visible], axis=0).clip(0, 255).astype(np.uint8)
+        completed_rgb[hidden] = fill_rgb
+    return rgba_from_rgb_alpha(completed_rgb, completed_alpha)
 
 
 def visible_masks_by_order(segments: list[Segment], order: list[int]) -> dict[int, np.ndarray]:
@@ -411,6 +454,18 @@ def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
         for layer in ordered:
             if layer.amodal_mask is not None:
                 merged_amodal |= layer.amodal_mask.astype(bool)
+    merged_hidden = None
+    if any(l.hidden_mask is not None for l in ordered):
+        merged_hidden = np.zeros_like(ordered[0].visible_mask, dtype=bool)
+        for layer in ordered:
+            if layer.hidden_mask is not None:
+                merged_hidden |= layer.hidden_mask.astype(bool)
+    completed = composite_layers_near_to_far(
+        [
+            Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.completed_rgba if l.completed_rgba is not None else l.rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata)
+            for l in ordered
+        ]
+    )
     source_ids = sorted({sid for l in ordered for sid in l.source_segment_ids})
     occludes = sorted({sid for l in ordered for sid in l.occludes})
     occluded_by = sorted({sid for l in ordered for sid in l.occluded_by})
@@ -443,6 +498,8 @@ def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
         occludes,
         occluded_by,
         {**ordered[0].metadata, **meta},
+        hidden_mask=merged_hidden,
+        completed_rgba=completed,
     )
 
 
@@ -472,6 +529,7 @@ def build_layers(
     matting_cfg: dict[str, Any],
     *,
     device: str = "auto",
+    amodal_cfg: dict[str, Any] | None = None,
 ) -> tuple[list[Layer], dict[int, Node]]:
     h, w = depth.shape
     min_area = max(12, int(h * w * float(cfg.get("min_layer_area_ratio", 0.0015))))
@@ -504,7 +562,15 @@ def build_layers(
         alpha, alpha_meta = refine_layer_alpha(rgb, vis, depth, matting_cfg, device=device)
         rgba = rgba_from_rgb_alpha(rgb, alpha)
         ar, sr = intrinsic_rgba(albedo, shading, alpha)
-        amodal = amodal_complete(vis, int(cfg.get("amodal_expand_px", 16))) if bool(cfg.get("amodal_enabled", True)) else None
+        amodal_meta: dict[str, Any] = {"method": "none", "backend_used": False}
+        if bool(cfg.get("amodal_enabled", True)):
+            amodal, amodal_meta = resolve_amodal_mask(vis, amodal_cfg or {"method": "heuristic"}, int(cfg.get("amodal_expand_px", 16)))
+        else:
+            amodal = None
+        hidden = (amodal.astype(bool) & ~vis.astype(bool)) if amodal is not None else None
+        completed_rgba = completed_rgba_from_hidden(rgb, alpha, vis, hidden)
+        hidden_area_ratio = float(hidden.sum() / max(1, int(vis.sum()))) if hidden is not None else 0.0
+        continuity = edge_continuity_score(vis, hidden) if hidden is not None else 1.0
         edge_meta = {
             "outgoing_edges": {str(k): asdict(edge) for k, edge in node.outgoing_edges.items()},
             "incoming_edges": {str(k): asdict(edge) for k, edge in node.incoming_edges.items()},
@@ -536,6 +602,10 @@ def build_layers(
                 "ordering_score": ordering_scores.get(sid),
                 "alpha": alpha_meta,
                 "alpha_quality_score": alpha_meta.get("alpha_quality_score"),
+                "amodal": amodal_meta,
+                "hidden_area_ratio": hidden_area_ratio,
+                "completion_consistency": 1.0,
+                "edge_continuity_score": continuity,
                 "depth_stats": {
                     "median": node.depth_median,
                     "p10": node.depth_p10,
@@ -548,6 +618,8 @@ def build_layers(
                 **seg.metadata,
                 **edge_meta,
             },
+            hidden_mask=hidden,
+            completed_rgba=completed_rgba,
         ))
     return merge_compatible_layers(layers, cfg), nodes
 

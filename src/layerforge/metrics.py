@@ -17,6 +17,9 @@ def _safe_structural_similarity(rgb: np.ndarray, comp: np.ndarray) -> float:
 
 def compute_run_metrics(rgb: np.ndarray, layers: list[Layer], cfg: dict) -> dict[str, float]:
     comp = composite_layers_near_to_far(layers)[..., :3]
+    hidden_ratios = [float(l.metadata.get("hidden_area_ratio", 0.0)) for l in layers]
+    completion_scores = [float(l.metadata.get("completion_consistency", 1.0)) for l in layers]
+    edge_scores = [float(l.metadata.get("edge_continuity_score", 1.0)) for l in layers]
     return {
         "num_layers": float(len(layers)),
         "foreground_alpha_coverage": float(np.mean(np.maximum.reduce([l.alpha for l in layers]) > 0.05)) if layers else 0.0,
@@ -24,4 +27,7 @@ def compute_run_metrics(rgb: np.ndarray, layers: list[Layer], cfg: dict) -> dict
         "recompose_ssim": _safe_structural_similarity(rgb, comp),
         "mean_layer_area": float(np.mean([l.area for l in layers])) if layers else 0.0,
         "mean_amodal_extra_ratio": float(np.mean([(max(0, int(l.amodal_mask.sum()) - l.area) / max(1, l.area)) for l in layers if l.amodal_mask is not None])) if any(l.amodal_mask is not None for l in layers) else 0.0,
+        "mean_hidden_area_ratio": float(np.mean(hidden_ratios)) if hidden_ratios else 0.0,
+        "mean_completion_consistency": float(np.mean(completion_scores)) if completion_scores else 1.0,
+        "mean_edge_continuity_score": float(np.mean(edge_scores)) if edge_scores else 1.0,
     }

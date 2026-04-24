@@ -47,7 +47,7 @@ class LayerForgePipeline:
             cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
 
         out = ensure_dir(output_dir)
-        dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_alpha", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_grouped_rgba", "debug"]}
+        dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_alpha", "layers_completed_rgba", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_hidden_masks", "layers_grouped_rgba", "debug"]}
         rgb, pil = load_rgb(input_path, cfg.get("io", {}).get("max_side"))
         save_rgb(dirs["debug"] / "input_rgb.png", rgb)
 
@@ -64,7 +64,7 @@ class LayerForgePipeline:
         save_rgb(dirs["debug"] / "intrinsic_albedo.png", albedo)
         save_rgb(dirs["debug"] / "intrinsic_shading.png", shading)
 
-        semantic_layers, nodes = build_layers(rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"], device=self.device)
+        semantic_layers, nodes = build_layers(rgb, segments, depth, albedo, shading, cfg["layering"], cfg["matting"], device=self.device, amodal_cfg=cfg.get("amodal", {}))
         premerge_semantic_layer_count = len(nodes)
         remove_mask = np.zeros(depth.shape, dtype=bool)
         for l in semantic_layers:
@@ -78,14 +78,21 @@ class LayerForgePipeline:
 
         ordered_paths = []
         alpha_paths = []
+        completed_paths = []
+        hidden_paths: list[str | None] = []
         for l in ordered_layers:
             ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{l.name}.png", l.rgba))
             alpha_paths.append(save_gray(dirs["layers_alpha"] / f"{l.name}_alpha.png", l.alpha))
+            completed_paths.append(save_rgba(dirs["layers_completed_rgba"] / f"{l.name}_completed.png", l.completed_rgba if l.completed_rgba is not None else l.rgba))
             save_rgba(dirs["layers_albedo_rgba"] / f"{l.name}_albedo.png", l.albedo_rgba)
             save_rgba(dirs["layers_shading_rgba"] / f"{l.name}_shading.png", l.shading_rgba)
             save_gray(dirs["debug"] / f"{l.name}_alpha.png", l.alpha)
             if l.amodal_mask is not None:
                 save_gray(dirs["layers_amodal_masks"] / f"{l.name}_amodal.png", l.amodal_mask.astype(np.float32))
+            if l.hidden_mask is not None:
+                hidden_paths.append(str(save_gray(dirs["layers_hidden_masks"] / f"{l.name}_hidden.png", l.hidden_mask.astype(np.float32))))
+            else:
+                hidden_paths.append(None)
 
         grouped = grouped_layers(ordered_layers, bins=3)
         grouped_paths = [save_rgba(dirs["layers_grouped_rgba"] / f"{g.name}.png", g.rgba) for g in grouped]
@@ -125,6 +132,8 @@ class LayerForgePipeline:
                 {
                     "path": str(path),
                     "alpha_path": str(alpha_path),
+                    "completed_path": str(completed_path),
+                    "hidden_mask_path": hidden_path,
                     "name": layer.name,
                     "rank": layer.rank,
                     "label": layer.label,
@@ -132,7 +141,7 @@ class LayerForgePipeline:
                     "depth_median": layer.depth_median,
                     "alpha_quality_score": layer.metadata.get("alpha_quality_score"),
                 }
-                for path, alpha_path, layer in zip(ordered_paths, alpha_paths, ordered_layers)
+                for path, alpha_path, completed_path, hidden_path, layer in zip(ordered_paths, alpha_paths, completed_paths, hidden_paths, ordered_layers)
             ],
             "grouped_layers": [str(p) for p in grouped_paths],
             "debug": {"input_rgb": str(dirs["debug"] / "input_rgb.png"), "depth_gray": str(dirs["debug"] / "depth_gray.png"), "segmentation_overlay": str(dirs["debug"] / "segmentation_overlay.png"), "background_completion": str(dirs["debug"] / "background_completion.png"), "recomposed_rgb": str(dirs["debug"] / "recomposed_rgb.png"), "parallax_preview": str(parallax_path) if parallax_path else None}

@@ -54,6 +54,8 @@ class Layer:
     occludes: list[int] = field(default_factory=list)
     occluded_by: list[int] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+    hidden_mask: np.ndarray | None = None
+    completed_rgba: np.ndarray | None = None
 
 
 @dataclass(slots=True)

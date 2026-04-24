@@ -49,6 +49,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "merge_color_threshold": 0.17,
         "merge_spatial_gap_px": 20,
     },
+    "amodal": {"method": "heuristic", "sameo_model": "", "external_command": ""},
     "matting": {
         "method": "heuristic",
         "alpha_band_px": 9,

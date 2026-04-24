@@ -72,9 +72,11 @@ def _layer_support_paths(run_dir: Path, rgba_path: Path) -> dict[str, str | None
     return {
         "rgba": _rel_path(run_dir, rgba_path),
         "alpha": _rel_path(run_dir, run_dir / "layers_alpha" / f"{stem}_alpha.png"),
+        "completed_rgba": _rel_path(run_dir, run_dir / "layers_completed_rgba" / f"{stem}_completed.png"),
         "albedo_rgba": _rel_path(run_dir, run_dir / "layers_albedo_rgba" / f"{stem}_albedo.png"),
         "shading_rgba": _rel_path(run_dir, run_dir / "layers_shading_rgba" / f"{stem}_shading.png"),
         "amodal_mask": _rel_path(run_dir, run_dir / "layers_amodal_masks" / f"{stem}_amodal.png"),
+        "hidden_mask": _rel_path(run_dir, run_dir / "layers_hidden_masks" / f"{stem}_hidden.png"),
     }
 
 
@@ -94,7 +96,7 @@ def _layer_v11_fields(
         "amodal_mask_path": support_paths.get("amodal_mask"),
         "hidden_mask_path": support_paths.get("hidden_mask"),
         "rgba_path": support_paths.get("rgba"),
-        "completed_rgba_path": support_paths.get("rgba") if str(row.get("group")) == "background" else None,
+        "completed_rgba_path": support_paths.get("completed_rgba"),
         "albedo_path": support_paths.get("albedo_rgba"),
         "shading_path": support_paths.get("shading_rgba"),
         "alpha_confidence_path": support_paths.get("alpha_confidence"),
@@ -117,6 +119,9 @@ def _layer_v11_fields(
         },
         "quality_metrics": {
             "alpha_quality_score": row.get("alpha_quality_score", metadata.get("alpha_quality_score")),
+            "hidden_area_ratio": metadata.get("hidden_area_ratio"),
+            "completion_consistency": metadata.get("completion_consistency"),
+            "edge_continuity_score": metadata.get("edge_continuity_score"),
             "area": graph_row.get("area"),
         },
     }
