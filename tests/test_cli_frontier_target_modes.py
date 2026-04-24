@@ -6,6 +6,7 @@ from pathlib import Path
 from PIL import Image
 
 from layerforge.cli import build_frontier_base_kwargs
+from layerforge.cli import default_frontier_output_root
 from layerforge.cli import main
 
 
@@ -37,6 +38,11 @@ def test_frontier_base_promotes_fast_config_to_best_score(tmp_path: Path) -> Non
 
     kwargs = build_frontier_base_kwargs(args, output_root=tmp_path / "frontier")
     assert kwargs["native_config"] == "configs/best_score.yaml"
+
+
+def test_default_frontier_output_root_is_sibling_of_output() -> None:
+    assert default_frontier_output_root("runs/sample") == Path("runs/sample_frontier")
+    assert default_frontier_output_root(".") == Path("output_frontier")
 
 
 def test_run_frontier_materializes_selected_run(tmp_path: Path, monkeypatch) -> None:
@@ -100,7 +106,7 @@ def test_run_frontier_materializes_selected_run(tmp_path: Path, monkeypatch) -> 
 
     assert exit_code == 0
     assert captured["target_dir"] == tmp_path / "run_output"
-    assert captured["frontier_root"] == tmp_path / "run_output" / "frontier"
+    assert captured["frontier_root"] == tmp_path / "run_output_frontier"
 
 
 def test_extract_frontier_uses_selected_run(tmp_path: Path, monkeypatch) -> None:

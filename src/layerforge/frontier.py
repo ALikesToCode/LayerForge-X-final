@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -148,6 +149,50 @@ def to_repo_relative(path: str | Path) -> str:
         return str(resolved.relative_to(ROOT))
     except ValueError:
         return str(value)
+
+
+def _is_relative_to(path: Path, base: Path) -> bool:
+    path = path.resolve()
+    base = base.resolve()
+    return path == base or base in path.parents
+
+
+def _looks_like_replaceable_layerforge_output(path: Path) -> bool:
+    if not path.exists():
+        return True
+    if not path.is_dir():
+        return False
+    children = {child.name for child in path.iterdir()}
+    if not children:
+        return True
+    if "frontier_selection.json" in children:
+        return True
+    if {"manifest.json", "metrics.json"} <= children:
+        return True
+    return {"layers_ordered_rgba", "debug"} <= children
+
+
+def _validate_materialization_paths(run_dir: Path, output_dir: Path) -> None:
+    run_dir_resolved = run_dir.resolve()
+    output_dir_resolved = output_dir.resolve()
+    repo_root = ROOT.resolve()
+    home = Path.home().resolve()
+    forbidden_targets = {repo_root, repo_root.parent, home, home.parent}
+
+    if not run_dir_resolved.exists():
+        raise FileNotFoundError(f"Selected frontier run directory does not exist: {run_dir}")
+    if _is_relative_to(run_dir_resolved, output_dir_resolved):
+        raise RuntimeError(
+            "Refusing to materialize frontier output because the selected run is inside the target output directory. "
+            "Use --frontier-output-root outside --output."
+        )
+    if output_dir_resolved in forbidden_targets:
+        raise RuntimeError(f"Refusing to replace unsafe output directory: {output_dir}")
+    if output_dir.exists() and not _looks_like_replaceable_layerforge_output(output_dir):
+        raise RuntimeError(
+            f"Refusing to replace non-LayerForge output directory: {output_dir}. "
+            "Choose an empty directory or remove it yourself after checking its contents."
+        )
 
 
 def parse_hybrid_modes(raw: str) -> list[str]:
@@ -498,11 +543,12 @@ def materialize_frontier_selection(
 ) -> dict[str, Path]:
     run_dir = Path(selection_result["run_dir"])
     output_dir = Path(target_dir)
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    shutil.copytree(run_dir, output_dir)
+    _validate_materialization_paths(run_dir, output_dir)
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    tmp_output = output_dir.parent / f".{output_dir.name}.tmp-{uuid.uuid4().hex}"
+    shutil.copytree(run_dir, tmp_output)
     selection_path = write_json(
-        output_dir / "frontier_selection.json",
+        tmp_output / "frontier_selection.json",
         {
             "selected_label": selection_result.get("selected_label"),
             "summary_path": to_repo_relative(selection_result.get("summary_path", "")),
@@ -512,23 +558,26 @@ def materialize_frontier_selection(
     )
     why_selected = selection_result.get("selection", {}).get("self_eval_reason")
     if why_selected:
-        (output_dir / "why_selected.md").write_text(
+        (tmp_output / "why_selected.md").write_text(
             f"# Selected frontier winner\n\n{why_selected}\n",
             encoding="utf-8",
         )
     if frontier_root is not None:
         write_json(
-            output_dir / "frontier_workspace.json",
+            tmp_output / "frontier_workspace.json",
             {
                 "frontier_root": to_repo_relative(frontier_root),
                 "summary_path": to_repo_relative(selection_result.get("summary_path", "")),
             },
         )
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    tmp_output.rename(output_dir)
     return {
         "output_dir": output_dir,
         "manifest_path": output_dir / "manifest.json",
         "metrics_path": output_dir / "metrics.json",
-        "selection_path": selection_path,
+        "selection_path": output_dir / selection_path.name,
     }
 
 

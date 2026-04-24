@@ -36,6 +36,12 @@ def parse_box(text: str | None) -> tuple[int, int, int, int] | None:
     return (parts[0], parts[1], parts[2], parts[3])
 
 
+def default_frontier_output_root(output: str | Path) -> Path:
+    output_path = Path(output)
+    name = output_path.name or "output"
+    return output_path.parent / f"{name}_frontier"
+
+
 def build_frontier_base_kwargs(args: argparse.Namespace, *, output_root: Path) -> dict[str, Any]:
     return {
         "input_path": args.input,
@@ -82,7 +88,7 @@ def add_frontier_base_arguments(parser: argparse.ArgumentParser) -> None:
 
 def cmd_run(args: argparse.Namespace) -> int:
     if getattr(args, "frontier", False):
-        frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else Path(args.output) / "frontier"
+        frontier_root = Path(args.frontier_output_root) if args.frontier_output_root else default_frontier_output_root(args.output)
         selection = run_single_image_frontier_selection(**build_frontier_base_kwargs(args, output_root=frontier_root))
         materialized = materialize_frontier_selection(selection, Path(args.output), frontier_root=frontier_root)
         print(f"winner:   {selection['selected_label']}")
