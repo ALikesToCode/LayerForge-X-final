@@ -21,6 +21,7 @@ def compute_run_metrics(rgb: np.ndarray, layers: list[Layer], cfg: dict) -> dict
     completion_scores = [float(l.metadata.get("completion_consistency", 1.0)) for l in layers]
     edge_scores = [float(l.metadata.get("edge_continuity_score", 1.0)) for l in layers]
     intrinsic_residuals = [float(l.metadata.get("intrinsic_residual", 0.0)) for l in layers]
+    alpha_scores = [float(l.metadata.get("alpha_quality_score", 1.0)) for l in layers]
     return {
         "num_layers": float(len(layers)),
         "foreground_alpha_coverage": float(np.mean(np.maximum.reduce([l.alpha for l in layers]) > 0.05)) if layers else 0.0,
@@ -32,4 +33,5 @@ def compute_run_metrics(rgb: np.ndarray, layers: list[Layer], cfg: dict) -> dict
         "mean_completion_consistency": float(np.mean(completion_scores)) if completion_scores else 1.0,
         "mean_edge_continuity_score": float(np.mean(edge_scores)) if edge_scores else 1.0,
         "mean_intrinsic_residual": float(np.mean(intrinsic_residuals)) if intrinsic_residuals else 0.0,
+        "mean_alpha_quality_score": float(np.mean(alpha_scores)) if alpha_scores else 1.0,
     }
