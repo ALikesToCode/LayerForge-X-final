@@ -17,6 +17,27 @@ from .transparent import export_transparent_assets
 from .webui import serve_webui
 
 
+PRESET_CONFIGS = {
+    "world_best": "configs/world_best.yaml",
+}
+
+
+def resolve_config_arg(args: argparse.Namespace) -> str:
+    preset = str(getattr(args, "preset", "") or "").strip()
+    if not preset:
+        return args.config
+    if preset not in PRESET_CONFIGS:
+        raise ValueError(f"Unknown preset: {preset}")
+    return PRESET_CONFIGS[preset]
+
+
+def resolve_input_arg(args: argparse.Namespace) -> str:
+    value = getattr(args, "input", None) or getattr(args, "input_pos", None)
+    if not value:
+        raise ValueError("input path is required")
+    return str(value)
+
+
 def parse_prompts(text: str | None) -> list[str] | None:
     return [x.strip() for x in text.split(",") if x.strip()] if text else None
 
@@ -45,9 +66,9 @@ def default_frontier_output_root(output: str | Path) -> Path:
 
 def build_frontier_base_kwargs(args: argparse.Namespace, *, output_root: Path) -> dict[str, Any]:
     return {
-        "input_path": args.input,
+        "input_path": resolve_input_arg(args),
         "output_root": output_root,
-        "native_config": resolve_frontier_native_config(args.config),
+        "native_config": resolve_frontier_native_config(resolve_config_arg(args)),
         "native_segmenter": args.segmenter or "grounded_sam2",
         "native_depth": args.depth or "ensemble",
         "skip_native": bool(getattr(args, "frontier_skip_native", False)),
@@ -115,10 +136,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"metrics:  {materialized['metrics_path']}")
         print(f"layers:   {(Path(args.output) / 'layers_ordered_rgba')}")
         return 0
-    cfg = load_config(args.config)
+    cfg = load_config(resolve_config_arg(args))
     pipe = LayerForgePipeline(cfg, device=args.device)
     out = pipe.run(
-        args.input,
+        resolve_input_arg(args),
         args.output,
         segmenter=args.segmenter,
         depth_method=args.depth,
@@ -136,7 +157,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_batch(args: argparse.Namespace) -> int:
-    cfg = load_config(args.config)
+    cfg = load_config(resolve_config_arg(args))
     pipe = LayerForgePipeline(cfg, device=args.device)
     paths: list[Path] = []
     for ext in ("*.png", "*.jpg", "*.jpeg", "*.webp"):
@@ -161,7 +182,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
 def cmd_autotune(args: argparse.Namespace) -> int:
     from .autotune import run_autotune
 
-    cfg = load_config(args.config)
+    cfg = load_config(resolve_config_arg(args))
     pipe = LayerForgePipeline(cfg, device=args.device)
     summary = run_autotune(
         pipe,
@@ -190,7 +211,7 @@ def cmd_frontier(args: argparse.Namespace) -> int:
 
 
 def cmd_enrich_qwen(args: argparse.Namespace) -> int:
-    cfg = load_config(args.config)
+    cfg = load_config(resolve_config_arg(args))
     pipe = LayerForgePipeline(cfg, device=args.device)
     out = pipe.enrich_rgba_layers(
         args.input,
@@ -210,7 +231,7 @@ def cmd_enrich_qwen(args: argparse.Namespace) -> int:
 
 
 def cmd_peel(args: argparse.Namespace) -> int:
-    cfg = load_config(args.config)
+    cfg = load_config(resolve_config_arg(args))
     pipe = LayerForgePipeline(cfg, device=args.device)
     out = pipe.peel(
         args.input,
@@ -240,7 +261,7 @@ def cmd_extract(args: argparse.Namespace) -> int:
         metrics_path = selection["metrics_path"]
         base_run_dir = selection["run_dir"]
     else:
-        cfg = load_config(args.config)
+        cfg = load_config(resolve_config_arg(args))
         pipe = LayerForgePipeline(cfg, device=args.device)
         out = pipe.run(
             args.input,
@@ -323,7 +344,7 @@ def cmd_transparent(args: argparse.Namespace) -> int:
         manifest_path = selection["manifest_path"]
         base_run_dir = selection["run_dir"]
     else:
-        cfg = load_config(args.config)
+        cfg = load_config(resolve_config_arg(args))
         pipe = LayerForgePipeline(cfg, device=args.device)
         run_dir = Path(args.output) / "base_run"
         out = pipe.run(
@@ -395,7 +416,7 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     report_path = run_synthetic_benchmark(
         dataset_dir=Path(args.dataset_dir),
         output_dir=Path(args.output_dir),
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         segmenter=args.segmenter,
         depth=args.depth,
         device=args.device,
@@ -413,7 +434,7 @@ def cmd_benchmark_coco_panoptic(args: argparse.Namespace) -> int:
     report_path = run_coco_panoptic_group_benchmark(
         dataset_dir=Path(args.dataset_dir),
         output_dir=Path(args.output_dir),
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         segmenter=args.segmenter,
         prompts=parse_prompts(args.prompts),
         prompt_source=args.prompt_source,
@@ -431,7 +452,7 @@ def cmd_benchmark_ade20k(args: argparse.Namespace) -> int:
     report_path = run_ade20k_group_benchmark(
         dataset_dir=Path(args.dataset_dir),
         output_dir=Path(args.output_dir),
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         segmenter=args.segmenter,
         prompts=parse_prompts(args.prompts),
         prompt_source=args.prompt_source,
@@ -449,7 +470,7 @@ def cmd_benchmark_diode(args: argparse.Namespace) -> int:
     report_path = run_diode_depth_benchmark(
         dataset_dir=Path(args.dataset_dir),
         output_dir=Path(args.output_dir),
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         depth_method=args.depth,
         device=args.device,
         max_images=args.max_images,
@@ -466,7 +487,7 @@ def cmd_train_ranker(args: argparse.Namespace) -> int:
     report = train_synthetic_order_ranker(
         dataset_dir=Path(args.dataset_dir),
         output_path=Path(args.output),
-        config_path=args.config,
+        config_path=resolve_config_arg(args),
         segmenter=args.segmenter,
         depth=args.depth,
         device=args.device,
@@ -501,9 +522,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="Run LayerForge-X on one RGB image")
-    run.add_argument("--input", required=True)
-    run.add_argument("--output", required=True)
+    run.add_argument("input_pos", nargs="?", help="Input image path")
+    run.add_argument("--input", default=None, help="Input image path")
+    run.add_argument("-o", "--output", required=True)
     run.add_argument("--config", default="configs/fast.yaml")
+    run.add_argument("--preset", default=None, choices=sorted(PRESET_CONFIGS), help="Named config preset, e.g. world_best")
     run.add_argument("--segmenter", default=None, help="classical | mask2former | grounded_sam2 | gemini")
     run.add_argument("--depth", default=None, help="geometric_luminance | depth_pro | depth_anything_v2 | marigold | ensemble")
     run.add_argument("--prompts", default=None, help="Comma-separated open-vocabulary prompts")
@@ -624,6 +647,7 @@ def build_parser() -> argparse.ArgumentParser:
     bench.add_argument("--dataset-dir", required=True)
     bench.add_argument("--output-dir", required=True)
     bench.add_argument("--config", default="configs/fast.yaml")
+    bench.add_argument("--preset", default=None, choices=sorted(PRESET_CONFIGS), help="Named config preset, e.g. world_best")
     bench.add_argument("--segmenter", default="classical")
     bench.add_argument("--depth", default="geometric_luminance")
     bench.add_argument("--device", default="auto")
@@ -685,6 +709,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor = sub.add_parser("doctor", help="Report LayerForge runtime, optional backend, GPU, and path readiness")
     doctor.add_argument("--config", default="configs/fast.yaml")
+    doctor.add_argument("--preset", default=None, choices=sorted(PRESET_CONFIGS), help="Named config preset, e.g. world_best")
     doctor.add_argument("--device", default="auto")
     doctor.add_argument("--cache-dir", default=None)
     doctor.add_argument("--output-dir", default=None)

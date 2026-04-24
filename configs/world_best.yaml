@@ -1,0 +1,99 @@
+project:
+  name: LayerForge-X-World-Best
+  seed: 7
+io:
+  max_side: 1280
+  save_contact_sheet: true
+  save_parallax_gif: true
+segmentation:
+  method: grounded_sam2
+  prompts: []
+  prompt_source: auto
+  min_area_ratio: 0.001
+  nms_iou: 0.80
+  add_background_segment: true
+  fusion:
+    enabled: true
+    iou_threshold: 0.78
+    containment_threshold: 0.92
+    stuff_overlap_threshold: 0.02
+  model:
+    gemini: gemini-3-flash-preview
+    gemini_max_layers: 16
+    gemini_max_side: 1024
+    gemini_timeout_sec: 300
+    mask2former: facebook/mask2former-swin-large-coco-panoptic
+    grounding_dino: IDEA-Research/grounding-dino-base
+    sam2: facebook/sam2.1-hiera-large
+    box_threshold: 0.25
+    text_threshold: 0.22
+depth:
+  method: ensemble
+  orientation: auto
+  near_is_smaller: true
+  flip: false
+  edge_smooth: true
+  ensemble:
+    - depth_pro
+    - depth_anything_v2
+    - marigold
+  model:
+    depth_pro: apple/DepthPro-hf
+    depth_anything_v2: depth-anything/Depth-Anything-V2-Large-hf
+    marigold: prs-eth/marigold-depth-v1-1
+layering:
+  min_layer_area_ratio: 0.001
+  max_layers: 96
+  split_stuff_depth_bins: 4
+  occlusion_boundary_width: 6
+  occlusion_depth_threshold: 0.02
+  same_plane_depth_threshold: 0.012
+  min_shared_boundary_px: 8
+  depth_stats_boundary_width: 4
+  amodal_enabled: true
+  amodal_expand_px: 20
+  ordering_method: boundary
+  merge_enabled: true
+  merge_depth_threshold: 0.035
+  merge_color_threshold: 0.15
+  merge_spatial_gap_px: 18
+matting:
+  method: auto
+  alpha_band_px: 11
+  preserve_depth_edges: true
+  model: ZhengPeng7/BiRefNet-matting
+  max_side: 1024
+  crop_expand_px: 56
+  support_expand_px: 14
+  respect_support_mask: true
+  prefer_half: true
+  backend_blend_weight: 0.75
+amodal:
+  method: auto
+  sameo_model: ""
+  external_command: ""
+inpainting:
+  method: auto
+  radius: 5
+  diffusion_model: ""
+  prompt: content-preserving layer completion
+  external_command: ""
+intrinsics:
+  method: auto
+  sigma: 28.0
+  model: ""
+  external_command: ""
+qwen:
+  model: Qwen/Qwen-Image-Layered
+  min_alpha: 0.02
+  preserve_external_order: false
+  merge_external_layers: false
+  graph_reorder_guardrail_enabled: true
+  max_graph_reorder_psnr_drop: 0.75
+  max_graph_reorder_ssim_drop: 0.03
+peeling:
+  max_layers: 8
+  min_remaining_foreground_ratio: 0.001
+render:
+  parallax_frames: 24
+  parallax_pixels: 28
