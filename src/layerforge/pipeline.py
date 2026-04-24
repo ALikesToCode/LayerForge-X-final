@@ -56,7 +56,7 @@ class LayerForgePipeline:
             cfg["layering"]["ranker_model_path"] = str(ranker_model_path)
 
         out = ensure_dir(output_dir)
-        dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_alpha", "layers_completed_rgba", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_hidden_masks", "layers_grouped_rgba", "debug"]}
+        dirs = {k: ensure_dir(out / k) for k in ["layers_ordered_rgba", "layers_alpha", "layers_alpha_confidence", "layers_completed_rgba", "layers_albedo_rgba", "layers_shading_rgba", "layers_amodal_masks", "layers_hidden_masks", "layers_grouped_rgba", "debug"]}
         rgb, pil = load_rgb(input_path, cfg.get("io", {}).get("max_side"))
         save_rgb(dirs["debug"] / "input_rgb.png", rgb)
 
@@ -98,11 +98,15 @@ class LayerForgePipeline:
 
         ordered_paths = []
         alpha_paths = []
+        alpha_confidence_paths = []
         completed_paths = []
         hidden_paths: list[str | None] = []
         for layer in ordered_layers:
             ordered_paths.append(save_rgba(dirs["layers_ordered_rgba"] / f"{layer.name}.png", layer.rgba))
             alpha_paths.append(save_gray(dirs["layers_alpha"] / f"{layer.name}_alpha.png", layer.alpha))
+            alpha_quality = float(layer.metadata.get("alpha_quality_score", 1.0) or 0.0)
+            alpha_confidence = np.full(layer.alpha.shape, np.clip(alpha_quality, 0.0, 1.0), dtype=np.float32)
+            alpha_confidence_paths.append(save_gray(dirs["layers_alpha_confidence"] / f"{layer.name}_alpha_confidence.png", alpha_confidence))
             completed_paths.append(save_rgba(dirs["layers_completed_rgba"] / f"{layer.name}_completed.png", layer.completed_rgba if layer.completed_rgba is not None else layer.rgba))
             save_rgba(dirs["layers_albedo_rgba"] / f"{layer.name}_albedo.png", layer.albedo_rgba)
             save_rgba(dirs["layers_shading_rgba"] / f"{layer.name}_shading.png", layer.shading_rgba)
@@ -156,6 +160,7 @@ class LayerForgePipeline:
                 {
                     "path": str(path),
                     "alpha_path": str(alpha_path),
+                    "alpha_confidence_path": str(alpha_confidence_path),
                     "completed_path": str(completed_path),
                     "hidden_mask_path": hidden_path,
                     "name": layer.name,
@@ -165,7 +170,7 @@ class LayerForgePipeline:
                     "depth_median": layer.depth_median,
                     "alpha_quality_score": layer.metadata.get("alpha_quality_score"),
                 }
-                for path, alpha_path, completed_path, hidden_path, layer in zip(ordered_paths, alpha_paths, completed_paths, hidden_paths, ordered_layers)
+                for path, alpha_path, alpha_confidence_path, completed_path, hidden_path, layer in zip(ordered_paths, alpha_paths, alpha_confidence_paths, completed_paths, hidden_paths, ordered_layers)
             ],
             "grouped_layers": [str(p) for p in grouped_paths],
             "debug": {

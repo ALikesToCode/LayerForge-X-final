@@ -117,6 +117,7 @@ def _mask_layer_from_path(*, mask_path: Path, parent: Any, name: str, canvas_siz
 def _support_layer_specs(layer: dict[str, Any]) -> list[tuple[str, str, str]]:
     return [
         ("alpha mask", "alpha_mask", "mask"),
+        ("alpha confidence", "alpha_confidence_path", "mask"),
         ("completed RGBA", "completed_path", "rgba"),
         ("albedo", "albedo_path", "rgba"),
         ("shading", "shading_path", "rgba"),

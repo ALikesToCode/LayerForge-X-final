@@ -72,6 +72,7 @@ def _layer_support_paths(run_dir: Path, rgba_path: Path) -> dict[str, str | None
     return {
         "rgba": _rel_path(run_dir, rgba_path),
         "alpha": _rel_path(run_dir, run_dir / "layers_alpha" / f"{stem}_alpha.png"),
+        "alpha_confidence": _rel_path(run_dir, run_dir / "layers_alpha_confidence" / f"{stem}_alpha_confidence.png"),
         "completed_rgba": _rel_path(run_dir, run_dir / "layers_completed_rgba" / f"{stem}_completed.png"),
         "albedo_rgba": _rel_path(run_dir, run_dir / "layers_albedo_rgba" / f"{stem}_albedo.png"),
         "shading_rgba": _rel_path(run_dir, run_dir / "layers_shading_rgba" / f"{stem}_shading.png"),
@@ -235,6 +236,7 @@ def build_dalg_manifest(run_dir: str | Path) -> dict[str, Any]:
             "editable": layer["editable"],
             "semantic_group": layer["group"],
             "alpha_mask": layer.get("visible_mask_path"),
+            "alpha_confidence_path": layer.get("alpha_confidence_path"),
             "completed_path": layer.get("completed_rgba_path"),
             "albedo_path": layer.get("albedo_path"),
             "shading_path": layer.get("shading_path"),

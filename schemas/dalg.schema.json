@@ -464,6 +464,8 @@
       "required": [
         "near_id",
         "far_id",
+        "relation",
+        "evidence",
         "confidence"
       ],
       "properties": {

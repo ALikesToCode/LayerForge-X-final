@@ -36,6 +36,7 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
     run_dir.mkdir()
     (run_dir / "layers_ordered_rgba").mkdir()
     (run_dir / "layers_alpha").mkdir()
+    (run_dir / "layers_alpha_confidence").mkdir()
     (run_dir / "layers_albedo_rgba").mkdir()
     (run_dir / "layers_shading_rgba").mkdir()
     (run_dir / "layers_amodal_masks").mkdir()
@@ -45,6 +46,7 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
     (run_dir / "layers_ordered_rgba" / "001_background_completed.png").write_bytes(b"png")
     (run_dir / "layers_alpha" / "000_foreground_person_alpha.png").write_bytes(b"png")
     (run_dir / "layers_alpha" / "001_background_completed_alpha.png").write_bytes(b"png")
+    (run_dir / "layers_alpha_confidence" / "000_foreground_person_alpha_confidence.png").write_bytes(b"png")
     (run_dir / "layers_albedo_rgba" / "000_foreground_person_albedo.png").write_bytes(b"png")
     (run_dir / "layers_shading_rgba" / "000_foreground_person_shading.png").write_bytes(b"png")
     (run_dir / "layers_amodal_masks" / "000_foreground_person_amodal.png").write_bytes(b"png")
@@ -126,4 +128,5 @@ def test_export_dalg_manifest_cli_shape_from_existing_run(tmp_path) -> None:
     assert dalg_path == run_dir / "dalg_manifest.json"
     assert dalg["graph"]["edge_count"] == 1
     assert dalg["graph"]["layers"][0]["paths"]["rgba"] == "layers_ordered_rgba/000_foreground_person.png"
+    assert dalg["graph"]["layers"][0]["alpha_confidence_path"] == "layers_alpha_confidence/000_foreground_person_alpha_confidence.png"
     assert dalg["graph"]["layers"][0]["metadata"]["source"] == "synthetic"

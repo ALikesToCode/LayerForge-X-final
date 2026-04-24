@@ -420,7 +420,7 @@ def _merge_bucket_candidate(bucket: list[Layer], layer: Layer, cfg: dict[str, An
 
 
 def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
-    ordered = sorted(bucket, key=lambda l: l.rank)
+    ordered = sorted(bucket, key=lambda layer: layer.rank)
     if len(ordered) == 1:
         layer = ordered[0]
         layer.rank = rank
@@ -428,43 +428,43 @@ def _merge_layer_bucket(bucket: list[Layer], rank: int) -> Layer:
         return layer
     rgba = composite_layers_near_to_far(ordered)
     albedo = composite_layers_near_to_far(
-        [Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.albedo_rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata) for l in ordered]
+        [Layer(layer.id, layer.name, layer.label, layer.group, layer.rank, layer.depth_median, layer.depth_p10, layer.depth_p90, layer.area, layer.bbox, layer.alpha, layer.albedo_rgba, layer.albedo_rgba, layer.shading_rgba, layer.visible_mask, layer.amodal_mask, layer.source_segment_ids, layer.occludes, layer.occluded_by, layer.metadata) for layer in ordered]
     )
     shading = composite_layers_near_to_far(
-        [Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.shading_rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata) for l in ordered]
+        [Layer(layer.id, layer.name, layer.label, layer.group, layer.rank, layer.depth_median, layer.depth_p10, layer.depth_p90, layer.area, layer.bbox, layer.alpha, layer.shading_rgba, layer.albedo_rgba, layer.shading_rgba, layer.visible_mask, layer.amodal_mask, layer.source_segment_ids, layer.occludes, layer.occluded_by, layer.metadata) for layer in ordered]
     )
     alpha = image_to_float(rgba)[..., 3]
     visible = alpha > 0.05
     group = ordered[0].group
-    labels = {_base_label(l.label) for l in ordered}
+    labels = {_base_label(layer.label) for layer in ordered}
     label = ordered[0].label if len(labels) == 1 else f"{group} merged"
     merged_amodal = None
-    if any(l.amodal_mask is not None for l in ordered):
+    if any(layer.amodal_mask is not None for layer in ordered):
         merged_amodal = np.zeros_like(ordered[0].visible_mask, dtype=bool)
         for layer in ordered:
             if layer.amodal_mask is not None:
                 merged_amodal |= layer.amodal_mask.astype(bool)
     merged_hidden = None
-    if any(l.hidden_mask is not None for l in ordered):
+    if any(layer.hidden_mask is not None for layer in ordered):
         merged_hidden = np.zeros_like(ordered[0].visible_mask, dtype=bool)
         for layer in ordered:
             if layer.hidden_mask is not None:
                 merged_hidden |= layer.hidden_mask.astype(bool)
     completed = composite_layers_near_to_far(
         [
-            Layer(l.id, l.name, l.label, l.group, l.rank, l.depth_median, l.depth_p10, l.depth_p90, l.area, l.bbox, l.alpha, l.completed_rgba if l.completed_rgba is not None else l.rgba, l.albedo_rgba, l.shading_rgba, l.visible_mask, l.amodal_mask, l.source_segment_ids, l.occludes, l.occluded_by, l.metadata)
-            for l in ordered
+            Layer(layer.id, layer.name, layer.label, layer.group, layer.rank, layer.depth_median, layer.depth_p10, layer.depth_p90, layer.area, layer.bbox, layer.alpha, layer.completed_rgba if layer.completed_rgba is not None else layer.rgba, layer.albedo_rgba, layer.shading_rgba, layer.visible_mask, layer.amodal_mask, layer.source_segment_ids, layer.occludes, layer.occluded_by, layer.metadata)
+            for layer in ordered
         ]
     )
-    source_ids = sorted({sid for l in ordered for sid in l.source_segment_ids})
-    occludes = sorted({sid for l in ordered for sid in l.occludes})
-    occluded_by = sorted({sid for l in ordered for sid in l.occluded_by})
-    depth_weights = np.array([max(1, l.area) for l in ordered], dtype=np.float32)
-    depth_values = np.array([l.depth_median for l in ordered], dtype=np.float32)
-    p10_values = np.array([l.depth_p10 for l in ordered], dtype=np.float32)
-    p90_values = np.array([l.depth_p90 for l in ordered], dtype=np.float32)
+    source_ids = sorted({sid for layer in ordered for sid in layer.source_segment_ids})
+    occludes = sorted({sid for layer in ordered for sid in layer.occludes})
+    occluded_by = sorted({sid for layer in ordered for sid in layer.occluded_by})
+    depth_weights = np.array([max(1, layer.area) for layer in ordered], dtype=np.float32)
+    depth_values = np.array([layer.depth_median for layer in ordered], dtype=np.float32)
+    p10_values = np.array([layer.depth_p10 for layer in ordered], dtype=np.float32)
+    p90_values = np.array([layer.depth_p90 for layer in ordered], dtype=np.float32)
     meta = {
-        "merged_members": [l.name for l in ordered],
+        "merged_members": [layer.name for layer in ordered],
         "merged_count": len(ordered),
     }
     return Layer(
@@ -497,7 +497,7 @@ def merge_compatible_layers(layers: list[Layer], cfg: dict[str, Any]) -> list[La
     if not layers or not bool(cfg.get("merge_enabled", True)):
         return renumber_layers_in_place(list(layers))
     buckets: list[list[Layer]] = []
-    for layer in sorted(layers, key=lambda l: l.rank):
+    for layer in sorted(layers, key=lambda item: item.rank):
         if layer.group == "background" or not buckets:
             buckets.append([layer])
             continue
@@ -626,21 +626,21 @@ def build_completed_background_layer(bg_rgb: np.ndarray, albedo: np.ndarray, sha
 
 
 def grouped_layers(layers: list[Layer], bins: int = 3) -> list[Layer]:
-    fg = [l for l in layers if l.group != "background"]
-    bg = [l for l in layers if l.group == "background"]
+    fg = [layer for layer in layers if layer.group != "background"]
+    bg = [layer for layer in layers if layer.group == "background"]
     if not fg:
         return bg
-    depths = np.array([l.depth_median for l in fg], dtype=np.float32)
+    depths = np.array([layer.depth_median for layer in fg], dtype=np.float32)
     qs = np.quantile(depths, np.linspace(0, 1, bins + 1)) if len(depths) > 1 else np.array([0, 1], dtype=np.float32)
     buckets: dict[tuple[str, int], list[Layer]] = defaultdict(list)
-    for l in fg:
-        bid = int(np.searchsorted(qs[1:-1], l.depth_median, side="right"))
-        buckets[(l.group, bid)].append(l)
+    for layer in fg:
+        bid = int(np.searchsorted(qs[1:-1], layer.depth_median, side="right"))
+        buckets[(layer.group, bid)].append(layer)
     out: list[Layer] = []
     for (group, bid), bucket in sorted(buckets.items(), key=lambda kv: (kv[0][1], kv[0][0])):
         comp = composite_layers_near_to_far(bucket)
         alpha = image_to_float(comp)[..., 3]
-        first = sorted(bucket, key=lambda l: l.rank)[0]
+        first = sorted(bucket, key=lambda layer: layer.rank)[0]
         out.append(Layer(len(out), f"{len(out):03d}_{safe_name(group)}_depthbin_{bid}", f"{group} depth bin {bid}", group, len(out), float(np.median([b.depth_median for b in bucket])), float(np.min([b.depth_p10 for b in bucket])), float(np.max([b.depth_p90 for b in bucket])), int((alpha > 0.05).sum()), bbox_from_mask(alpha > 0.05), alpha, comp, first.albedo_rgba, first.shading_rgba, alpha > 0.05, None, [], [], [], {"members": [b.name for b in bucket]}))
     for b in bg:
         idx = len(out)
@@ -655,29 +655,31 @@ def graph_json(layers: list[Layer], nodes: dict[int, Node]) -> dict[str, Any]:
     edges: list[dict[str, Any]] = []
     for _, n in sorted(nodes.items()):
         for _, edge in sorted(n.outgoing_edges.items()):
-            edges.append(asdict(edge))
+            row = asdict(edge)
+            row["evidence"] = edge_evidence(edge)
+            edges.append(row)
     return {
         "layers_near_to_far": [
             {
-                "rank": l.rank,
-                "name": l.name,
-                "label": l.label,
-                "group": l.group,
-                "depth_median": l.depth_median,
-                "depth_p10": l.depth_p10,
-                "depth_p90": l.depth_p90,
-                "depth_trimmed_mean": l.metadata.get("depth_stats", {}).get("trimmed_mean"),
-                "depth_boundary_median": l.metadata.get("depth_stats", {}).get("boundary_median"),
-                "depth_variance": l.metadata.get("depth_stats", {}).get("variance"),
-                "depth_confidence": l.metadata.get("depth_stats", {}).get("confidence"),
-                "area": l.area,
-                "bbox": l.bbox,
-                "occludes": l.occludes,
-                "occluded_by": l.occluded_by,
-                "source_segment_ids": l.source_segment_ids,
-                "metadata": l.metadata,
+                "rank": layer.rank,
+                "name": layer.name,
+                "label": layer.label,
+                "group": layer.group,
+                "depth_median": layer.depth_median,
+                "depth_p10": layer.depth_p10,
+                "depth_p90": layer.depth_p90,
+                "depth_trimmed_mean": layer.metadata.get("depth_stats", {}).get("trimmed_mean"),
+                "depth_boundary_median": layer.metadata.get("depth_stats", {}).get("boundary_median"),
+                "depth_variance": layer.metadata.get("depth_stats", {}).get("variance"),
+                "depth_confidence": layer.metadata.get("depth_stats", {}).get("confidence"),
+                "area": layer.area,
+                "bbox": layer.bbox,
+                "occludes": layer.occludes,
+                "occluded_by": layer.occluded_by,
+                "source_segment_ids": layer.source_segment_ids,
+                "metadata": layer.metadata,
             }
-            for l in sorted(layers, key=lambda x: x.rank)
+            for layer in sorted(layers, key=lambda item: item.rank)
         ],
         "occlusion_edges": edges,
         "segment_nodes": [

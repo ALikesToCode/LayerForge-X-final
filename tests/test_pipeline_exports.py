@@ -26,12 +26,14 @@ def test_run_exports_unique_ordered_layer_paths_and_stable_manifest(tmp_path) ->
     exported = sorted((tmp_path / "run" / "layers_ordered_rgba").glob("*.png"))
     albedo_exported = sorted((tmp_path / "run" / "layers_albedo_rgba").glob("*.png"))
     shading_exported = sorted((tmp_path / "run" / "layers_shading_rgba").glob("*.png"))
+    alpha_confidence_exported = sorted((tmp_path / "run" / "layers_alpha_confidence").glob("*.png"))
 
     assert names
     assert len(names) == len(set(names))
     assert len(exported) == len(names)
     assert len(albedo_exported) == len(names)
     assert len(shading_exported) == len(names)
+    assert len(alpha_confidence_exported) == len(names)
     assert ranks == list(range(len(ranks)))
     assert all(item["label"] for item in manifest["ordered_layers_near_to_far"])
     assert all(item["group"] for item in manifest["ordered_layers_near_to_far"])
@@ -40,3 +42,4 @@ def test_run_exports_unique_ordered_layer_paths_and_stable_manifest(tmp_path) ->
         assert layer["paths"]["rgba"]
         assert layer["paths"]["albedo_rgba"]
         assert layer["paths"]["shading_rgba"]
+        assert layer["alpha_confidence_path"]

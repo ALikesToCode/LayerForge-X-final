@@ -25,6 +25,7 @@ def _make_design_run(tmp_path: Path) -> Path:
     for name in (
         "layers_ordered_rgba",
         "layers_alpha",
+        "layers_alpha_confidence",
         "layers_completed_rgba",
         "layers_albedo_rgba",
         "layers_shading_rgba",
@@ -39,6 +40,7 @@ def _make_design_run(tmp_path: Path) -> Path:
     _write_png(run_dir / "layers_ordered_rgba" / "001_background.png", (20, 30, 40, 255))
     _write_mask(run_dir / "layers_alpha" / "000_person_alpha.png", 160)
     _write_mask(run_dir / "layers_alpha" / "001_background_alpha.png", 255)
+    _write_mask(run_dir / "layers_alpha_confidence" / "000_person_alpha_confidence.png", 220)
     _write_png(run_dir / "layers_completed_rgba" / "000_person_completed.png", (230, 30, 30, 255))
     _write_png(run_dir / "layers_albedo_rgba" / "000_person_albedo.png", (180, 30, 30, 255))
     _write_png(run_dir / "layers_shading_rgba" / "000_person_shading.png", (180, 180, 180, 255))
@@ -136,6 +138,7 @@ def test_design_manifest_projects_dalg_layers_and_groups(tmp_path: Path) -> None
     assert design["canvas"] == {"height": 12, "width": 16}
     assert design["semantic_groups"]["people"] == ["000_person"]
     assert design["layers"][0]["alpha_mask"] == "layers_alpha/000_person_alpha.png"
+    assert design["layers"][0]["alpha_confidence_path"] == "layers_alpha_confidence/000_person_alpha_confidence.png"
     assert design["layers"][0]["hidden_mask"] == "layers_hidden_masks/000_person_hidden.png"
     assert rebuilt["exports"]["dalg"] == "dalg_manifest.json"
 
@@ -168,3 +171,4 @@ def test_export_psd_creates_semantic_groups_and_support_sublayers(tmp_path: Path
     assert "people" in group_names
     assert "000 000_person" in first_group_children
     assert "000 000_person / alpha mask" in first_group_children
+    assert "000 000_person / alpha confidence" in first_group_children
