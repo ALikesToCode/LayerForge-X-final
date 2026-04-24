@@ -4,9 +4,11 @@ import json
 
 import numpy as np
 import pytest
+from PIL import Image, ImageDraw
 
 from layerforge.peeling import _refine_effect_alpha, extract_associated_effect_layer
 from layerforge.pipeline import LayerForgePipeline
+from layerforge.utils import mask_iou
 
 
 def test_extract_associated_effect_layer_detects_shadow_region() -> None:
@@ -73,6 +75,51 @@ def test_refine_effect_alpha_can_use_backend_prediction(monkeypatch) -> None:
     assert float(alpha[10:16, 7:19].mean()) > 0.55
     assert float(alpha[4:10, 8:16].mean()) < 0.05
     assert metadata["backend"] == "birefnet"
+
+
+def test_residual_shape_backend_completes_occluded_effect() -> None:
+    size = (96, 128)
+    current = np.full((*size, 3), 220, dtype=np.uint8)
+    clean_reference = current.copy()
+
+    effect = Image.new("L", (size[1], size[0]), 0)
+    draw = ImageDraw.Draw(effect)
+    draw.ellipse((26, 58, 104, 86), fill=255)
+    effect_mask = np.asarray(effect, dtype=np.uint8) > 0
+    current[effect_mask] = np.array([150, 150, 150], dtype=np.uint8)
+
+    core = Image.new("L", (size[1], size[0]), 0)
+    draw = ImageDraw.Draw(core)
+    draw.ellipse((48, 24, 80, 78), fill=255)
+    core_mask = np.asarray(core, dtype=np.uint8) > 0
+    current[core_mask] = np.array([230, 90, 70], dtype=np.uint8)
+
+    layer = extract_associated_effect_layer(
+        current_rgb=current,
+        inpainted_rgb=clean_reference,
+        core_mask=core_mask,
+        label="person",
+        rank=1,
+        cfg={
+            "enabled": True,
+            "use_provided_reference": True,
+            "candidate_backend": "residual_shape",
+            "candidate_support_px": 48,
+            "shape_completion_enabled": True,
+            "shape_completion_support_px": 48,
+            "shape_completion_max_area_ratio": 2.25,
+            "dilate_px": 14,
+            "inner_dilate_px": 2,
+            "delta_threshold": 0.04,
+            "alpha_scale": 0.12,
+            "min_area_px": 12,
+            "prefer_downward": True,
+        },
+    )
+
+    assert layer is not None
+    assert layer.metadata["shape_completion"]["used"] is True
+    assert mask_iou(layer.visible_mask, effect_mask) > 0.9
 
 
 @pytest.mark.slow

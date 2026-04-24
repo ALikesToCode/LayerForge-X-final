@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from skimage.morphology import convex_hull_image
 
 from .compose import composite_layers_near_to_far, rgba_from_rgb_alpha
 from .dalg import export_dalg_manifest
@@ -47,6 +48,60 @@ def _save_peeling_strip(path: str | Path, frames: list[np.ndarray]) -> Path:
     return out
 
 
+def _effect_direction_mask(core: np.ndarray, *, prefer_downward: bool) -> np.ndarray:
+    mask = np.ones(core.shape, dtype=bool)
+    if prefer_downward:
+        ys, _ = np.where(core)
+        if ys.size:
+            center_y = int(np.median(ys))
+            y_coords = np.arange(core.shape[0], dtype=np.int32)[:, None]
+            mask &= y_coords >= center_y
+    return mask
+
+
+def _complete_effect_shape(
+    observed_mask: np.ndarray,
+    support_mask: np.ndarray,
+    cfg: dict[str, Any],
+) -> tuple[np.ndarray, dict[str, Any]]:
+    backend = str(cfg.get("candidate_backend", cfg.get("backend", "ring_residual"))).lower()
+    enabled = cfg.get("shape_completion_enabled")
+    if enabled is None:
+        enabled = backend in {"residual_shape", "shape_completion"}
+
+    observed = np.asarray(observed_mask, dtype=bool)
+    metadata: dict[str, Any] = {
+        "enabled": bool(enabled),
+        "method": str(cfg.get("shape_completion_method", "convex_hull")),
+        "observed_pixels": int(observed.sum()),
+    }
+    if not bool(enabled) or not observed.any():
+        metadata["used"] = False
+        return observed, metadata
+
+    method = str(cfg.get("shape_completion_method", "convex_hull")).lower()
+    if method != "convex_hull":
+        metadata.update({"used": False, "reason": "unsupported_method"})
+        return observed, metadata
+
+    completed = np.asarray(convex_hull_image(observed), dtype=bool)
+    completed = (completed | observed) & np.asarray(support_mask, dtype=bool)
+    completed_pixels = int(completed.sum())
+    observed_pixels = max(1, int(observed.sum()))
+    max_area_ratio = max(1.0, float(cfg.get("shape_completion_max_area_ratio", 2.25)))
+    metadata["completed_pixels"] = completed_pixels
+    metadata["max_area_ratio"] = max_area_ratio
+    if completed_pixels > int(np.ceil(observed_pixels * max_area_ratio)):
+        metadata.update({"used": False, "reason": "area_guardrail"})
+        return observed, metadata
+    if completed_pixels <= observed_pixels:
+        metadata.update({"used": False, "reason": "no_expansion"})
+        return observed, metadata
+
+    metadata["used"] = True
+    return completed, metadata
+
+
 def extract_associated_effect_layer(
     *,
     current_rgb: np.ndarray,
@@ -73,13 +128,10 @@ def extract_associated_effect_layer(
     outer = ndi.binary_dilation(core, iterations=dilate_px)
     inner = ndi.binary_dilation(core, iterations=inner_dilate_px) if inner_dilate_px > 0 else core
     ring = outer & ~inner
+    direction_mask = _effect_direction_mask(core, prefer_downward=bool(cfg.get("prefer_downward", True)))
 
     if bool(cfg.get("prefer_downward", True)):
-        ys, _ = np.where(core)
-        if ys.size:
-            center_y = int(np.median(ys))
-            y_coords = np.arange(core.shape[0], dtype=np.int32)[:, None]
-            ring &= y_coords >= center_y
+        ring &= direction_mask
 
     reference_rgb = np.asarray(inpainted_rgb, dtype=np.uint8)
     use_provided_reference = bool(cfg.get("use_provided_reference", False))
@@ -87,11 +139,7 @@ def extract_associated_effect_layer(
         support_dilate_px = max(1, int(cfg.get("support_dilate_px", max(6, dilate_px // 2))))
         support_mask = ndi.binary_dilation(core, iterations=support_dilate_px)
         if bool(cfg.get("prefer_downward", True)):
-            ys, _ = np.where(core)
-            if ys.size:
-                center_y = int(np.median(ys))
-                y_coords = np.arange(core.shape[0], dtype=np.int32)[:, None]
-                support_mask &= y_coords >= center_y
+            support_mask &= direction_mask
         if support_mask.any():
             local_inpainted, _, _ = inpaint_background(
                 current_rgb,
@@ -105,12 +153,31 @@ def extract_associated_effect_layer(
     else:
         support_dilate_px = 0
     delta = np.mean(np.abs(current_rgb.astype(np.float32) - reference_rgb.astype(np.float32)), axis=2) / 255.0
-    candidate = ring & (delta >= float(cfg.get("delta_threshold", 0.05)))
+    residual = delta >= float(cfg.get("delta_threshold", 0.05))
+    candidate_backend = str(cfg.get("candidate_backend", cfg.get("backend", "ring_residual"))).lower()
+    observed_candidate = ring & residual
+    completion_support = outer & direction_mask
+
+    if candidate_backend in {"expanded_residual", "visible_residual", "residual_shape", "shape_completion"}:
+        default_support_px = max(dilate_px * 2, dilate_px + 32)
+        candidate_support_px = max(1, int(cfg.get("candidate_support_px", cfg.get("shape_completion_support_px", default_support_px))))
+        completion_support = ndi.binary_dilation(core, iterations=candidate_support_px) & direction_mask
+        expanded_candidate = residual & completion_support & ~core
+        if int(expanded_candidate.sum()) >= int(cfg.get("min_area_px", 80)):
+            observed_candidate = expanded_candidate
+
+    candidate, completion_meta = _complete_effect_shape(observed_candidate, completion_support, cfg)
     if int(candidate.sum()) < int(cfg.get("min_area_px", 80)):
         return None
 
     alpha_scale = max(1e-3, float(cfg.get("alpha_scale", 0.18)))
-    residual_alpha = np.clip(delta / alpha_scale, 0.0, 1.0).astype(np.float32)
+    residual_alpha = np.zeros(delta.shape, dtype=np.float32)
+    residual_alpha[observed_candidate] = np.clip(delta[observed_candidate] / alpha_scale, 0.0, 1.0)
+    completed_only = candidate & ~observed_candidate
+    if completed_only.any() and observed_candidate.any():
+        q = float(cfg.get("shape_completion_alpha_quantile", 0.5))
+        fill_alpha = float(np.quantile(residual_alpha[observed_candidate], np.clip(q, 0.0, 1.0)))
+        residual_alpha[completed_only] = max(fill_alpha, float(cfg.get("shape_completion_min_alpha", 0.08)))
     residual_alpha *= candidate.astype(np.float32)
     alpha, alpha_backend_meta = _refine_effect_alpha(
         current_rgb=current_rgb,
@@ -124,7 +191,12 @@ def extract_associated_effect_layer(
     if int(visible.sum()) < int(cfg.get("min_area_px", 80)):
         return None
 
-    rgba = rgba_from_rgb_alpha(current_rgb, alpha)
+    effect_rgb = current_rgb
+    if bool(cfg.get("fill_completed_rgb", True)) and completed_only.any() and observed_candidate.any():
+        effect_rgb = current_rgb.copy()
+        fill_rgb = np.median(current_rgb[observed_candidate], axis=0).clip(0, 255).astype(np.uint8)
+        effect_rgb[completed_only] = fill_rgb
+    rgba = rgba_from_rgb_alpha(effect_rgb, alpha)
     if albedo is not None and shading is not None:
         albedo_rgba, shading_rgba = intrinsic_rgba(albedo, shading, alpha)
     else:
@@ -154,6 +226,10 @@ def extract_associated_effect_layer(
             "delta_mean": float(delta[visible].mean()) if visible.any() else 0.0,
             "support_dilate_px": support_dilate_px,
             "use_provided_reference": use_provided_reference,
+            "candidate_backend": candidate_backend,
+            "observed_candidate_pixels": int(observed_candidate.sum()),
+            "candidate_pixels": int(candidate.sum()),
+            "shape_completion": completion_meta,
             "alpha_backend": alpha_backend_meta,
         },
     )
