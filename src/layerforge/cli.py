@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import load_config
-from .dalg import export_dalg_manifest
+from .design_export import export_design_assets
 from .editability import export_target_assets
 from .editability import target_geometry_is_confident
 from .frontier import materialize_frontier_selection
@@ -328,8 +328,19 @@ def cmd_extract(args: argparse.Namespace) -> int:
 
 
 def cmd_export_design(args: argparse.Namespace) -> int:
-    output_path = export_dalg_manifest(args.run_dir, args.output)
-    print(f"dalg:     {output_path}")
+    output_format = getattr(args, "format", "dalg")
+    include_design_json = output_format in {"json", "all"}
+    include_psd = output_format in {"psd", "all"}
+    outputs = export_design_assets(
+        args.run_dir,
+        dalg_output=args.output,
+        design_output=args.design_output,
+        psd_output=args.psd_output,
+        include_design_json=include_design_json,
+        include_psd=include_psd,
+    )
+    for label, path in outputs.items():
+        print(f"{label}: {path}")
     return 0
 
 
@@ -620,9 +631,12 @@ def build_parser() -> argparse.ArgumentParser:
     add_frontier_base_arguments(extract)
     extract.set_defaults(func=cmd_extract)
 
-    export_design = sub.add_parser("export-design", help="Normalize an existing LayerForge run into the canonical DALG design-manifest JSON")
+    export_design = sub.add_parser("export-design", help="Normalize an existing LayerForge run into DALG/design manifests and optional PSD assets")
     export_design.add_argument("--run-dir", required=True, help="Run directory containing manifest.json")
-    export_design.add_argument("--output", default=None, help="Optional output JSON path; defaults to <run-dir>/dalg_manifest.json")
+    export_design.add_argument("--output", default=None, help="Optional DALG JSON path; defaults to <run-dir>/dalg_manifest.json")
+    export_design.add_argument("--format", choices=["dalg", "json", "psd", "all"], default="dalg", help="Additional design output to write; default preserves the original DALG-only behavior")
+    export_design.add_argument("--design-output", default=None, help="Optional design JSON path; defaults to <run-dir>/design_manifest.json")
+    export_design.add_argument("--psd-output", default=None, help="Optional PSD path; defaults to <run-dir>/layers.psd")
     export_design.set_defaults(func=cmd_export_design)
 
     transparent = sub.add_parser("transparent", help="Approximate transparent or semi-transparent foreground decomposition using clean-background estimation and alpha blending")

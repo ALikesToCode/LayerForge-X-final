@@ -33,6 +33,7 @@ models = [
 ]
 inpaint = ["simple-lama-inpainting>=0.1.2; python_version < '3.14'"]
 quality = ["lpips>=0.1.4", "pandas>=2.0"]
+export = ["psd-tools>=1.10"]
 dev = ["pytest>=8.0", "ruff>=0.5"]
 
 [project.scripts]
