@@ -245,6 +245,7 @@ def _derive_layer_asset_paths(output_dir: Path, row: dict[str, Any]) -> dict[str
     candidates = {
         "rgba": rgba_path,
         "alpha": _resolve_output_path(output_dir, row.get("alpha_path")) or output_dir / "layers_alpha" / f"{stem}_alpha.png",
+        "alpha_confidence": _resolve_output_path(output_dir, row.get("alpha_confidence_path")) or output_dir / "layers_alpha_confidence" / f"{stem}_alpha_confidence.png",
         "amodal": output_dir / "layers_amodal_masks" / f"{stem}_amodal.png",
         "hidden": _resolve_output_path(output_dir, row.get("hidden_mask_path")) or output_dir / "layers_hidden_masks" / f"{stem}_hidden.png",
         "completed": _resolve_output_path(output_dir, row.get("completed_path")) or output_dir / "layers_completed_rgba" / f"{stem}_completed.png",

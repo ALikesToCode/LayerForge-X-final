@@ -34,6 +34,7 @@ def test_webui_run_job_creates_accessible_outputs(tmp_path: Path) -> None:
     assert result["urls"]["dalg"]
     assert result["previews"]
     assert result["inspector"]["layers"]
+    assert result["inspector"]["layers"][0]["assets"]["alpha_confidence"]
     assert result["inspector"]["diagnostics"]["error_heatmap_url"]
     assert any(item["label"] == "Depth crops" for item in result["previews"])
 
